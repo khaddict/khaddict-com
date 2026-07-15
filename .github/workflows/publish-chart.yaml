@@ -1,0 +1,32 @@
+name: Publish khaddict-com chart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "Chart.yaml"
+      - "files/**"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v5
+
+      - name: Login to ghcr.io
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Package and push chart
+        run: |
+          VERSION="0.1.$(git rev-list --count HEAD)"
+          helm package . --version "$VERSION" --app-version "$VERSION" -d /tmp/chart-out
+          helm push "/tmp/chart-out/khaddict-com-${VERSION}.tgz" oci://ghcr.io/khaddict/charts

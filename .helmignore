@@ -1,0 +1,10 @@
+# Only files/ is consumed by the parent chart's .Files.Get calls.
+# Everything below is source content for other pipelines (Docker image build,
+# manual VPS deployment, CI config, repo metadata) and must not be packaged
+# into the Helm chart artifact - some of these (gallery images) are large
+# enough to blow past Helm's per-file size limit inside a chart archive.
+images-build
+vps-fallback
+.github
+.git
+README.md
