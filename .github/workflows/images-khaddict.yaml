@@ -17,10 +17,16 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v7.0.0
+        with:
+          fetch-depth: 0
 
       - name: Get short SHA
         id: sha
         run: echo "short=$(echo "${{ github.sha }}" | cut -c1-7)" >> $GITHUB_OUTPUT
+
+      - name: Get version
+        id: version
+        run: echo "value=0.1.$(git rev-list --count HEAD)" >> $GITHUB_OUTPUT
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -39,4 +45,5 @@ jobs:
           push: true
           tags: |
             ghcr.io/khaddict/images-khaddict:${{ steps.sha.outputs.short }}
+            ghcr.io/khaddict/images-khaddict:${{ steps.version.outputs.value }}
             ghcr.io/khaddict/images-khaddict:latest
