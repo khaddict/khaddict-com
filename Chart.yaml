@@ -1,0 +1,11 @@
+apiVersion: v2
+name: khaddict-com
+description: Static site content (HTML/CSS/JS) for the khaddict.com site family (www, blog, images), consumed as a Helm subchart by voidnode's khaddict chart
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://github.com/khaddict/khaddict-com
+sources:
+  - https://github.com/khaddict/khaddict-com
+maintainers:
+  - name: platform
