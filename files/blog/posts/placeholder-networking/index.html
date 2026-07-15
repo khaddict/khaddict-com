@@ -551,10 +551,10 @@
       </a>
       <nav class="topnav">
         <a href="https://khaddict.com" data-i18n="nav.home">home</a>
-        <a href="https://blog.khaddict.com">blog</a>
-        <a href="https://projects.khaddict.com">projects</a>
-        <a href="https://images.khaddict.com">images</a>
-        <a href="https://dashboard.khaddict.com">dashboard</a>
+        <a href="https://blog.khaddict.com" data-i18n="nav.blog">blog</a>
+        <a href="https://projects.khaddict.com" data-i18n="nav.projects">projects</a>
+        <a href="https://images.khaddict.com" data-i18n="nav.images">images</a>
+        <a href="https://dashboard.khaddict.com" data-i18n="nav.dashboard">dashboard</a>
       </nav>
       <div class="bandeau-right">
         <div class="status-nav">
@@ -630,6 +630,10 @@
     const I18N = {
       en: {
         'nav.home': 'home',
+        'nav.blog': 'blog',
+        'nav.projects': 'projects',
+        'nav.images': 'images',
+        'nav.dashboard': 'dashboard',
         'status.label': 'status',
         'status.checking': 'checking systems…',
         'status.viewFull': 'view full status ↗',
@@ -646,15 +650,19 @@
       },
       fr: {
         'nav.home': 'accueil',
+        'nav.blog': 'blog',
+        'nav.projects': 'projets',
+        'nav.images': 'images',
+        'nav.dashboard': 'dashboard',
         'status.label': 'statut',
-        'status.checking': 'vérification des systèmes…',
+        'status.checking': 'vérification en cours…',
         'status.viewFull': 'voir le statut complet ↗',
-        'status.unreachable': 'page de statut injoignable',
+        'status.unreachable': 'page de statut inaccessible',
         'title.post': 'Placeholder : réseau | khaddict blog',
         'post.back': '← retour au blog',
         'post.title': 'Placeholder : réseau',
-        'post.body': 'Cet article n’a pas encore été écrit. Un vrai article sur le réseau remplacera ce placeholder. Cette page existe pour illustrer la structure une-page-par-article du blog.',
-        'discord.hint': 'copier pseudo',
+        'post.body': 'Cet article n’a pas encore été écrit. Un vrai article sur le réseau sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog.',
+        'discord.hint': 'copier le pseudo',
         'discord.toast': 'copié',
         'discord.ariaLabel': 'Copier le pseudo Discord',
         'theme.ariaLabel': 'Changer le thème',
