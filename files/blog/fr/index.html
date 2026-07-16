@@ -979,7 +979,7 @@
         card.className = 'article-card';
         card.innerHTML = `
           <div class="article-date">${formatArticleDate(a.date)}</div>
-          <h2 class="article-title"><a href="https://blog.khaddict.com/posts/${a.slug}/${currentLang === 'fr' ? 'fr/' : ''}">${a.title[currentLang] || a.title.en}</a></h2>
+          <h2 class="article-title"><a href="https://blog.khaddict.com/${currentLang === 'fr' ? 'fr/posts/' : 'posts/'}${a.slug}/">${a.title[currentLang] || a.title.en}</a></h2>
           <p class="article-excerpt">${a.excerpt[currentLang] || a.excerpt.en}</p>
           <div class="article-tags">${a.tags.map((id) => `<span class="article-tag" style="${tagStyle(id)}">${tagLabel(id)}</span>`).join('')}</div>
         `;
