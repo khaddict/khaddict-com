@@ -367,6 +367,17 @@
       gap: .5rem;
     }
 
+    .copyright {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 1.5rem;
+      z-index: 14;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      opacity: .7;
+    }
+
     .icon-link {
       position: relative;
       display: flex;
@@ -672,6 +683,7 @@
       .bandeau-inner { justify-content: center; text-align: center; }
       .topnav { justify-content: center; gap: 1.2rem; }
       .footer-links { position: static; align-self: center; margin: 2rem 0 1.5rem; }
+      .copyright { position: static; transform: none; text-align: center; margin: 0 0 1.5rem; }
       .status-nav { position: static; }
       .dropdown { left: 50%; right: auto; width: min(340px, calc(100vw - 2rem)); transform: translateX(-50%) translateY(-6px); }
       .dropdown.open, .status-nav:hover .dropdown { transform: translateX(-50%) translateY(0); }
@@ -780,6 +792,9 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
     </a>
   </div>
+
+  <div class="copyright">&copy; <span id="copyright-year"></span> khaddict.com</div>
+  <script>document.getElementById('copyright-year').textContent = new Date().getFullYear();</script>
 
   <script>
     const I18N = {
