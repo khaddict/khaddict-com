@@ -1,18 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://khaddict.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://khaddict.com/"/>
+  </url>
+  <url>
+    <loc>https://khaddict.com/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://khaddict.com/"/>
   </url>
   <url>
     <loc>https://blog.khaddict.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-homelab/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-homelab/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-homelab/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-homelab/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-homelab/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-homelab/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-homelab/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-homelab/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-tooling/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-tooling/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-tooling/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-tooling/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-tooling/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-tooling/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-tooling/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-tooling/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-systems/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-systems/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-systems/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-systems/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-systems/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-systems/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-systems/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-systems/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-networking/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-networking/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-networking/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-networking/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-networking/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-networking/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-networking/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-networking/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-3d-printing/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-3d-printing/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-3d-printing/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-3d-printing/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-3d-printing/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-3d-printing/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-3d-printing/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-3d-printing/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-cloud/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-cloud/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-cloud/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-cloud/"/>
+  </url>
+  <url>
+    <loc>https://blog.khaddict.com/posts/placeholder-cloud/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/placeholder-cloud/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/posts/placeholder-cloud/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/placeholder-cloud/"/>
+  </url>
+  <url>
+    <loc>https://projects.khaddict.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://projects.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://projects.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://projects.khaddict.com/"/>
+  </url>
+  <url>
+    <loc>https://projects.khaddict.com/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://projects.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://projects.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://projects.khaddict.com/"/>
   </url>
   <url>
     <loc>https://images.khaddict.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://images.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://images.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://images.khaddict.com/"/>
   </url>
   <url>
-    <loc>https://dashboard.khaddict.com/</loc>
-  </url>
-  <url>
-    <loc>https://status.khaddict.com/</loc>
+    <loc>https://images.khaddict.com/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://images.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://images.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://images.khaddict.com/"/>
   </url>
 </urlset>
