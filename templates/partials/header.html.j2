@@ -1,0 +1,44 @@
+  <header class="bandeau">
+    <div class="bandeau-inner">
+      <a class="brand" href="{{ brand_href }}">
+        <img class="brand-icon" src="https://images.khaddict.com/icons/khazix-pc-flat.png" alt="" />
+        khaddict.com
+      </a>
+      <nav class="topnav">
+        <a href="{{ nav_home_href }}" data-i18n="nav.home">{{ i18n['nav.home'] }}</a>
+        <a href="{{ nav_blog_href }}" data-i18n="nav.blog">{{ i18n['nav.blog'] }}</a>
+        <a href="{{ nav_projects_href }}" data-i18n="nav.projects">{{ i18n['nav.projects'] }}</a>
+        <a href="{{ nav_images_href }}" data-i18n="nav.images">{{ i18n['nav.images'] }}</a>
+        <a href="{{ nav_dashboard_href }}" data-i18n="nav.dashboard">{{ i18n['nav.dashboard'] }}</a>
+      </nav>
+      <div class="bandeau-right">
+        <div class="status-nav">
+          <button id="status-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="s-dropdown">
+            <span class="dot" id="s-dot"></span><span data-i18n="status.label">{{ i18n['status.label'] }}</span>
+          </button>
+          <div class="dropdown" id="s-dropdown">
+            <div id="s-inner">
+              <div class="dropdown-line dropdown-msg" data-i18n="status.checking">{{ i18n['status.checking'] }}</div>
+            </div>
+          </div>
+        </div>
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="{{ i18n['theme.ariaLabel'] }}" data-i18n-aria="theme.ariaLabel">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <div class="lang-nav">
+          <button class="lang-btn" id="lang-btn" type="button" aria-label="{{ i18n['lang.ariaLabel'] }}" data-i18n-aria="lang.ariaLabel" aria-haspopup="true" aria-expanded="false" aria-controls="lang-dropdown">
+            <span id="lang-current">{{ lang_current }}</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div class="lang-dropdown" id="lang-dropdown">
+{% if lang_mode == 'url' %}
+{% include "partials/lang_switcher_url.html.j2" %}
+{% else %}
+{% include "partials/lang_switcher_cookie.html.j2" %}
+{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>

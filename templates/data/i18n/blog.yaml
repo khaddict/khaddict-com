@@ -1,0 +1,14 @@
+en:
+  title.blog: "Blog | khaddict"
+  blog.searchPlaceholder: "Search articles…"
+  blog.sortNewest: "newest first"
+  blog.sortOldest: "oldest first"
+  blog.empty: "No articles match your filters."
+  blog.clearFilters: "Clear filters"
+fr:
+  title.blog: "Blog | khaddict"
+  blog.searchPlaceholder: "Rechercher un article…"
+  blog.sortNewest: "plus récent"
+  blog.sortOldest: "plus ancien"
+  blog.empty: "Aucun article ne correspond à ces filtres."
+  blog.clearFilters: "Réinitialiser les filtres"

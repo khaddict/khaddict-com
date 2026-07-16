@@ -1,0 +1,72 @@
+placeholder-homelab:
+  date: '2026-07-01'
+  tags: [homelab]
+  title:
+    en: "Placeholder: homelab"
+    fr: "Placeholder : homelab"
+  excerpt:
+    en: "This post has not been written yet. A real article about the homelab will replace this placeholder."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur le homelab remplacera ce placeholder."
+  body:
+    en: "This post has not been written yet. A real article about the homelab will replace this placeholder. This page exists to demonstrate the one-article-per-page structure of the blog."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur le homelab sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog."
+placeholder-tooling:
+  date: '2026-06-20'
+  tags: [tooling]
+  title:
+    en: "Placeholder: tooling"
+    fr: "Placeholder : technos"
+  excerpt:
+    en: "This post has not been written yet. A real article about the tools I use will replace this placeholder."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur les outils que j’utilise remplacera ce placeholder."
+  body:
+    en: "This post has not been written yet. A real article about the tools I use will replace this placeholder. This page exists to demonstrate the one-article-per-page structure of the blog."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur les outils que j’utilise sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog."
+placeholder-systems:
+  date: '2026-06-05'
+  tags: [systems]
+  title:
+    en: "Placeholder: systems"
+    fr: "Placeholder : système"
+  excerpt:
+    en: "This post has not been written yet. A real article about systems administration will replace this placeholder."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur l’administration système remplacera ce placeholder."
+  body:
+    en: "This post has not been written yet. A real article about systems administration will replace this placeholder. This page exists to demonstrate the one-article-per-page structure of the blog."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur l’administration système sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog."
+placeholder-networking:
+  date: '2026-05-20'
+  tags: [networking]
+  title:
+    en: "Placeholder: networking"
+    fr: "Placeholder : réseau"
+  excerpt:
+    en: "This post has not been written yet. A real article about networking will replace this placeholder."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur le réseau remplacera ce placeholder."
+  body:
+    en: "This post has not been written yet. A real article about networking will replace this placeholder. This page exists to demonstrate the one-article-per-page structure of the blog."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur le réseau sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog."
+placeholder-3d-printing:
+  date: '2026-05-05'
+  tags: ['3d-printing']
+  title:
+    en: "Placeholder: 3D printing"
+    fr: "Placeholder : impression 3D"
+  excerpt:
+    en: "This post has not been written yet. A real article about 3D printing projects will replace this placeholder."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur mes projets d’impression 3D remplacera ce placeholder."
+  body:
+    en: "This post has not been written yet. A real article about 3D printing projects will replace this placeholder. This page exists to demonstrate the one-article-per-page structure of the blog."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur mes projets d’impression 3D sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog."
+placeholder-cloud:
+  date: '2026-04-20'
+  tags: [cloud]
+  title:
+    en: "Placeholder: cloud"
+    fr: "Placeholder : cloud"
+  excerpt:
+    en: "This post has not been written yet. A real article about cloud and infrastructure topics will replace this placeholder."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur le cloud et l’infrastructure remplacera ce placeholder."
+  body:
+    en: "This post has not been written yet. A real article about cloud and infrastructure topics will replace this placeholder. This page exists to demonstrate the one-article-per-page structure of the blog."
+    fr: "Cet article n’a pas encore été écrit. Un vrai article sur le cloud et l’infrastructure sera publié ici. Cette page sert simplement à montrer que chaque article a sa propre page sur ce blog."

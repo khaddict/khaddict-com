@@ -1,0 +1,326 @@
+{% from "partials/js_str.j2" import js_str %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+{% include "partials/theme_toggle.js.j2" %}
+  </script>
+  <title>{{ i18n['title.projects'] }}</title>
+  <meta name="description" content="{{ meta_description }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ og_url }}" />
+  <meta property="og:title" content="{{ i18n['title.projects'] }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <meta property="og:image" content="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta property="og:locale" content="{{ og_locale }}" />
+  <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
+  <link rel="canonical" href="{{ canonical_url }}" />
+  <link rel="alternate" hreflang="en" href="https://projects.khaddict.com/" />
+  <link rel="alternate" hreflang="fr" href="https://projects.khaddict.com/fr/" />
+  <link rel="alternate" hreflang="x-default" href="https://projects.khaddict.com/" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ i18n['title.projects'] }}" />
+  <meta name="twitter:image" content="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <link rel="icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" type="image/png" />
+  <link rel="apple-touch-icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <!-- Matomo -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.khaddict.com/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo -->
+
+  <style>
+{% include "partials/head_tokens.css.j2" %}
+{% include "partials/status_widget.css.j2" %}
+    /* projects */
+    .projects {
+      flex: 1;
+      padding: 3rem 1.5rem 4rem;
+      animation: fade-up .45s ease both;
+    }
+
+    .projects-inner { max-width: 1040px; margin: 0 auto; }
+
+    .projects-intro { text-align: center; margin-bottom: 2.5rem; }
+
+    .projects-intro h1 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: .6rem;
+    }
+
+    .projects-intro .highlight {
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      padding: 1.4rem 1.5rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    .project-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+    .project-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      margin-bottom: .55rem;
+    }
+
+    .project-desc {
+      font-size: .86rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: 1rem;
+      flex: 1;
+    }
+
+    .project-stack {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-bottom: 1rem;
+    }
+    .project-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: .2rem .55rem;
+      border-radius: 10px;
+    }
+
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .project-link:hover { color: var(--accent-2); }
+    .project-link svg { width: 13px; height: 13px; }
+
+    .project-badge {
+      display: inline-flex;
+      align-self: flex-start;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .74rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      padding: .3rem .7rem;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 460px) {
+      .projects-grid { grid-template-columns: 1fr; }
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+{% include "partials/responsive.css.j2" %}
+  </style>
+</head>
+
+<body>
+{% include "partials/header.html.j2" %}
+
+  <main class="projects">
+    <div class="projects-inner">
+      <div class="projects-intro">
+        <h1 data-i18n="projects.title">{{ i18n['projects.title'] | safe }}</h1>
+      </div>
+      <div class="projects-grid">
+        <article class="project-card">
+          <h2 class="project-name">voidnode</h2>
+          <p class="project-desc" data-i18n="projects.voidnode">{{ i18n['projects.voidnode'] }}</p>
+          <div class="project-stack">
+            <span class="project-tag">Kubernetes</span>
+            <span class="project-tag">ArgoCD</span>
+            <span class="project-tag">SaltStack</span>
+            <span class="project-tag">OPNsense</span>
+            <span class="project-tag">Proxmox VE</span>
+          </div>
+          <a class="project-link" href="https://github.com/khaddict/voidnode" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            github.com/khaddict/voidnode
+          </a>
+        </article>
+        <article class="project-card">
+          <h2 class="project-name">khaddict-com</h2>
+          <p class="project-desc" data-i18n="projects.khaddictcom">{{ i18n['projects.khaddictcom'] }}</p>
+          <div class="project-stack">
+            <span class="project-tag">Helm</span>
+            <span class="project-tag">Nginx</span>
+            <span class="project-tag">GitHub Actions</span>
+          </div>
+          <a class="project-link" href="https://github.com/khaddict/khaddict-com" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            github.com/khaddict/khaddict-com
+          </a>
+        </article>
+        <article class="project-card">
+          <h2 class="project-name">homelab</h2>
+          <p class="project-desc" data-i18n="projects.homelab">{{ i18n['projects.homelab'] }}</p>
+          <div class="project-stack">
+            <span class="project-tag">Proxmox VE</span>
+            <span class="project-tag">Ceph</span>
+            <span class="project-tag">Kubernetes</span>
+            <span class="project-tag">StackStorm</span>
+            <span class="project-tag">SaltStack</span>
+          </div>
+          <a class="project-link" href="https://github.com/khaddict/homelab" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            github.com/khaddict/homelab
+          </a>
+        </article>
+        <article class="project-card">
+          <h2 class="project-name">homelab_cloud</h2>
+          <p class="project-desc" data-i18n="projects.homelabcloud">{{ i18n['projects.homelabcloud'] }}</p>
+          <div class="project-stack">
+            <span class="project-tag">ArgoCD</span>
+            <span class="project-tag">Kubernetes</span>
+            <span class="project-tag">Helm</span>
+          </div>
+          <a class="project-link" href="https://github.com/khaddict/homelab_cloud" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            github.com/khaddict/homelab_cloud
+          </a>
+        </article>
+        <article class="project-card">
+          <h2 class="project-name">easypki</h2>
+          <p class="project-desc" data-i18n="projects.easypki">{{ i18n['projects.easypki'] }}</p>
+          <div class="project-stack">
+            <span class="project-tag">Bash</span>
+            <span class="project-tag">OpenSSL</span>
+            <span class="project-tag">PKI</span>
+          </div>
+          <a class="project-link" href="https://github.com/khaddict/easypki" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
+            github.com/khaddict/easypki
+          </a>
+        </article>
+        <article class="project-card">
+          <h2 class="project-name">voidpath</h2>
+          <p class="project-desc" data-i18n="projects.voidpath">{{ i18n['projects.voidpath'] }}</p>
+          <div class="project-stack">
+            <span class="project-tag">HackTheBox</span>
+          </div>
+          <span class="project-badge" data-i18n="projects.comingSoon">{{ i18n['projects.comingSoon'] }}</span>
+        </article>
+      </div>
+    </div>
+  </main>
+
+{% include "partials/footer.html.j2" %}
+
+  <script>
+    const I18N = {
+{% for locale in ['en', 'fr'] %}
+      {{ locale }}: {
+{% for key, value in i18n_all[locale].items() %}
+        '{{ key }}': {{ js_str(value) }},
+{% endfor %}
+      },
+{% endfor %}
+    };
+
+    let currentLang = '{{ lang }}';
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.title = t('title.projects');
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        el.innerHTML = t(el.getAttribute('data-i18n'));
+      });
+      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+      });
+      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
+      document.querySelectorAll('.lang-option').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
+      });
+    }
+
+    applyLanguage();
+
+    const langBtn = document.getElementById('lang-btn');
+    const langDropdown = document.getElementById('lang-dropdown');
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = langDropdown.classList.toggle('open');
+      langBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', (e) => {
+      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
+        langDropdown.classList.remove('open');
+        langBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+{% include "partials/status_widget.js.j2" %}
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      setThemeCookie(next);
+    });
+
+    (function () {
+      const discordBtn = document.getElementById('discord-btn');
+      const discordToast = document.getElementById('discord-toast');
+      let toastTimer = null;
+
+      discordBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
+        discordBtn.classList.add('copied');
+        discordToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          discordToast.classList.remove('show');
+          discordBtn.classList.remove('copied');
+        }, 900);
+      });
+    })();
+  </script>
+</body>
+</html>

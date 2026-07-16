@@ -1,0 +1,8 @@
+files/www/**/index.html
+files/blog/**/index.html
+files/blog/**/feed.xml
+files/projects/**/index.html
+files/images/**/index.html
+files/shared/404.html
+vps-fallback/index.html
+_preview/

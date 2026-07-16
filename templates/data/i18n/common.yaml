@@ -1,0 +1,40 @@
+en:
+  nav.home: home
+  nav.blog: blog
+  nav.projects: projects
+  nav.images: images
+  nav.dashboard: dashboard
+  status.label: status
+  status.checking: "checking systems…"
+  status.viewFull: "view full status ↗"
+  status.unreachable: "could not reach status page"
+  status.allUp: "All systems operational"
+  status.partial: "Partial outage"
+  status.majorOutage: "Major outage"
+  status.updatedAgo: "updated {n}s ago"
+  discord.hint: "copy username"
+  discord.toast: copied
+  discord.ariaLabel: "Copy Discord username"
+  theme.ariaLabel: "Toggle theme"
+  lang.ariaLabel: "Switch language"
+  rss.ariaLabel: "RSS feed"
+fr:
+  nav.home: accueil
+  nav.blog: blog
+  nav.projects: projets
+  nav.images: images
+  nav.dashboard: dashboard
+  status.label: statut
+  status.checking: "vérification en cours…"
+  status.viewFull: "voir le statut complet ↗"
+  status.unreachable: "page de statut inaccessible"
+  status.allUp: "Tous les systèmes sont opérationnels"
+  status.partial: "Panne partielle"
+  status.majorOutage: "Panne majeure"
+  status.updatedAgo: "actualisé il y a {n}s"
+  discord.hint: "copier le pseudo"
+  discord.toast: copié
+  discord.ariaLabel: "Copier le pseudo Discord"
+  theme.ariaLabel: "Changer le thème"
+  lang.ariaLabel: "Changer de langue"
+  rss.ariaLabel: "Flux RSS"

@@ -1,0 +1,17 @@
+    function getThemeCookie() {
+      try {
+        var match = document.cookie.match(/(?:^|; )khaddict-theme=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : null;
+      } catch (e) { return null; }
+    }
+    function setThemeCookie(value) {
+      try {
+        document.cookie = 'khaddict-theme=' + encodeURIComponent(value) + '; domain=.khaddict.com; path=/; max-age=31536000; SameSite=Lax; Secure';
+      } catch (e) { /* cookies unavailable */ }
+    }
+    (function () {
+      var stored = getThemeCookie();
+      var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+      if (!stored) setThemeCookie(theme);
+    })();

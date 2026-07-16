@@ -1,0 +1,263 @@
+{% from "partials/js_str.j2" import js_str %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+{% include "partials/theme_toggle.js.j2" %}
+  </script>
+  <title>{{ i18n['title.post'] }}</title>
+  <meta name="description" content="{{ meta_description }}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="{{ og_url }}" />
+  <meta property="og:title" content="{{ i18n['title.post'] }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <meta property="og:image" content="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta property="og:locale" content="{{ og_locale }}" />
+  <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
+  <link rel="canonical" href="{{ canonical_url }}" />
+  <link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/{{ slug }}/" />
+  <link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/fr/posts/{{ slug }}/" />
+  <link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/{{ slug }}/" />
+  <link rel="alternate" type="application/rss+xml" title="khaddict blog" href="{{ rss_href }}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ i18n['title.post'] }}" />
+  <meta name="twitter:image" content="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <link rel="icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" type="image/png" />
+  <link rel="apple-touch-icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <!-- Matomo -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.khaddict.com/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo -->
+
+  <style>
+{% include "partials/head_tokens.css.j2" %}
+{% include "partials/status_widget.css.j2" %}
+    /* post */
+    .post {
+      flex: 1;
+      padding: 2.5rem 1.5rem 4rem;
+      animation: fade-up .45s ease both;
+    }
+
+    .post-inner { max-width: 760px; margin: 0 auto; }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 1.75rem;
+      transition: color .15s ease;
+    }
+    .back-link:hover { color: var(--accent); }
+
+    .post-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: .5rem;
+    }
+
+    .post-title {
+      font-size: clamp(1.35rem, 3.4vw, 1.75rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.3;
+      margin-bottom: .9rem;
+    }
+
+    .post-tags { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1.75rem; }
+    .article-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      font-weight: 600;
+      padding: .2rem .55rem;
+      border-radius: 10px;
+    }
+
+    .post-body p {
+      font-size: .95rem;
+      line-height: 1.7;
+      color: var(--text);
+      margin-bottom: 1rem;
+    }
+    .post-body p:last-child { margin-bottom: 0; }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+{% include "partials/responsive.css.j2" %}
+  </style>
+</head>
+
+<body>
+{% include "partials/header.html.j2" %}
+
+  <main class="post">
+    <div class="post-inner">
+      <a class="back-link" href="{{ nav_blog_href }}" data-i18n="post.back">{{ i18n['post.back'] }}</a>
+      <div class="post-date" id="post-date"></div>
+      <h1 class="post-title" data-i18n="post.title">{{ i18n['post.title'] }}</h1>
+      <div class="post-tags" id="post-tags"></div>
+      <div class="post-body">
+        <p data-i18n="post.body">{{ i18n['post.body'] }}</p>
+      </div>
+    </div>
+  </main>
+
+{% include "partials/footer.html.j2" %}
+
+  <script>
+    const I18N = {
+{% for locale in ['en', 'fr'] %}
+      {{ locale }}: {
+{% for key, value in i18n_all[locale].items() %}
+        '{{ key }}': {{ js_str(value) }},
+{% endfor %}
+      },
+{% endfor %}
+    };
+
+    let currentLang = '{{ lang }}';
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+    }
+
+    // ---- Post: tag helpers ----
+    // canonical tag ids (stable across languages, also used as CSS var suffixes)
+    const TAG_LABELS = {
+      en: {
+        'homelab': 'homelab',
+        '3d-printing': '3D printing',
+        'tooling': 'tooling',
+        'systems': 'systems',
+        'networking': 'networking',
+        'cloud': 'cloud',
+      },
+      fr: {
+        'homelab': 'homelab',
+        '3d-printing': 'impression 3D',
+        'tooling': 'technos',
+        'systems': 'système',
+        'networking': 'réseau',
+        'cloud': 'cloud',
+      },
+    };
+    function tagLabel(id) {
+      return (TAG_LABELS[currentLang] && TAG_LABELS[currentLang][id]) || TAG_LABELS.en[id] || id;
+    }
+    // CSS custom property names can't start with a digit, so ids like "3d-printing"
+    // need a safe suffix for their --tag-* variable.
+    const TAG_CSS_SUFFIX = { '3d-printing': 'printing3d' };
+    function tagCssVar(id) {
+      return `--tag-${TAG_CSS_SUFFIX[id] || id}`;
+    }
+    function tagStyle(id) {
+      const v = tagCssVar(id);
+      return `color: var(${v}); background: var(${v}-bg);`;
+    }
+
+    // ---- Post: data ----
+    const POST = {
+      tags: [{% for tag in post.tags %}'{{ tag }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+      date: '{{ post.date }}',
+    };
+
+    function formatArticleDate(iso) {
+      const d = new Date(iso + 'T00:00:00');
+      return d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function renderPostTags() {
+      const wrap = document.getElementById('post-tags');
+      wrap.innerHTML = '';
+      POST.tags.forEach((id) => {
+        const span = document.createElement('span');
+        span.className = 'article-tag';
+        span.setAttribute('style', tagStyle(id));
+        span.textContent = tagLabel(id);
+        wrap.appendChild(span);
+      });
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.title = t('title.post');
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        el.innerHTML = t(el.getAttribute('data-i18n'));
+      });
+      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+      });
+      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
+      document.querySelectorAll('.lang-option').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
+      });
+      document.getElementById('post-date').textContent = formatArticleDate(POST.date);
+      renderPostTags();
+    }
+
+    applyLanguage();
+
+    const langBtn = document.getElementById('lang-btn');
+    const langDropdown = document.getElementById('lang-dropdown');
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = langDropdown.classList.toggle('open');
+      langBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', (e) => {
+      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
+        langDropdown.classList.remove('open');
+        langBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+{% include "partials/status_widget.js.j2" %}
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      setThemeCookie(next);
+    });
+
+    (function () {
+      const discordBtn = document.getElementById('discord-btn');
+      const discordToast = document.getElementById('discord-toast');
+      let toastTimer = null;
+
+      discordBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
+        discordBtn.classList.add('copied');
+        discordToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          discordToast.classList.remove('show');
+          discordBtn.classList.remove('copied');
+        }, 900);
+      });
+    })();
+  </script>
+</body>
+</html>

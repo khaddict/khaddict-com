@@ -1,0 +1,464 @@
+{% from "partials/js_str.j2" import js_str %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+{% include "partials/theme_toggle.js.j2" %}
+  </script>
+  <title>{{ i18n['title.blog'] }}</title>
+  <meta name="description" content="{{ meta_description }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ og_url }}" />
+  <meta property="og:title" content="{{ i18n['title.blog'] }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <meta property="og:image" content="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta property="og:locale" content="{{ og_locale }}" />
+  <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
+  <link rel="canonical" href="{{ canonical_url }}" />
+  <link rel="alternate" hreflang="en" href="https://blog.khaddict.com/" />
+  <link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/fr/" />
+  <link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/" />
+  <link rel="alternate" type="application/rss+xml" title="khaddict blog" href="{{ rss_href }}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ i18n['title.blog'] }}" />
+  <meta name="twitter:image" content="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <link rel="icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" type="image/png" />
+  <link rel="apple-touch-icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <!-- Matomo -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.khaddict.com/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo -->
+
+  <style>
+{% include "partials/head_tokens.css.j2" %}
+{% include "partials/status_widget.css.j2" %}
+    /* blog */
+    .blog {
+      flex: 1;
+      padding: 2.5rem 1.5rem 4rem;
+      animation: fade-up .45s ease both;
+    }
+
+    .blog-inner { max-width: 760px; margin: 0 auto; }
+
+    .blog-controls {
+      display: flex;
+      gap: .75rem;
+      margin-bottom: 1.1rem;
+      flex-wrap: wrap;
+    }
+
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap svg {
+      position: absolute;
+      left: .75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px; height: 15px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 38px;
+      padding: 0 .8rem 0 2.2rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82rem;
+    }
+    .search-input:focus { outline: none; border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .sort-toggle {
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      height: 38px;
+      padding: 0 .9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .sort-toggle:hover { color: var(--accent); border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+    .sort-toggle svg { width: 13px; height: 13px; transition: transform .2s ease; }
+    .sort-toggle.asc svg { transform: rotate(180deg); }
+
+    .tag-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: .5rem;
+      margin-bottom: 2rem;
+    }
+
+    .clear-filters {
+      height: 30px;
+      padding: 0 .8rem;
+      border-radius: 15px;
+      border: 1px solid var(--down);
+      background: none;
+      color: var(--down);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .74rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+    .clear-filters:hover { background: rgba(220, 38, 38, .08); }
+
+    .tag-chip {
+      height: 30px;
+      padding: 0 .8rem;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .74rem;
+      font-weight: 600;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .tag-chip:hover { color: var(--accent); border-color: var(--accent); }
+    .tag-chip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+
+    .article-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .article-card {
+      padding: 1.25rem 1.4rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: border-color .15s ease;
+    }
+    .article-card:hover { border-color: var(--accent); }
+
+    .article-date {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: .4rem;
+    }
+
+    .article-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      margin-bottom: .5rem;
+    }
+    .article-title a { color: inherit; text-decoration: none; }
+    .article-title a:hover { color: var(--accent); }
+
+    .article-excerpt {
+      font-size: .88rem;
+      color: var(--muted);
+      line-height: 1.55;
+      margin-bottom: .8rem;
+    }
+
+    .article-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+    .article-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      font-weight: 600;
+      padding: .2rem .55rem;
+      border-radius: 10px;
+    }
+
+    .blog-empty {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .82rem;
+      color: var(--muted);
+      padding: 2rem 0;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 460px) {
+      .blog-controls { flex-direction: column; }
+      .search-wrap { width: 100%; }
+    }
+{% include "partials/responsive.css.j2" %}
+  </style>
+</head>
+
+<body>
+{% include "partials/header.html.j2" %}
+
+  <main class="blog">
+    <div class="blog-inner">
+      <div class="blog-controls">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="blog-search" class="search-input" data-i18n-placeholder="blog.searchPlaceholder" placeholder="{{ i18n['blog.searchPlaceholder'] }}" />
+        </div>
+        <button class="sort-toggle" id="sort-toggle" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M6 12h12M10 18h4"/></svg>
+          <span id="sort-label" data-i18n="blog.sortNewest">{{ i18n['blog.sortNewest'] }}</span>
+        </button>
+      </div>
+      <div class="tag-filters" id="tag-filters"></div>
+      <div class="article-list" id="article-list"></div>
+      <p class="blog-empty" id="blog-empty" data-i18n="blog.empty" hidden>{{ i18n['blog.empty'] }}</p>
+    </div>
+  </main>
+
+{% include "partials/footer.html.j2" %}
+
+  <script>
+    const I18N = {
+{% for locale in ['en', 'fr'] %}
+      {{ locale }}: {
+{% for key, value in i18n_all[locale].items() %}
+        '{{ key }}': {{ js_str(value) }},
+{% endfor %}
+      },
+{% endfor %}
+    };
+
+    let currentLang = '{{ lang }}';
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+    }
+
+    // ---- Blog: data ----
+    // canonical tag ids (stable across languages, also used as CSS var suffixes)
+    const TAG_IDS = ['homelab', '3d-printing', 'tooling', 'systems', 'networking', 'cloud'];
+    const TAG_LABELS = {
+      en: {
+        'homelab': 'homelab',
+        '3d-printing': '3D printing',
+        'tooling': 'tooling',
+        'systems': 'systems',
+        'networking': 'networking',
+        'cloud': 'cloud',
+      },
+      fr: {
+        'homelab': 'homelab',
+        '3d-printing': 'impression 3D',
+        'tooling': 'technos',
+        'systems': 'système',
+        'networking': 'réseau',
+        'cloud': 'cloud',
+      },
+    };
+    function tagLabel(id) {
+      return (TAG_LABELS[currentLang] && TAG_LABELS[currentLang][id]) || TAG_LABELS.en[id] || id;
+    }
+    // CSS custom property names can't start with a digit, so ids like "3d-printing"
+    // need a safe suffix for their --tag-* variable.
+    const TAG_CSS_SUFFIX = { '3d-printing': 'printing3d' };
+    function tagCssVar(id) {
+      return `--tag-${TAG_CSS_SUFFIX[id] || id}`;
+    }
+    function tagStyle(id) {
+      const v = tagCssVar(id);
+      return `color: var(${v}); background: var(${v}-bg);`;
+    }
+
+    // Placeholder posts: no real articles are written yet, these exist only to
+    // exercise the search/tag/sort UI. One per tag, honestly labeled as such.
+    const ARTICLES = [
+{% for slug, post in posts.items() %}
+      {
+        slug: '{{ slug }}',
+        date: '{{ post.date }}',
+        tags: [{% for tag in post.tags %}'{{ tag }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        title: {
+          en: {{ js_str(post.title.en) }},
+          fr: {{ js_str(post.title.fr) }},
+        },
+        excerpt: {
+          en: {{ js_str(post.excerpt.en) }},
+          fr: {{ js_str(post.excerpt.fr) }},
+        },
+      },
+{% endfor %}
+    ];
+
+    // ---- Blog: state ----
+    const activeTags = new Set();
+    let searchQuery = '';
+    let sortDir = 'desc';
+
+    // ---- Blog: render ----
+    function formatArticleDate(iso) {
+      const d = new Date(iso + 'T00:00:00');
+      return d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function renderTagFilters() {
+      const wrap = document.getElementById('tag-filters');
+      wrap.innerHTML = '';
+      TAG_IDS.forEach((id) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        const isActive = activeTags.has(id);
+        btn.className = 'tag-chip' + (isActive ? ' active' : '');
+        if (isActive) btn.setAttribute('style', tagStyle(id) + ` border-color: var(${tagCssVar(id)});`);
+        btn.textContent = tagLabel(id);
+        btn.addEventListener('click', () => {
+          if (activeTags.has(id)) activeTags.delete(id); else activeTags.add(id);
+          renderTagFilters();
+          renderArticles();
+        });
+        wrap.appendChild(btn);
+      });
+
+      if (activeTags.size > 0 || searchQuery.trim() !== '') {
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'clear-filters';
+        clearBtn.textContent = t('blog.clearFilters');
+        clearBtn.addEventListener('click', () => {
+          activeTags.clear();
+          searchQuery = '';
+          document.getElementById('blog-search').value = '';
+          renderTagFilters();
+          renderArticles();
+        });
+        wrap.appendChild(clearBtn);
+      }
+    }
+
+    function renderArticles() {
+      const list = document.getElementById('article-list');
+      const empty = document.getElementById('blog-empty');
+      const q = searchQuery.trim().toLowerCase();
+
+      const filtered = ARTICLES.filter((a) => {
+        const matchesTags = activeTags.size === 0 || a.tags.some((id) => activeTags.has(id));
+        const tagWords = a.tags.flatMap((id) => [TAG_LABELS.en[id], TAG_LABELS.fr[id]]);
+        const haystack = [a.title.en, a.title.fr, a.excerpt.en, a.excerpt.fr, ...tagWords].join(' ').toLowerCase();
+        const matchesQuery = q === '' || haystack.includes(q);
+        return matchesTags && matchesQuery;
+      });
+
+      filtered.sort((a, b) => sortDir === 'desc' ? b.date.localeCompare(a.date) : a.date.localeCompare(b.date));
+
+      list.innerHTML = '';
+      empty.hidden = filtered.length > 0;
+      filtered.forEach((a) => {
+        const card = document.createElement('article');
+        card.className = 'article-card';
+        card.innerHTML = `
+          <div class="article-date">${formatArticleDate(a.date)}</div>
+          <h2 class="article-title"><a href="https://blog.khaddict.com/${currentLang === 'fr' ? 'fr/posts/' : 'posts/'}${a.slug}/">${a.title[currentLang] || a.title.en}</a></h2>
+          <p class="article-excerpt">${a.excerpt[currentLang] || a.excerpt.en}</p>
+          <div class="article-tags">${a.tags.map((id) => `<span class="article-tag" style="${tagStyle(id)}">${tagLabel(id)}</span>`).join('')}</div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    // ---- Blog: events ----
+    document.getElementById('blog-search').addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderTagFilters();
+      renderArticles();
+    });
+
+    document.getElementById('sort-toggle').addEventListener('click', () => {
+      sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+      document.getElementById('sort-toggle').classList.toggle('asc', sortDir === 'asc');
+      document.getElementById('sort-label').textContent = t(sortDir === 'desc' ? 'blog.sortNewest' : 'blog.sortOldest');
+      renderArticles();
+    });
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.title = t('title.blog');
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        el.innerHTML = t(el.getAttribute('data-i18n'));
+      });
+      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+      });
+      document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+        el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+      });
+      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
+      document.querySelectorAll('.lang-option').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
+      });
+      document.getElementById('sort-label').textContent = t(sortDir === 'desc' ? 'blog.sortNewest' : 'blog.sortOldest');
+      renderTagFilters();
+      renderArticles();
+    }
+
+    applyLanguage();
+
+    const langBtn = document.getElementById('lang-btn');
+    const langDropdown = document.getElementById('lang-dropdown');
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = langDropdown.classList.toggle('open');
+      langBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', (e) => {
+      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
+        langDropdown.classList.remove('open');
+        langBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+{% include "partials/status_widget.js.j2" %}
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      setThemeCookie(next);
+    });
+
+    (function () {
+      const discordBtn = document.getElementById('discord-btn');
+      const discordToast = document.getElementById('discord-toast');
+      let toastTimer = null;
+
+      discordBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
+        discordBtn.classList.add('copied');
+        discordToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          discordToast.classList.remove('show');
+          discordBtn.classList.remove('copied');
+        }, 900);
+      });
+    })();
+  </script>
+</body>
+</html>

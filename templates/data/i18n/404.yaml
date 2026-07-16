@@ -1,0 +1,6 @@
+en:
+  title.404: "Not Found | khaddict"
+  error.message: "This page doesn't exist, or was never deployed."
+fr:
+  title.404: "Introuvable | khaddict"
+  error.message: "Cette page n’existe pas, ou n’a jamais été déployée."

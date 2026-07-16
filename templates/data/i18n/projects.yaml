@@ -1,0 +1,20 @@
+en:
+  title.projects: "Projects | khaddict"
+  projects.title: 'Things I <span class="highlight">build</span> and run.'
+  projects.voidnode: "Single-node homelab running Talos Kubernetes, ArgoCD and SaltStack. The current, leaner setup after retiring a three-node HA cluster."
+  projects.khaddictcom: "Static site content for the khaddict.com family (www, blog, images, projects), packaged as a Helm subchart consumed by voidnode."
+  projects.homelab: "The original three-node HA homelab: Kubernetes on bare metal with Ceph for distributed storage. Retired in favor of voidnode's single-node setup."
+  projects.homelabcloud: "Companion repository to homelab, covering the cloud-facing side of the original three-node HA setup."
+  projects.easypki: "Internal PKI authority issuing and renewing TLS certificates for every *.khaddict.lab service, provisioned via StackStorm and distributed via SaltStack."
+  projects.voidpath: "A HackTheBox machine I created. Not released yet, this card will be updated with a link once it drops."
+  projects.comingSoon: "Not released yet"
+fr:
+  title.projects: "Projets | khaddict"
+  projects.title: 'Ce que je <span class="highlight">construis</span> et fais tourner.'
+  projects.voidnode: "Homelab mono-nœud sous Talos Kubernetes, avec ArgoCD et SaltStack. Le setup actuel, plus léger, depuis l’abandon d’un cluster HA à trois nœuds."
+  projects.khaddictcom: "Contenu statique pour la famille khaddict.com (www, blog, images, projects), packagé en sous-chart Helm utilisé par voidnode."
+  projects.homelab: "L’ancien homelab HA à trois nœuds : Kubernetes sur bare-metal avec Ceph pour le stockage distribué. Retiré au profit du setup mono-nœud de voidnode."
+  projects.homelabcloud: "Dépôt qui accompagne homelab et couvre le volet cloud de l’ancien setup HA à trois nœuds."
+  projects.easypki: "Autorité PKI interne qui émet et renouvelle les certificats TLS pour chaque service *.khaddict.lab ; ces certificats sont provisionnés via StackStorm et distribués via SaltStack."
+  projects.voidpath: "Une machine HackTheBox que j’ai créée. Pas encore sortie, cette carte sera mise à jour avec un lien une fois publiée."
+  projects.comingSoon: "Pas encore sortie"

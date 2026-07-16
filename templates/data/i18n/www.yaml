@@ -1,0 +1,18 @@
+en:
+  title.home: "Home | khaddict"
+  hero.title: 'Where <span class="highlight">infrastructure</span> evolves.'
+  deploy.warning: Warning
+  deploy.title: 'The project is on hold. Do <strong>NOT</strong> press the red button.'
+  deploy.sub: "This is a controlled environment. Any action may have irreversible consequences."
+  deploy.button: "Deploy to production"
+  deploy.deploying: "Deploying..."
+  deploy.deployed: Deployed
+fr:
+  title.home: "Accueil | khaddict"
+  hero.title: 'Là où l’<span class="highlight">infrastructure</span> évolue.'
+  deploy.warning: Attention
+  deploy.title: 'Projet en pause. Ne <strong>PAS</strong> appuyer sur le bouton rouge.'
+  deploy.sub: "Ceci est un environnement contrôlé. Toute action peut avoir des conséquences irréversibles."
+  deploy.button: "Déployer en production"
+  deploy.deploying: "Déploiement…"
+  deploy.deployed: Déployé

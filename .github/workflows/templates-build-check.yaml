@@ -1,0 +1,33 @@
+name: Check templates render
+
+on:
+  pull_request:
+    paths:
+      - "templates/**"
+      - "build.py"
+      - "requirements.txt"
+  push:
+    branches: [main]
+    paths:
+      - "templates/**"
+      - "build.py"
+      - "requirements.txt"
+
+jobs:
+  build-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7.0.0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Render templates
+        run: python build.py
