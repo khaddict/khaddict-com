@@ -9,5 +9,5 @@ RUN mkdir -p /data/icons/thumbs /data/gallery/thumbs \
  && find /data/gallery -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) \
       -exec sh -c 'vipsthumbnail "$1" --size 800x600 --crop=centre -o "/data/gallery/thumbs/$(basename "$1")[Q=80]"' _ {} \;
 
-FROM nginx:1.31.2
+FROM nginx:1.31.3
 COPY --from=builder /data/ /data/
