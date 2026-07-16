@@ -68,7 +68,7 @@
       --accent:             #8b5cf6;
       --accent-2:           #c026d3;
       --up:                 #16a34a;
-      --down:               #dc2626;
+      --down: #dc2626; --warn: #b45309; --up-bg: #dcfce7; --warn-bg: #fef3c7; --down-bg: #fee2e2;
       --surface:            #ffffff;
       --surface-translucent: rgba(255, 255, 255, .5);
       --shadow:             rgba(24, 24, 27, .12);
@@ -97,7 +97,7 @@
         --accent:              #a78bfa;
         --accent-2:            #e879f9;
         --up:                  #4ade80;
-        --down:                #f87171;
+        --down: #f87171; --warn: #fbbf24; --up-bg: rgba(74, 222, 128, .13); --warn-bg: rgba(251, 191, 36, .14); --down-bg: rgba(248, 113, 113, .13);
         --surface:             #22222c;
         --surface-translucent: rgba(26, 26, 34, .5);
         --shadow:              rgba(0, 0, 0, .5);
@@ -120,7 +120,7 @@
 
     :root[data-theme="light"] {
       --bg: #ffffff; --text: #18181b; --muted: #71717a; --border: rgba(24, 24, 27, .09);
-      --accent: #8b5cf6; --accent-2: #c026d3; --up: #16a34a; --down: #dc2626;
+      --accent: #8b5cf6; --accent-2: #c026d3; --up: #16a34a; --down: #dc2626; --warn: #b45309; --up-bg: #dcfce7; --warn-bg: #fef3c7; --down-bg: #fee2e2;
       --surface: #ffffff; --surface-translucent: rgba(255, 255, 255, .5); --shadow: rgba(24, 24, 27, .12);
       --blob-1: rgba(139, 92, 246, .32); --blob-2: rgba(192, 71, 219, .24);
       --tag-homelab: #7C5CBF; --tag-homelab-bg: rgba(124, 92, 191, .12);
@@ -133,7 +133,7 @@
 
     :root[data-theme="dark"] {
       --bg: #1a1a22; --text: #f1f5f9; --muted: #94949f; --border: rgba(255, 255, 255, .1);
-      --accent: #a78bfa; --accent-2: #e879f9; --up: #4ade80; --down: #f87171;
+      --accent: #a78bfa; --accent-2: #e879f9; --up: #4ade80; --down: #f87171; --warn: #fbbf24; --up-bg: rgba(74, 222, 128, .13); --warn-bg: rgba(251, 191, 36, .14); --down-bg: rgba(248, 113, 113, .13);
       --surface: #22222c; --surface-translucent: rgba(26, 26, 34, .5); --shadow: rgba(0, 0, 0, .5);
       --blob-1: rgba(139, 92, 246, .22); --blob-2: rgba(192, 71, 219, .18);
       --tag-homelab: #B39DDB; --tag-homelab-bg: rgba(179, 157, 219, .15);
@@ -307,11 +307,52 @@
     }
     .heartbeat-bar.up   { background: var(--up); opacity: 1; }
     .heartbeat-bar.down { background: var(--down); opacity: 1; }
-    .heartbeat-bar.pending { background: #fbbf24; opacity: 1; }
+    .heartbeat-bar.pending { background: var(--warn); opacity: 1; }
+
+    #status-btn {
+      padding: .3rem .6rem .3rem .5rem;
+      border-radius: 999px;
+      background: var(--up-bg);
+      color: var(--text);
+      transition: background .15s ease;
+    }
+    #status-btn.warn-pill { background: var(--warn-bg); }
+    #status-btn.down-pill { background: var(--down-bg); }
+
+    .dot.warn { background: var(--warn); }
+
+    .summary-line {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      padding: 0 0 .55rem;
+      margin-bottom: .45rem;
+      border-bottom: 1px solid var(--border);
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .summary-line .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .summary-line .status-dot.up   { background: var(--up);   box-shadow: 0 0 0 3px var(--up-bg); }
+    .summary-line .status-dot.warn { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-bg); }
+    .summary-line .status-dot.down { background: var(--down); box-shadow: 0 0 0 3px var(--down-bg); }
+
+    .pct.good { color: var(--up); }
+    .pct.mid  { color: var(--warn); }
+    .pct.bad  { color: var(--down); }
+
+    .status-updated {
+      font-size: .68rem;
+      color: var(--muted);
+      text-align: right;
+      margin-top: .4rem;
+      opacity: .8;
+    }
 
     .dropdown-more {
       display: block;
       margin-top: .4rem;
+      font-family: 'JetBrains Mono', monospace;
       font-size: .74rem;
       color: var(--accent);
       text-decoration: none;
@@ -645,6 +686,10 @@
         'status.checking': 'checking systems…',
         'status.viewFull': 'view full status ↗',
         'status.unreachable': 'could not reach status page',
+        'status.allUp': 'All systems operational',
+        'status.partial': 'Partial outage',
+        'status.majorOutage': 'Major outage',
+        'status.updatedAgo': 'updated {n}s ago',
         'title.post': 'Placeholder: systems | khaddict blog',
         'post.back': '← back to blog',
         'post.title': 'Placeholder: systems',
@@ -665,6 +710,10 @@
         'status.checking': 'vérification en cours…',
         'status.viewFull': 'voir le statut complet ↗',
         'status.unreachable': 'page de statut inaccessible',
+        'status.allUp': 'Tous les systèmes sont opérationnels',
+        'status.partial': 'Panne partielle',
+        'status.majorOutage': 'Panne majeure',
+        'status.updatedAgo': 'actualisé il y a {n}s',
         'title.post': 'Placeholder : système | khaddict blog',
         'post.back': '← retour au blog',
         'post.title': 'Placeholder : système',
@@ -781,6 +830,15 @@
     const inner    = document.getElementById('s-inner');
     const btn      = document.getElementById('status-btn');
 
+    let lastStatusFetch = null;
+    function updateStatusFreshness() {
+      const el = document.getElementById('status-updated');
+      if (!el || !lastStatusFetch) return;
+      const secs = Math.max(0, Math.round((Date.now() - lastStatusFetch) / 1000));
+      el.textContent = t('status.updatedAgo').replace('{n}', secs);
+    }
+    setInterval(updateStatusFreshness, 5000);
+
     async function loadStatus() {
       try {
         const [pageRes, hbRes] = await Promise.all([
@@ -793,46 +851,60 @@
         const hb   = await hbRes.json();
         const monitors = page.publicGroupList.flatMap(g => g.monitorList);
         let up = 0;
+        const pctValues = [];
 
-        inner.innerHTML = '';
-        monitors.forEach(m => {
+        const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          const pct24 = hb.uptimeList[`${m.id}_24`];
-          const p = pct24 !== undefined ? `${(pct24 * 100).toFixed(1)}%` : '—';
+          const pct24  = hb.uptimeList[`${m.id}_24`];
+          const pctNum = pct24 !== undefined ? pct24 * 100 : undefined;
+          if (pctNum !== undefined) pctValues.push(pctNum);
+          const p = pctNum !== undefined ? `${pctNum.toFixed(1)}%` : '—';
+          const pctCls = pctNum === undefined ? '' : pctNum >= 99 ? 'good' : pctNum >= 95 ? 'mid' : 'bad';
+          const dotCls = isUp ? (pctNum !== undefined && pctNum < 95 ? 'warn' : 'up') : 'down';
 
           const recent = beats.slice(-30);
           const bars = recent.map(b => {
             const state = b.status === 1 ? 'up' : b.status === 0 ? 'down' : b.status === 2 ? 'pending' : '';
-            return `<span class="heartbeat-bar ${state}"></span>`;
+            const title = b.time ? new Date(b.time).toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '';
+            return `<span class="heartbeat-bar ${state}"${title ? ` title="${title}"` : ''}></span>`;
           }).join('');
 
-          const el = document.createElement('div');
-          el.className = 'dropdown-line';
-          el.innerHTML = `
-            <div class="dropdown-line-top">
-              <span class="dot ${isUp ? 'up' : 'down'}"></span>
-              <span class="dropdown-name">${m.name}</span>
-              <span>${p}</span>
-            </div>
-            <div class="heartbeat">${bars}</div>
-          `;
-          inner.appendChild(el);
-        });
-
-        const link = document.createElement('a');
-        link.href = STATUS;
-        link.target = '_blank';
-        link.rel = 'noopener';
-        link.className = 'dropdown-more';
-        link.textContent = t('status.viewFull');
-        inner.appendChild(link);
+          return `
+            <div class="dropdown-line">
+              <div class="dropdown-line-top">
+                <span class="dot ${dotCls}"></span>
+                <span class="dropdown-name">${m.name}</span>
+                <span class="pct ${pctCls}">${p}</span>
+              </div>
+              <div class="heartbeat">${bars}</div>
+            </div>`;
+        }).join('');
 
         const total = monitors.length;
-        dot.className = `dot ${up === total ? 'up' : up === 0 ? 'down' : ''}`;
+        const worstPct = pctValues.length ? Math.min(...pctValues) : 100;
+        let level, summaryKey;
+        if (up === total && worstPct >= 99) { level = 'up'; summaryKey = 'status.allUp'; }
+        else if (up === 0) { level = 'down'; summaryKey = 'status.majorOutage'; }
+        else { level = 'warn'; summaryKey = 'status.partial'; }
+
+        inner.innerHTML = `
+          <div class="summary-line"><span class="status-dot ${level}"></span>${t(summaryKey)}</div>
+          ${rows}
+          <a class="dropdown-more" href="${STATUS}" target="_blank" rel="noopener">${t('status.viewFull')}</a>
+          <div class="status-updated" id="status-updated"></div>
+        `;
+
+        btn.classList.remove('warn-pill', 'down-pill');
+        if (level === 'warn') btn.classList.add('warn-pill');
+        if (level === 'down') btn.classList.add('down-pill');
+        dot.className = `dot ${level}`;
+
+        lastStatusFetch = Date.now();
+        updateStatusFreshness();
 
       } catch {
         inner.innerHTML = `<div class="dropdown-line dropdown-msg">${t('status.unreachable')}</div>`;
