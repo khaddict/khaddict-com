@@ -238,6 +238,9 @@ def render(env, template_name, out_path, **context):
     print(f"wrote {out_path}")
 
 
+PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "images", "404", "posts", "feed"]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Render the site's Jinja2 templates.")
     parser.add_argument(
@@ -248,8 +251,15 @@ def main():
         "(for local preview only: point it somewhere outside the repo, or under "
         "the gitignored _preview/, so nothing gets committed by mistake).",
     )
+    parser.add_argument(
+        "--only",
+        choices=PAGE_CHOICES,
+        help="Render only this page instead of the whole site, e.g. --only vps-fallback "
+        "for the 503 page you deploy by hand.",
+    )
     args = parser.parse_args()
     out_root = args.out_dir.resolve()
+    only = args.only
 
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATES)),
@@ -260,242 +270,246 @@ def main():
     )
 
     common = load_i18n("common")
-    www_yaml = load_i18n("www")
-    vps_yaml = load_i18n("vps_fallback")
-
-    www_i18n_all = merged_i18n(common, www_yaml)
-    vps_i18n_all = merged_i18n(common, vps_yaml)
-
-    for locale, out_rel in (("en", "files/www/index.html"), ("fr", "files/www/fr/index.html")):
-        render(
-            env,
-            "pages/www.html.j2",
-            out_root / out_rel,
-            lang=locale,
-            lang_mode="url",
-            lang_current=locale.upper(),
-            i18n=www_i18n_all[locale],
-            i18n_all=www_i18n_all,
-            brand_href=SITE_URLS[locale]["brand"],
-            nav_home_href=SITE_URLS[locale]["home"],
-            nav_blog_href=SITE_URLS[locale]["blog"],
-            nav_projects_href=SITE_URLS[locale]["projects"],
-            nav_images_href=SITE_URLS[locale]["images"],
-            nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-            meta_description=WWW_META[locale]["description"],
-            og_url=WWW_META[locale]["og_url"],
-            og_locale=WWW_META[locale]["og_locale"],
-            og_locale_alternate=WWW_META[locale]["og_locale_alternate"],
-            canonical_url=WWW_META[locale]["canonical_url"],
-            **WWW_EXTRA_TOKENS,
-            **lang_switch_hrefs("home"),
-        )
-
-    # vps-fallback has no /fr/ sibling: it ships one lang-agnostic build whose
-    # static (pre-JS) markup mirrors what was already on disk (English text,
-    # lang="en"), while the runtime I18N object still carries both locales for
-    # the cookie-based switcher. The lang-current placeholder is left as "FR"
-    # to match the file as it existed before this refactor.
-    render(
-        env,
-        "pages/vps_fallback.html.j2",
-        out_root / "vps-fallback/index.html",
-        lang="en",
-        lang_mode="cookie",
-        lang_current="FR",
-        i18n=vps_i18n_all["en"],
-        i18n_all=vps_i18n_all,
-        brand_href=SITE_URLS["en"]["brand"],
-        nav_home_href=SITE_URLS["en"]["home"],
-        nav_blog_href=SITE_URLS["en"]["blog"],
-        nav_projects_href=SITE_URLS["en"]["projects"],
-        nav_images_href=SITE_URLS["en"]["images"],
-        nav_dashboard_href=SITE_URLS["en"]["dashboard"],
-        meta_description=vps_i18n_all["en"]["error.message"],
-        **NO_EXTRA_TOKENS,
-    )
-
-    blog_yaml = load_i18n("blog")
-    projects_yaml = load_i18n("projects")
-    images_yaml = load_i18n("images")
-    not_found_yaml = load_i18n("404")
-    post_yaml = load_i18n("post")
-
-    blog_i18n_all = merged_i18n(common, blog_yaml)
-    projects_i18n_all = merged_i18n(common, projects_yaml)
-    images_i18n_all = merged_i18n(common, images_yaml)
-    not_found_i18n_all = merged_i18n(common, not_found_yaml)
-
     with open(TEMPLATES / "data" / "posts.yaml", encoding="utf-8") as f:
         posts = yaml.safe_load(f)
 
-    for locale, out_rel in (("en", "files/blog/index.html"), ("fr", "files/blog/fr/index.html")):
-        render(
-            env,
-            "pages/blog.html.j2",
-            out_root / out_rel,
-            lang=locale,
-            lang_mode="url",
-            lang_current=locale.upper(),
-            i18n=blog_i18n_all[locale],
-            i18n_all=blog_i18n_all,
-            posts=posts,
-            brand_href=SITE_URLS[locale]["home"],
-            nav_home_href=SITE_URLS[locale]["home"],
-            nav_blog_href=SITE_URLS[locale]["blog"],
-            nav_projects_href=SITE_URLS[locale]["projects"],
-            nav_images_href=SITE_URLS[locale]["images"],
-            nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-            meta_description=BLOG_META[locale]["description"],
-            og_url=BLOG_META[locale]["og_url"],
-            og_locale=BLOG_META[locale]["og_locale"],
-            og_locale_alternate=BLOG_META[locale]["og_locale_alternate"],
-            canonical_url=BLOG_META[locale]["canonical_url"],
-            rss_href=RSS_HREFS[locale],
-            **BLOG_EXTRA_TOKENS,
-            **lang_switch_hrefs("blog"),
-        )
-
-    for locale, out_rel in (("en", "files/projects/index.html"), ("fr", "files/projects/fr/index.html")):
-        render(
-            env,
-            "pages/projects.html.j2",
-            out_root / out_rel,
-            lang=locale,
-            lang_mode="url",
-            lang_current=locale.upper(),
-            i18n=projects_i18n_all[locale],
-            i18n_all=projects_i18n_all,
-            brand_href=SITE_URLS[locale]["home"],
-            nav_home_href=SITE_URLS[locale]["home"],
-            nav_blog_href=SITE_URLS[locale]["blog"],
-            nav_projects_href=SITE_URLS[locale]["projects"],
-            nav_images_href=SITE_URLS[locale]["images"],
-            nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-            meta_description=PROJECTS_META[locale]["description"],
-            og_url=PROJECTS_META[locale]["og_url"],
-            og_locale=PROJECTS_META[locale]["og_locale"],
-            og_locale_alternate=PROJECTS_META[locale]["og_locale_alternate"],
-            canonical_url=PROJECTS_META[locale]["canonical_url"],
-            **PROJECTS_EXTRA_TOKENS,
-            **lang_switch_hrefs("projects"),
-        )
-
-    for locale, out_rel in (("en", "files/images/index.html"), ("fr", "files/images/fr/index.html")):
-        render(
-            env,
-            "pages/images.html.j2",
-            out_root / out_rel,
-            lang=locale,
-            lang_mode="url",
-            lang_current=locale.upper(),
-            i18n=images_i18n_all[locale],
-            i18n_all=images_i18n_all,
-            brand_href=SITE_URLS[locale]["home"],
-            nav_home_href=SITE_URLS[locale]["home"],
-            nav_blog_href=SITE_URLS[locale]["blog"],
-            nav_projects_href=SITE_URLS[locale]["projects"],
-            nav_images_href=SITE_URLS[locale]["images"],
-            nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-            meta_description=IMAGES_META[locale]["description"],
-            og_url=IMAGES_META[locale]["og_url"],
-            og_locale=IMAGES_META[locale]["og_locale"],
-            og_locale_alternate=IMAGES_META[locale]["og_locale_alternate"],
-            canonical_url=IMAGES_META[locale]["canonical_url"],
-            **NO_EXTRA_TOKENS,
-            **lang_switch_hrefs("images"),
-        )
-
-    # 404.html is a single shared file served across all 4 khaddict.com
-    # subdomains (see Helm configmap.yaml / deployment.yaml), not a per-site
-    # page like the others, so it only ever gets one "en" render. Its
-    # lang-switcher links to the site ROOT's /fr/ (not a same-page fr
-    # variant, since a 404 has no page-specific fr content), and its runtime
-    # currentLang is detected from location.pathname rather than baked in
-    # at build time.
-    render(
-        env,
-        "pages/404.html.j2",
-        out_root / "files/shared/404.html",
-        lang="en",
-        lang_mode="url",
-        lang_current="EN",
-        i18n=not_found_i18n_all["en"],
-        i18n_all=not_found_i18n_all,
-        brand_href="/",
-        nav_home_href=SITE_URLS["en"]["home"],
-        nav_blog_href=SITE_URLS["en"]["blog"],
-        nav_projects_href=SITE_URLS["en"]["projects"],
-        nav_images_href=SITE_URLS["en"]["images"],
-        nav_dashboard_href=SITE_URLS["en"]["dashboard"],
-        meta_description=NOT_FOUND_DESCRIPTION,
-        lang_switch_fr_href="/fr/",
-        lang_switch_en_href="/",
-        **NO_EXTRA_TOKENS,
-    )
-
-    # posts.yaml is data, not translation strings in the i18n sense: it holds
-    # the one field (title/excerpt/body/date/tags) that's genuinely unique
-    # per blog post, keyed by slug, feeding both blog.html.j2 (the listing's
-    # ARTICLES array) and post.html.j2 (this loop) from a single source.
-    for slug, post in posts.items():
-        post_extra = {
-            locale: {
-                "title.post": f"{post['title'][locale]} | khaddict blog",
-                "post.title": post["title"][locale],
-                "post.body": post["body"][locale],
-                **post_yaml[locale],
-            }
-            for locale in LOCALES
-        }
-        post_i18n_all = merged_i18n(common, post_extra)
-
-        for locale, out_rel in (
-            ("en", f"files/blog/posts/{slug}/index.html"),
-            ("fr", f"files/blog/fr/posts/{slug}/index.html"),
-        ):
+    if only in (None, "www"):
+        www_yaml = load_i18n("www")
+        www_i18n_all = merged_i18n(common, www_yaml)
+        for locale, out_rel in (("en", "files/www/index.html"), ("fr", "files/www/fr/index.html")):
             render(
                 env,
-                "pages/post.html.j2",
+                "pages/www.html.j2",
                 out_root / out_rel,
                 lang=locale,
                 lang_mode="url",
                 lang_current=locale.upper(),
-                i18n=post_i18n_all[locale],
-                i18n_all=post_i18n_all,
-                slug=slug,
-                post=post,
+                i18n=www_i18n_all[locale],
+                i18n_all=www_i18n_all,
+                brand_href=SITE_URLS[locale]["brand"],
+                nav_home_href=SITE_URLS[locale]["home"],
+                nav_blog_href=SITE_URLS[locale]["blog"],
+                nav_projects_href=SITE_URLS[locale]["projects"],
+                nav_images_href=SITE_URLS[locale]["images"],
+                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                meta_description=WWW_META[locale]["description"],
+                og_url=WWW_META[locale]["og_url"],
+                og_locale=WWW_META[locale]["og_locale"],
+                og_locale_alternate=WWW_META[locale]["og_locale_alternate"],
+                canonical_url=WWW_META[locale]["canonical_url"],
+                **WWW_EXTRA_TOKENS,
+                **lang_switch_hrefs("home"),
+            )
+
+    if only in (None, "vps-fallback"):
+        vps_yaml = load_i18n("vps_fallback")
+        vps_i18n_all = merged_i18n(common, vps_yaml)
+        # vps-fallback has no /fr/ sibling: it ships one lang-agnostic build whose
+        # static (pre-JS) markup mirrors what was already on disk (English text,
+        # lang="en"), while the runtime I18N object still carries both locales for
+        # the cookie-based switcher. The lang-current placeholder is left as "FR"
+        # to match the file as it existed before this refactor.
+        render(
+            env,
+            "pages/vps_fallback.html.j2",
+            out_root / "vps-fallback/index.html",
+            lang="en",
+            lang_mode="cookie",
+            lang_current="FR",
+            i18n=vps_i18n_all["en"],
+            i18n_all=vps_i18n_all,
+            brand_href=SITE_URLS["en"]["brand"],
+            nav_home_href=SITE_URLS["en"]["home"],
+            nav_blog_href=SITE_URLS["en"]["blog"],
+            nav_projects_href=SITE_URLS["en"]["projects"],
+            nav_images_href=SITE_URLS["en"]["images"],
+            nav_dashboard_href=SITE_URLS["en"]["dashboard"],
+            meta_description=vps_i18n_all["en"]["error.message"],
+            **NO_EXTRA_TOKENS,
+        )
+
+    if only in (None, "blog"):
+        blog_yaml = load_i18n("blog")
+        blog_i18n_all = merged_i18n(common, blog_yaml)
+        for locale, out_rel in (("en", "files/blog/index.html"), ("fr", "files/blog/fr/index.html")):
+            render(
+                env,
+                "pages/blog.html.j2",
+                out_root / out_rel,
+                lang=locale,
+                lang_mode="url",
+                lang_current=locale.upper(),
+                i18n=blog_i18n_all[locale],
+                i18n_all=blog_i18n_all,
+                posts=posts,
                 brand_href=SITE_URLS[locale]["home"],
                 nav_home_href=SITE_URLS[locale]["home"],
                 nav_blog_href=SITE_URLS[locale]["blog"],
                 nav_projects_href=SITE_URLS[locale]["projects"],
                 nav_images_href=SITE_URLS[locale]["images"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                meta_description=post["body"][locale],
-                og_url=f"https://blog.khaddict.com/{'fr/' if locale == 'fr' else ''}posts/{slug}/",
-                og_locale="fr_FR" if locale == "fr" else "en_US",
-                og_locale_alternate="en_US" if locale == "fr" else "fr_FR",
-                canonical_url=f"https://blog.khaddict.com/{'fr/' if locale == 'fr' else ''}posts/{slug}/",
-                lang_switch_fr_href=f"https://blog.khaddict.com/fr/posts/{slug}/",
-                lang_switch_en_href=f"https://blog.khaddict.com/posts/{slug}/",
+                meta_description=BLOG_META[locale]["description"],
+                og_url=BLOG_META[locale]["og_url"],
+                og_locale=BLOG_META[locale]["og_locale"],
+                og_locale_alternate=BLOG_META[locale]["og_locale_alternate"],
+                canonical_url=BLOG_META[locale]["canonical_url"],
                 rss_href=RSS_HREFS[locale],
                 **BLOG_EXTRA_TOKENS,
+                **lang_switch_hrefs("blog"),
             )
 
-    # The feed is derived entirely from posts.yaml (the same data backing the
-    # blog listing and post pages), one per locale to match the rest of the
-    # site's EN/FR split.
-    for locale, out_rel in (("en", "files/blog/feed.xml"), ("fr", "files/blog/fr/feed.xml")):
+    if only in (None, "projects"):
+        projects_yaml = load_i18n("projects")
+        projects_i18n_all = merged_i18n(common, projects_yaml)
+        for locale, out_rel in (("en", "files/projects/index.html"), ("fr", "files/projects/fr/index.html")):
+            render(
+                env,
+                "pages/projects.html.j2",
+                out_root / out_rel,
+                lang=locale,
+                lang_mode="url",
+                lang_current=locale.upper(),
+                i18n=projects_i18n_all[locale],
+                i18n_all=projects_i18n_all,
+                brand_href=SITE_URLS[locale]["home"],
+                nav_home_href=SITE_URLS[locale]["home"],
+                nav_blog_href=SITE_URLS[locale]["blog"],
+                nav_projects_href=SITE_URLS[locale]["projects"],
+                nav_images_href=SITE_URLS[locale]["images"],
+                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                meta_description=PROJECTS_META[locale]["description"],
+                og_url=PROJECTS_META[locale]["og_url"],
+                og_locale=PROJECTS_META[locale]["og_locale"],
+                og_locale_alternate=PROJECTS_META[locale]["og_locale_alternate"],
+                canonical_url=PROJECTS_META[locale]["canonical_url"],
+                **PROJECTS_EXTRA_TOKENS,
+                **lang_switch_hrefs("projects"),
+            )
+
+    if only in (None, "images"):
+        images_yaml = load_i18n("images")
+        images_i18n_all = merged_i18n(common, images_yaml)
+        for locale, out_rel in (("en", "files/images/index.html"), ("fr", "files/images/fr/index.html")):
+            render(
+                env,
+                "pages/images.html.j2",
+                out_root / out_rel,
+                lang=locale,
+                lang_mode="url",
+                lang_current=locale.upper(),
+                i18n=images_i18n_all[locale],
+                i18n_all=images_i18n_all,
+                brand_href=SITE_URLS[locale]["home"],
+                nav_home_href=SITE_URLS[locale]["home"],
+                nav_blog_href=SITE_URLS[locale]["blog"],
+                nav_projects_href=SITE_URLS[locale]["projects"],
+                nav_images_href=SITE_URLS[locale]["images"],
+                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                meta_description=IMAGES_META[locale]["description"],
+                og_url=IMAGES_META[locale]["og_url"],
+                og_locale=IMAGES_META[locale]["og_locale"],
+                og_locale_alternate=IMAGES_META[locale]["og_locale_alternate"],
+                canonical_url=IMAGES_META[locale]["canonical_url"],
+                **NO_EXTRA_TOKENS,
+                **lang_switch_hrefs("images"),
+            )
+
+    if only in (None, "404"):
+        not_found_yaml = load_i18n("404")
+        not_found_i18n_all = merged_i18n(common, not_found_yaml)
+        # 404.html is a single shared file served across all 4 khaddict.com
+        # subdomains (see Helm configmap.yaml / deployment.yaml), not a per-site
+        # page like the others, so it only ever gets one "en" render. Its
+        # lang-switcher links to the site ROOT's /fr/ (not a same-page fr
+        # variant, since a 404 has no page-specific fr content), and its runtime
+        # currentLang is detected from location.pathname rather than baked in
+        # at build time.
         render(
             env,
-            "pages/feed.xml.j2",
-            out_root / out_rel,
-            channel_link=BLOG_META[locale]["canonical_url"],
-            rss_href=RSS_HREFS[locale],
-            channel_description=xml_escape(BLOG_META[locale]["description"]),
-            language="fr-fr" if locale == "fr" else "en-us",
-            items=build_feed_items(posts, locale),
+            "pages/404.html.j2",
+            out_root / "files/shared/404.html",
+            lang="en",
+            lang_mode="url",
+            lang_current="EN",
+            i18n=not_found_i18n_all["en"],
+            i18n_all=not_found_i18n_all,
+            brand_href="/",
+            nav_home_href=SITE_URLS["en"]["home"],
+            nav_blog_href=SITE_URLS["en"]["blog"],
+            nav_projects_href=SITE_URLS["en"]["projects"],
+            nav_images_href=SITE_URLS["en"]["images"],
+            nav_dashboard_href=SITE_URLS["en"]["dashboard"],
+            meta_description=NOT_FOUND_DESCRIPTION,
+            lang_switch_fr_href="/fr/",
+            lang_switch_en_href="/",
+            **NO_EXTRA_TOKENS,
         )
+
+    if only in (None, "posts"):
+        post_yaml = load_i18n("post")
+        # posts.yaml is data, not translation strings in the i18n sense: it holds
+        # the one field (title/excerpt/body/date/tags) that's genuinely unique
+        # per blog post, keyed by slug, feeding both blog.html.j2 (the listing's
+        # ARTICLES array) and post.html.j2 (this loop) from a single source.
+        for slug, post in posts.items():
+            post_extra = {
+                locale: {
+                    "title.post": f"{post['title'][locale]} | khaddict blog",
+                    "post.title": post["title"][locale],
+                    "post.body": post["body"][locale],
+                    **post_yaml[locale],
+                }
+                for locale in LOCALES
+            }
+            post_i18n_all = merged_i18n(common, post_extra)
+
+            for locale, out_rel in (
+                ("en", f"files/blog/posts/{slug}/index.html"),
+                ("fr", f"files/blog/fr/posts/{slug}/index.html"),
+            ):
+                render(
+                    env,
+                    "pages/post.html.j2",
+                    out_root / out_rel,
+                    lang=locale,
+                    lang_mode="url",
+                    lang_current=locale.upper(),
+                    i18n=post_i18n_all[locale],
+                    i18n_all=post_i18n_all,
+                    slug=slug,
+                    post=post,
+                    brand_href=SITE_URLS[locale]["home"],
+                    nav_home_href=SITE_URLS[locale]["home"],
+                    nav_blog_href=SITE_URLS[locale]["blog"],
+                    nav_projects_href=SITE_URLS[locale]["projects"],
+                    nav_images_href=SITE_URLS[locale]["images"],
+                    nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                    meta_description=post["body"][locale],
+                    og_url=f"https://blog.khaddict.com/{'fr/' if locale == 'fr' else ''}posts/{slug}/",
+                    og_locale="fr_FR" if locale == "fr" else "en_US",
+                    og_locale_alternate="en_US" if locale == "fr" else "fr_FR",
+                    canonical_url=f"https://blog.khaddict.com/{'fr/' if locale == 'fr' else ''}posts/{slug}/",
+                    lang_switch_fr_href=f"https://blog.khaddict.com/fr/posts/{slug}/",
+                    lang_switch_en_href=f"https://blog.khaddict.com/posts/{slug}/",
+                    rss_href=RSS_HREFS[locale],
+                    **BLOG_EXTRA_TOKENS,
+                )
+
+    if only in (None, "feed"):
+        # The feed is derived entirely from posts.yaml (the same data backing the
+        # blog listing and post pages), one per locale to match the rest of the
+        # site's EN/FR split.
+        for locale, out_rel in (("en", "files/blog/feed.xml"), ("fr", "files/blog/fr/feed.xml")):
+            render(
+                env,
+                "pages/feed.xml.j2",
+                out_root / out_rel,
+                channel_link=BLOG_META[locale]["canonical_url"],
+                rss_href=RSS_HREFS[locale],
+                channel_description=xml_escape(BLOG_META[locale]["description"]),
+                language="fr-fr" if locale == "fr" else "en-us",
+                items=build_feed_items(posts, locale),
+            )
 
 
 if __name__ == "__main__":

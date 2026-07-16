@@ -6,3 +6,4 @@ files/images/**/index.html
 files/shared/404.html
 vps-fallback/index.html
 _preview/
+.venv/
