@@ -7,6 +7,7 @@ way to populate the real paths on disk. For a quick preview without touching
 those paths, use --out-dir (e.g. --out-dir _preview, already gitignored).
 """
 import argparse
+import base64
 import pathlib
 from datetime import datetime, timezone
 from email.utils import format_datetime
@@ -18,6 +19,18 @@ from jinja2 import Environment, FileSystemLoader
 ROOT = pathlib.Path(__file__).resolve().parent
 TEMPLATES = ROOT / "templates"
 I18N_DIR = TEMPLATES / "data" / "i18n"
+ASSETS_DIR = TEMPLATES / "data" / "assets"
+
+# The live site links the brand icon straight to images.khaddict.com. The
+# vps-fallback page is shown precisely when the homelab (and therefore
+# images.khaddict.com) is unreachable, so it gets its own copy inlined as a
+# base64 data URI instead, sized down from images-build/images/icons/khazix-pc-flat.png.
+BRAND_ICON_URL = "https://images.khaddict.com/icons/khazix-pc-flat.png"
+
+
+def fallback_icon_data_uri():
+    data = (ASSETS_DIR / "vps-fallback-icon.png").read_bytes()
+    return "data:image/png;base64," + base64.b64encode(data).decode("ascii")
 
 LOCALES = ("en", "fr")
 
@@ -292,6 +305,7 @@ def main():
                 nav_projects_href=SITE_URLS[locale]["projects"],
                 nav_images_href=SITE_URLS[locale]["images"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                brand_icon_src=BRAND_ICON_URL,
                 meta_description=WWW_META[locale]["description"],
                 og_url=WWW_META[locale]["og_url"],
                 og_locale=WWW_META[locale]["og_locale"],
@@ -324,6 +338,7 @@ def main():
             nav_projects_href=SITE_URLS["en"]["projects"],
             nav_images_href=SITE_URLS["en"]["images"],
             nav_dashboard_href=SITE_URLS["en"]["dashboard"],
+            brand_icon_src=fallback_icon_data_uri(),
             meta_description=vps_i18n_all["en"]["error.message"],
             **NO_EXTRA_TOKENS,
         )
@@ -348,6 +363,7 @@ def main():
                 nav_projects_href=SITE_URLS[locale]["projects"],
                 nav_images_href=SITE_URLS[locale]["images"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                brand_icon_src=BRAND_ICON_URL,
                 meta_description=BLOG_META[locale]["description"],
                 og_url=BLOG_META[locale]["og_url"],
                 og_locale=BLOG_META[locale]["og_locale"],
@@ -377,6 +393,7 @@ def main():
                 nav_projects_href=SITE_URLS[locale]["projects"],
                 nav_images_href=SITE_URLS[locale]["images"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                brand_icon_src=BRAND_ICON_URL,
                 meta_description=PROJECTS_META[locale]["description"],
                 og_url=PROJECTS_META[locale]["og_url"],
                 og_locale=PROJECTS_META[locale]["og_locale"],
@@ -405,6 +422,7 @@ def main():
                 nav_projects_href=SITE_URLS[locale]["projects"],
                 nav_images_href=SITE_URLS[locale]["images"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                brand_icon_src=BRAND_ICON_URL,
                 meta_description=IMAGES_META[locale]["description"],
                 og_url=IMAGES_META[locale]["og_url"],
                 og_locale=IMAGES_META[locale]["og_locale"],
@@ -439,6 +457,7 @@ def main():
             nav_projects_href=SITE_URLS["en"]["projects"],
             nav_images_href=SITE_URLS["en"]["images"],
             nav_dashboard_href=SITE_URLS["en"]["dashboard"],
+            brand_icon_src=BRAND_ICON_URL,
             meta_description=NOT_FOUND_DESCRIPTION,
             lang_switch_fr_href="/fr/",
             lang_switch_en_href="/",
@@ -484,6 +503,7 @@ def main():
                     nav_projects_href=SITE_URLS[locale]["projects"],
                     nav_images_href=SITE_URLS[locale]["images"],
                     nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                    brand_icon_src=BRAND_ICON_URL,
                     meta_description=post["body"][locale],
                     og_url=f"https://blog.khaddict.com/{'fr/' if locale == 'fr' else ''}posts/{slug}/",
                     og_locale="fr_FR" if locale == "fr" else "en_US",
