@@ -1,6 +1,6 @@
 # khaddict-com
 
-Static site content (HTML/CSS/JS) for the khaddict.com site family: `www`, `blog`, `images`, `projects`, plus the shared 404 page and a standalone VPS fallback page. Pages are authored as Jinja2 templates and rendered to static HTML by `build.py`; the rendered output is what actually ships, but it isn't committed. `templates/` is the only source of truth.
+Static site content (HTML/CSS/JS) for the khaddict.com site family: `www`, `blog`, `images`, `projects`, plus the shared 404 page and a standalone VPS fallback page. Pages are authored as Jinja2 templates and rendered to static HTML by `build.py`; `templates/` is the only source of truth. The rendered output isn't committed, with one exception: `vps-fallback/index.html` (see "vps-fallback" below).
 
 This repo holds no infrastructure. It's packaged as a Helm chart (`Chart.yaml` + `files/`) published to `oci://ghcr.io/khaddict/charts` and pulled in as a subchart dependency by [`voidnode`](https://github.com/khaddict/voidnode)'s `argocd/apps/khaddict` chart, which reads the rendered files via `(index .Subcharts "khaddict-com").Files.Get`.
 
@@ -24,7 +24,7 @@ files/
   <site>/security.txt, sitemap.xml   # hand-maintained, not generated
 images-build/            # Docker build context for the images-khaddict gallery/icons image
                          # (excluded from the Helm chart via .helmignore, published separately)
-vps-fallback/            # generated 503 page for the VPS-side fallback (gitignored), see below
+vps-fallback/            # generated 503 page for the VPS-side fallback, committed (see below)
 ```
 
 Every generated page shares the same header, footer, theme toggle (light by default on first visit), language switcher (FR/EN, `/fr/` URL siblings everywhere except vps-fallback, which stays cookie-based since it has no sibling), and live status widget, all defined once in `templates/partials/` instead of being duplicated by hand. The blog also gets an RSS feed link in its footer.
@@ -37,7 +37,7 @@ python3 -m venv .venv
 .venv/bin/python3 build.py
 ```
 
-This renders every page to its real path (`files/www/index.html`, `vps-fallback/index.html`, etc., all gitignored, never committed). Two useful flags:
+This renders every page to its real path (`files/www/index.html`, `vps-fallback/index.html`, etc.). All of it is gitignored and never committed, except `vps-fallback/index.html` (see "vps-fallback" below). Two useful flags:
 
 - `--out-dir <dir>`: render to a different directory instead of the real paths (e.g. `--out-dir _preview`, already gitignored), for previewing changes without touching what a local Helm test or a manual deploy would pick up.
 - `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `images`, `404`, `posts`, `feed`.
@@ -65,17 +65,21 @@ More involved than a blog post, since it needs its own template, data, and Kuber
 3. Add `files/<name>/security.txt` (hand-maintained, not generated) and, if it needs one, a `sitemap.xml`.
 4. Add the nav link to `templates/partials/header.html.j2`, the one shared partial every page includes, so this is a single edit.
 5. In `voidnode`, add the new site to `argocd/apps/khaddict/values.yaml`'s `sites:` list. Deployment/Service/HTTPRoute/ConfigMap are generated from that list already, no template changes needed there.
-6. `voidnode` also needs: a DNS CNAME, a `revproxy` HAProxy ACL + backend, the new hostname added to the VPS-side nginx configs and the fallback TLS cert's SAN list. See `documentation/KHADDICT-VPS/KHADDICT-VPS.md` in `voidnode`.
+6. `voidnode` also needs: a DNS CNAME, a `revproxy` HAProxy ACL + backend, the new hostname added to the VPS-side nginx configs (`role/vps/files/`) and the fallback TLS cert's SAN list. See `documentation/KHADDICT-VPS.md` in `voidnode`.
 
 ## vps-fallback
 
-`vps-fallback/index.html` is the standalone 503 page served from a separate fallback VPS. It's not part of the Helm chart (excluded via `.helmignore`) and not wired into any CI workflow, since it's deployed by hand. After editing `templates/pages/vps_fallback.html.j2` (or any shared partial), regenerate it locally with:
+`vps-fallback/index.html` is the standalone 503 page served from a separate fallback VPS. It's not part of the Helm chart (excluded via `.helmignore`) and not wired into any CI workflow, but unlike every other rendered page, it **is** committed: the VPS pulls it directly from this repo's raw GitHub URL (`role.vps` in `voidnode`, a `file.managed` state with `use_etag: True`), so there's nothing to deploy by hand and no separate publish step.
+
+After editing `templates/pages/vps_fallback.html.j2` (or any shared partial), regenerate and commit it:
 
 ```
 .venv/bin/python3 build.py --only vps-fallback
+git add vps-fallback/index.html
+git commit
 ```
 
-then deploy the resulting `vps-fallback/index.html` to the VPS however you currently do that; this repo doesn't automate that last step.
+Once that lands on `main`, the VPS picks it up on its next Salt highstate (ETag comparison against GitHub's raw content; no polling delay-sensitive deploy step to run here).
 
 ## Testing locally
 
