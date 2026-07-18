@@ -40,19 +40,19 @@
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          // Dot, percentage and bars all read the same 30-beat window as the
-          // summary pill above. Using Uptime Kuma's 24h aggregate here instead
-          // could show a green dot (or the top pill) next to a stale red
-          // percentage whenever the last outage falls outside this window but
-          // inside 24h, which is confusing since nothing in the visible bars
-          // would explain it.
+          // Dot and bars read the 30-beat window: consistent with the summary
+          // pill above, so red never appears there without a red bar to show
+          // for it. The percentage is the exception on purpose: it mirrors
+          // Uptime Kuma's own 24h uptime stat (the same number shown on
+          // status.khaddict.com) rather than a value recomputed from these
+          // 30 beats, so the two never disagree on what "the uptime" is.
           const recent = beats.slice(-30);
-          const recentUp = recent.filter(b => b.status === 1).length;
           const recentHasDown = recent.some(b => b.status === 0);
           if (recentHasDown) anyRecentDown = true;
 
-          const pctNum = recent.length ? (recentUp / recent.length) * 100 : undefined;
-          const p = pctNum !== undefined ? `${pctNum.toFixed(1)}%` : '—';
+          const pct24 = hb.uptimeList[`${m.id}_24`];
+          const pctNum = pct24 !== undefined ? pct24 * 100 : undefined;
+          const p = pctNum !== undefined ? `${pctNum.toFixed(2)}%` : '—';
           const pctCls = !isUp ? 'bad' : recentHasDown ? 'mid' : 'good';
           const dotCls = !isUp ? 'down' : recentHasDown ? 'warn' : 'up';
 

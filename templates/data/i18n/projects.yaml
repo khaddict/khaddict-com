@@ -1,20 +1,20 @@
 en:
   title.projects: "Projects | khaddict"
   projects.title: 'Things I <span class="highlight">build</span> and run.'
-  projects.voidnode: "Single-node homelab running Talos Kubernetes, ArgoCD and SaltStack. The current, leaner setup after retiring a three-node HA cluster."
-  projects.khaddictcom: "Static site content for the khaddict.com family (www, blog, images, projects), packaged as a Helm subchart consumed by voidnode."
-  projects.homelab: "The original three-node HA homelab: Kubernetes on bare metal with Ceph for distributed storage. Retired in favor of voidnode's single-node setup."
-  projects.homelabcloud: "Companion repository to homelab, covering the cloud-facing side of the original three-node HA setup."
+  projects.voidnode: "Single-node homelab: Proxmox as the hypervisor, Kubernetes for container orchestration, OPNsense for network segmentation, SaltStack for configuration management. Less redundant than my former homelab project."
+  projects.khaddictcom: "Static HTML/CSS/JS for the khaddict.com subdomains (www, blog, images, projects), packaged as a Helm subchart integrated into voidnode."
+  projects.homelab: "My former three-node highly-available homelab: Proxmox as the hypervisor, Kubernetes for container orchestration, Ceph for distributed storage. More redundant than my current project, voidnode."
+  projects.homelabcloud: "Goes hand in hand with my old homelab. Deploys ArgoCD resources on the Kubernetes cluster."
   projects.easypki: "Internal PKI authority issuing and renewing TLS certificates for every *.khaddict.lab service, provisioned via StackStorm and distributed via SaltStack."
   projects.voidpath: "A HackTheBox machine I created. Not released yet, this card will be updated with a link once it drops."
   projects.comingSoon: "Not released yet"
 fr:
   title.projects: "Projets | khaddict"
   projects.title: 'Ce que je <span class="highlight">construis</span> et fais tourner.'
-  projects.voidnode: "Homelab mono-nœud sous Talos Kubernetes, avec ArgoCD et SaltStack. Le setup actuel, plus léger, depuis l’abandon d’un cluster HA à trois nœuds."
-  projects.khaddictcom: "Contenu statique pour la famille khaddict.com (www, blog, images, projects), packagé en sous-chart Helm utilisé par voidnode."
-  projects.homelab: "L’ancien homelab HA à trois nœuds : Kubernetes sur bare-metal avec Ceph pour le stockage distribué. Retiré au profit du setup mono-nœud de voidnode."
-  projects.homelabcloud: "Dépôt qui accompagne homelab et couvre le volet cloud de l’ancien setup HA à trois nœuds."
+  projects.voidnode: "Homelab mono-nœud : Proxmox comme hyperviseur, Kubernetes pour l’orchestration de conteneurs, OPNsense pour la segmentation réseau, SaltStack pour la gestion de configuration. Setup avec moins de redondance que mon ancien projet homelab."
+  projects.khaddictcom: "HTML/CSS/JS statiques des sous-domaines khaddict.com (www, blog, images, projects), packagés en sous-chart Helm intégré à voidnode."
+  projects.homelab: "Mon ancien homelab hautement disponible à trois nœuds : Proxmox comme hyperviseur, Kubernetes pour l’orchestration de conteneurs, Ceph pour le stockage distribué. Setup avec plus de redondance que mon projet actuel, voidnode."
+  projects.homelabcloud: "Va de pair avec mon ancien homelab. Déploie les ressources ArgoCD sur le cluster Kubernetes."
   projects.easypki: "Autorité PKI interne qui émet et renouvelle les certificats TLS pour chaque service *.khaddict.lab ; ces certificats sont provisionnés via StackStorm et distribués via SaltStack."
   projects.voidpath: "Une machine HackTheBox que j’ai créée. Pas encore sortie, cette carte sera mise à jour avec un lien une fois publiée."
   projects.comingSoon: "Pas encore sortie"
