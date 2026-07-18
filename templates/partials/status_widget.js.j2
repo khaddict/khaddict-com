@@ -40,16 +40,22 @@
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          const pct24  = hb.uptimeList[`${m.id}_24`];
-          const pctNum = pct24 !== undefined ? pct24 * 100 : undefined;
-          const p = pctNum !== undefined ? `${pctNum.toFixed(1)}%` : '—';
-          const pctCls = pctNum === undefined ? '' : pctNum >= 99 ? 'good' : pctNum >= 95 ? 'mid' : 'bad';
-          const dotCls = isUp ? (pctNum !== undefined && pctNum < 95 ? 'warn' : 'up') : 'down';
-
-          // Same 30-beat window as the heartbeat bars below: the summary pill
-          // reflects exactly what's visible there, not a separate 24h stat.
+          // Dot, percentage and bars all read the same 30-beat window as the
+          // summary pill above. Using Uptime Kuma's 24h aggregate here instead
+          // could show a green dot (or the top pill) next to a stale red
+          // percentage whenever the last outage falls outside this window but
+          // inside 24h, which is confusing since nothing in the visible bars
+          // would explain it.
           const recent = beats.slice(-30);
-          if (recent.some(b => b.status === 0)) anyRecentDown = true;
+          const recentUp = recent.filter(b => b.status === 1).length;
+          const recentHasDown = recent.some(b => b.status === 0);
+          if (recentHasDown) anyRecentDown = true;
+
+          const pctNum = recent.length ? (recentUp / recent.length) * 100 : undefined;
+          const p = pctNum !== undefined ? `${pctNum.toFixed(1)}%` : '—';
+          const pctCls = !isUp ? 'bad' : recentHasDown ? 'mid' : 'good';
+          const dotCls = !isUp ? 'down' : recentHasDown ? 'warn' : 'up';
+
           const bars = recent.map(b => {
             const state = b.status === 1 ? 'up' : b.status === 0 ? 'down' : b.status === 2 ? 'pending' : '';
             const title = b.time ? new Date(b.time).toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { hour: '2-digit', minute: '2-digit' }) : '';
