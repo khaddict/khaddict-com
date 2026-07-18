@@ -70,7 +70,7 @@
         radial-gradient(520px circle at 100% 8%, var(--blob-2), transparent 55%),
         var(--bg);
       color: var(--text);
-      font-family: 'Inter', system-ui, sans-serif;
+      font-family: 'JetBrains Mono', monospace;
       display: flex;
       flex-direction: column;
       transition: background-color .2s ease, color .2s ease;
@@ -132,6 +132,10 @@
       gap: .4rem;
       transition: color .15s ease;
       padding: 0;
+    }
+    .topnav a, .topnav button {
+      font-size: .92rem;
+      font-weight: 600;
     }
     .topnav a:hover, .topnav button:hover, .status-nav button:hover,
     .topnav a:focus-visible, .topnav button:focus-visible, .status-nav button:focus-visible { color: var(--accent); }

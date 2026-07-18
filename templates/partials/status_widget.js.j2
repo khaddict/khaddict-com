@@ -16,10 +16,7 @@
     setInterval(updateStatusFreshness, 5000);
 
     async function loadStatus() {
-      // fetch() has no default timeout: a stalled connection (dropped packets,
-      // slow TLS/DNS) hangs indefinitely instead of rejecting, leaving the
-      // widget stuck on the initial "checking systems…" placeholder. Bound it
-      // so a stall resolves to the "unreachable" state within a few seconds.
+      // fetch() has no default timeout, so bound it or a stall hangs forever.
       const timeout = AbortSignal.timeout(8000);
       try {
         const [pageRes, hbRes] = await Promise.all([
@@ -40,12 +37,7 @@
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          // Dot and bars read the 30-beat window: consistent with the summary
-          // pill above, so red never appears there without a red bar to show
-          // for it. The percentage is the exception on purpose: it mirrors
-          // Uptime Kuma's own 24h uptime stat (the same number shown on
-          // status.khaddict.com) rather than a value recomputed from these
-          // 30 beats, so the two never disagree on what "the uptime" is.
+          // Percentage is Uptime Kuma's own 24h stat; dot/bars use the 30-beat window.
           const recent = beats.slice(-30);
           const recentHasDown = recent.some(b => b.status === 0);
           if (recentHasDown) anyRecentDown = true;

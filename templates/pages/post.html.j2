@@ -28,7 +28,7 @@
   <link rel="apple-touch-icon" href="https://images.khaddict.com/icons/khazix-pc-flat.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Matomo -->
   <script>
@@ -102,6 +102,23 @@
     }
     .post-body p:last-child { margin-bottom: 0; }
 
+    .post-share {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: .75rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .post-share-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+    }
+
+    .post-comments { margin-top: 2.5rem; }
+
     @keyframes fade-up {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -121,6 +138,34 @@
       <div class="post-tags" id="post-tags"></div>
       <div class="post-body">
         <p data-i18n="post.body">{{ i18n['post.body'] }}</p>
+      </div>
+
+      <div class="post-share">
+        <span class="post-share-label" data-i18n="share.title">{{ i18n['share.title'] }}</span>
+        <a class="icon-link" href="https://www.reddit.com/submit?url={{ canonical_url | urlencode }}&title={{ post.title[lang] | urlencode }}" target="_blank" rel="noopener" aria-label="{{ i18n['share.reddit.ariaLabel'] }}" data-i18n-aria="share.reddit.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 01-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 01.042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 013 12.529c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.443 4.744-1.51l.885-4.15a.32.32 0 01.13-.194.32.32 0 01.222-.06l2.91.617a1.226 1.226 0 011.15-.815zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 00-.231.094.33.33 0 000 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 00.029-.463.33.33 0 00-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 00-.232-.095z"/></svg>
+        </a>
+        <a class="icon-link" href="https://twitter.com/intent/tweet?text={{ post.title[lang] | urlencode }}&url={{ canonical_url | urlencode }}" target="_blank" rel="noopener" aria-label="{{ i18n['share.twitter.ariaLabel'] }}" data-i18n-aria="share.twitter.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a class="icon-link" href="https://www.linkedin.com/sharing/share-offsite/?url={{ canonical_url | urlencode }}" target="_blank" rel="noopener" aria-label="{{ i18n['share.linkedin.ariaLabel'] }}" data-i18n-aria="share.linkedin.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a class="icon-link" href="https://api.whatsapp.com/send?text={{ (post.title[lang] ~ ' ' ~ canonical_url) | urlencode }}" target="_blank" rel="noopener" aria-label="{{ i18n['share.whatsapp.ariaLabel'] }}" data-i18n-aria="share.whatsapp.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347M12 21.785h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374A9.86 9.86 0 012.116 11.9C2.117 6.45 6.55 2.017 12.003 2.017c2.64 0 5.121 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884"/></svg>
+        </a>
+        <a class="icon-link" href="mailto:?subject={{ post.title[lang] | urlencode }}&body={{ canonical_url | urlencode }}" aria-label="{{ i18n['share.email.ariaLabel'] }}" data-i18n-aria="share.email.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        </a>
+        <button class="icon-link" id="share-copy-btn" type="button" aria-label="{{ i18n['share.copy.hint'] }}" data-i18n-aria="share.copy.hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span class="hover-hint" data-i18n="share.copy.hint">{{ i18n['share.copy.hint'] }}</span>
+          <span class="copy-toast" id="share-copy-toast" data-i18n="share.copy.toast">{{ i18n['share.copy.toast'] }}</span>
+        </button>
+      </div>
+
+      <div class="post-comments">
+        <div id="remark42"></div>
       </div>
     </div>
   </main>
@@ -240,6 +285,7 @@
       const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
       setThemeCookie(next);
+      if (window.REMARK42) window.REMARK42.changeTheme(next);
     });
 
     (function () {
@@ -257,6 +303,39 @@
           discordBtn.classList.remove('copied');
         }, 900);
       });
+    })();
+
+    (function () {
+      const copyBtn = document.getElementById('share-copy-btn');
+      const copyToast = document.getElementById('share-copy-toast');
+      let toastTimer = null;
+
+      copyBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('{{ canonical_url }}'); } catch { /* clipboard unavailable */ }
+        copyBtn.classList.add('copied');
+        copyToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          copyToast.classList.remove('show');
+          copyBtn.classList.remove('copied');
+        }, 900);
+      });
+    })();
+
+    (function () {
+      window.remark_config = {
+        host: 'https://blog.khaddict.com/remark42',
+        site_id: 'khaddict-blog',
+        url: 'https://blog.khaddict.com/posts/{{ slug }}/',
+        theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
+        locale: currentLang,
+        no_footer: true,
+        show_rss_subscription: false,
+      };
+      const script = document.createElement('script');
+      script.src = window.remark_config.host + '/web/embed.js';
+      script.defer = true;
+      (document.head || document.body).appendChild(script);
     })();
   </script>
 </body>
