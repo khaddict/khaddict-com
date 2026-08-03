@@ -21,11 +21,11 @@ TEMPLATES = ROOT / "templates"
 I18N_DIR = TEMPLATES / "data" / "i18n"
 ASSETS_DIR = TEMPLATES / "data" / "assets"
 
-# The live site links the brand icon straight to images.khaddict.com. The
+# The live site links the brand icon straight to media.khaddict.com. The
 # vps-fallback page is shown precisely when the homelab (and therefore
-# images.khaddict.com) is unreachable, so it gets its own copy inlined as a
-# base64 data URI instead, sized down from images-build/images/icons/khazix-pc-flat.png.
-BRAND_ICON_URL = "https://images.khaddict.com/icons/khazix-pc-flat.png"
+# media.khaddict.com) is unreachable, so it gets its own copy inlined as a
+# base64 data URI instead, sized down from media-build/media/icons/khazix-pc-flat.png.
+BRAND_ICON_URL = "https://media.khaddict.com/icons/khazix-pc-flat.png"
 
 
 def fallback_icon_data_uri():
@@ -44,7 +44,7 @@ SITE_URLS = {
         "home": "https://khaddict.com",
         "blog": "https://blog.khaddict.com",
         "projects": "https://projects.khaddict.com",
-        "images": "https://images.khaddict.com",
+        "media": "https://media.khaddict.com",
         "dashboard": "https://dashboard.khaddict.com",
     },
     "fr": {
@@ -52,7 +52,7 @@ SITE_URLS = {
         "home": "https://khaddict.com/fr/",
         "blog": "https://blog.khaddict.com/fr/",
         "projects": "https://projects.khaddict.com/fr/",
-        "images": "https://images.khaddict.com/fr/",
+        "media": "https://media.khaddict.com/fr/",
         "dashboard": "https://dashboard.khaddict.com",
     },
 }
@@ -180,20 +180,20 @@ PROJECTS_META = {
     },
 }
 
-IMAGES_META = {
+MEDIA_META = {
     "en": {
-        "description": "Personal image gallery hosting icons, wallpapers and homelab assets.",
-        "og_url": "https://images.khaddict.com/",
+        "description": "Personal media gallery hosting icons, wallpapers, homelab videos and assets.",
+        "og_url": "https://media.khaddict.com/",
         "og_locale": "en_US",
         "og_locale_alternate": "fr_FR",
-        "canonical_url": "https://images.khaddict.com/",
+        "canonical_url": "https://media.khaddict.com/",
     },
     "fr": {
-        "description": "Galerie personnelle hébergeant icônes, fonds d’écran et assets du homelab.",
-        "og_url": "https://images.khaddict.com/fr/",
+        "description": "Galerie personnelle hébergeant icônes, fonds d’écran, vidéos et assets du homelab.",
+        "og_url": "https://media.khaddict.com/fr/",
         "og_locale": "fr_FR",
         "og_locale_alternate": "en_US",
-        "canonical_url": "https://images.khaddict.com/fr/",
+        "canonical_url": "https://media.khaddict.com/fr/",
     },
 }
 
@@ -251,7 +251,7 @@ def render(env, template_name, out_path, **context):
     print(f"wrote {out_path}")
 
 
-PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "images", "404", "posts", "feed"]
+PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "404", "posts", "feed"]
 
 
 def main():
@@ -303,7 +303,7 @@ def main():
                 nav_home_href=SITE_URLS[locale]["home"],
                 nav_blog_href=SITE_URLS[locale]["blog"],
                 nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_images_href=SITE_URLS[locale]["images"],
+                nav_media_href=SITE_URLS[locale]["media"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=WWW_META[locale]["description"],
@@ -336,7 +336,7 @@ def main():
             nav_home_href=SITE_URLS["en"]["home"],
             nav_blog_href=SITE_URLS["en"]["blog"],
             nav_projects_href=SITE_URLS["en"]["projects"],
-            nav_images_href=SITE_URLS["en"]["images"],
+            nav_media_href=SITE_URLS["en"]["media"],
             nav_dashboard_href=SITE_URLS["en"]["dashboard"],
             brand_icon_src=fallback_icon_data_uri(),
             meta_description=vps_i18n_all["en"]["error.message"],
@@ -361,7 +361,7 @@ def main():
                 nav_home_href=SITE_URLS[locale]["home"],
                 nav_blog_href=SITE_URLS[locale]["blog"],
                 nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_images_href=SITE_URLS[locale]["images"],
+                nav_media_href=SITE_URLS[locale]["media"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=BLOG_META[locale]["description"],
@@ -391,7 +391,7 @@ def main():
                 nav_home_href=SITE_URLS[locale]["home"],
                 nav_blog_href=SITE_URLS[locale]["blog"],
                 nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_images_href=SITE_URLS[locale]["images"],
+                nav_media_href=SITE_URLS[locale]["media"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=PROJECTS_META[locale]["description"],
@@ -403,33 +403,33 @@ def main():
                 **lang_switch_hrefs("projects"),
             )
 
-    if only in (None, "images"):
-        images_yaml = load_i18n("images")
-        images_i18n_all = merged_i18n(common, images_yaml)
-        for locale, out_rel in (("en", "files/images/index.html"), ("fr", "files/images/fr/index.html")):
+    if only in (None, "media"):
+        media_yaml = load_i18n("media")
+        media_i18n_all = merged_i18n(common, media_yaml)
+        for locale, out_rel in (("en", "files/media/index.html"), ("fr", "files/media/fr/index.html")):
             render(
                 env,
-                "pages/images.html.j2",
+                "pages/media.html.j2",
                 out_root / out_rel,
                 lang=locale,
                 lang_mode="url",
                 lang_current=locale.upper(),
-                i18n=images_i18n_all[locale],
-                i18n_all=images_i18n_all,
+                i18n=media_i18n_all[locale],
+                i18n_all=media_i18n_all,
                 brand_href=SITE_URLS[locale]["home"],
                 nav_home_href=SITE_URLS[locale]["home"],
                 nav_blog_href=SITE_URLS[locale]["blog"],
                 nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_images_href=SITE_URLS[locale]["images"],
+                nav_media_href=SITE_URLS[locale]["media"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
                 brand_icon_src=BRAND_ICON_URL,
-                meta_description=IMAGES_META[locale]["description"],
-                og_url=IMAGES_META[locale]["og_url"],
-                og_locale=IMAGES_META[locale]["og_locale"],
-                og_locale_alternate=IMAGES_META[locale]["og_locale_alternate"],
-                canonical_url=IMAGES_META[locale]["canonical_url"],
+                meta_description=MEDIA_META[locale]["description"],
+                og_url=MEDIA_META[locale]["og_url"],
+                og_locale=MEDIA_META[locale]["og_locale"],
+                og_locale_alternate=MEDIA_META[locale]["og_locale_alternate"],
+                canonical_url=MEDIA_META[locale]["canonical_url"],
                 **NO_EXTRA_TOKENS,
-                **lang_switch_hrefs("images"),
+                **lang_switch_hrefs("media"),
             )
 
     if only in (None, "404"):
@@ -455,7 +455,7 @@ def main():
             nav_home_href=SITE_URLS["en"]["home"],
             nav_blog_href=SITE_URLS["en"]["blog"],
             nav_projects_href=SITE_URLS["en"]["projects"],
-            nav_images_href=SITE_URLS["en"]["images"],
+            nav_media_href=SITE_URLS["en"]["media"],
             nav_dashboard_href=SITE_URLS["en"]["dashboard"],
             brand_icon_src=BRAND_ICON_URL,
             meta_description=NOT_FOUND_DESCRIPTION,
@@ -501,7 +501,7 @@ def main():
                     nav_home_href=SITE_URLS[locale]["home"],
                     nav_blog_href=SITE_URLS[locale]["blog"],
                     nav_projects_href=SITE_URLS[locale]["projects"],
-                    nav_images_href=SITE_URLS[locale]["images"],
+                    nav_media_href=SITE_URLS[locale]["media"],
                     nav_dashboard_href=SITE_URLS[locale]["dashboard"],
                     brand_icon_src=BRAND_ICON_URL,
                     meta_description=post["body"][locale],

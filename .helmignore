@@ -1,5 +1,5 @@
 # .Files.Get only reads files/; everything else here is for other pipelines/tooling, not the chart.
-images-build
+media-build
 vps-fallback
 .github
 .git

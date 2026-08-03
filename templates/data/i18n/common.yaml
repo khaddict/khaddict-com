@@ -2,7 +2,7 @@ en:
   nav.home: home
   nav.blog: blog
   nav.projects: projects
-  nav.images: images
+  nav.media: media
   nav.dashboard: dashboard
   status.label: status
   status.checking: "checking systems…"
@@ -22,7 +22,7 @@ fr:
   nav.home: accueil
   nav.blog: blog
   nav.projects: projets
-  nav.images: images
+  nav.media: médias
   nav.dashboard: dashboard
   status.label: statut
   status.checking: "vérification en cours…"

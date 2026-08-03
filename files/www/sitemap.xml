@@ -109,15 +109,15 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://projects.khaddict.com/"/>
   </url>
   <url>
-    <loc>https://images.khaddict.com/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://images.khaddict.com/"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://images.khaddict.com/fr/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://images.khaddict.com/"/>
+    <loc>https://media.khaddict.com/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://media.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://media.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://media.khaddict.com/"/>
   </url>
   <url>
-    <loc>https://images.khaddict.com/fr/</loc>
-    <xhtml:link rel="alternate" hreflang="en" href="https://images.khaddict.com/"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://images.khaddict.com/fr/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://images.khaddict.com/"/>
+    <loc>https://media.khaddict.com/fr/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://media.khaddict.com/"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://media.khaddict.com/fr/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://media.khaddict.com/"/>
   </url>
 </urlset>

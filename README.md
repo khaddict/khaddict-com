@@ -1,6 +1,6 @@
 # khaddict-com
 
-Static site content (HTML/CSS/JS) for the khaddict.com site family: `www`, `blog`, `images`, `projects`, plus the shared 404 page and a standalone VPS fallback page. Pages are authored as Jinja2 templates and rendered to static HTML by `build.py`; `templates/` is the only source of truth. The rendered output isn't committed, with one exception: `vps-fallback/index.html` (see "vps-fallback" below).
+Static site content (HTML/CSS/JS) for the khaddict.com site family: `www`, `blog`, `media`, `projects`, plus the shared 404 page and a standalone VPS fallback page. Pages are authored as Jinja2 templates and rendered to static HTML by `build.py`; `templates/` is the only source of truth. The rendered output isn't committed, with one exception: `vps-fallback/index.html` (see "vps-fallback" below).
 
 This repo holds no infrastructure. It's packaged as a Helm chart (`Chart.yaml` + `files/`) published to `oci://ghcr.io/khaddict/charts` and pulled in as a subchart dependency by [`voidnode`](https://github.com/khaddict/voidnode)'s `argocd/apps/khaddict` chart, which reads the rendered files via `(index .Subcharts "khaddict-com").Files.Get`.
 
@@ -12,17 +12,17 @@ build.py                 # renders templates/ -> files/** and vps-fallback/index
 requirements.txt         # jinja2, pyyaml
 templates/
   partials/              # shared chrome: theme cookie, header/nav, status widget, footer, responsive CSS
-  pages/                 # one template per page type (www, blog, projects, images, 404, vps_fallback, post, feed)
+  pages/                 # one template per page type (www, blog, projects, media, 404, vps_fallback, post, feed)
   data/
     i18n/                # translation strings per page type, en + fr
     posts.yaml           # one entry per blog post slug: date, tags, title/excerpt/body in en+fr
 files/
-  www/ blog/ images/ projects/   # generated index.html (+ fr/index.html) land here, all gitignored
+  www/ blog/ media/ projects/   # generated index.html (+ fr/index.html) land here, all gitignored
   blog/posts/<slug>/     # generated per-post pages, gitignored
   blog/feed.xml          # generated RSS feed (+ fr/feed.xml), gitignored
   shared/                # 404 page (generated, gitignored) plus hand-maintained default.conf, security-headers.conf, robots.txt
   <site>/security.txt, sitemap.xml   # hand-maintained, not generated
-images-build/            # Docker build context for the images-khaddict gallery/icons image
+media-build/             # Docker build context for the media-khaddict icons/gallery/videos image
                          # (excluded from the Helm chart via .helmignore, published separately)
 vps-fallback/            # generated 503 page for the VPS-side fallback, committed (see below)
 ```
@@ -40,7 +40,7 @@ python3 -m venv .venv
 This renders every page to its real path (`files/www/index.html`, `vps-fallback/index.html`, etc.). All of it is gitignored and never committed, except `vps-fallback/index.html` (see "vps-fallback" below). Two useful flags:
 
 - `--out-dir <dir>`: render to a different directory instead of the real paths (e.g. `--out-dir _preview`, already gitignored), for previewing changes without touching what a local Helm test or a manual deploy would pick up.
-- `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `images`, `404`, `posts`, `feed`.
+- `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `media`, `404`, `posts`, `feed`.
 
 ## Publishing
 
@@ -48,9 +48,9 @@ Two independent CI workflows:
 
 - **`publish-chart.yaml`** (push to `main`, paths `Chart.yaml`/`files/**`/`templates/**`/`build.py`/`requirements.txt`): installs the Python deps, runs `build.py` to regenerate the site fresh, then packages and pushes to `oci://ghcr.io/khaddict/charts`. Version is `0.1.$(git rev-list --count HEAD)`, the repo's total commit count at build time rather than a sequential publish counter, so it can jump by more than 1 between two publishes if unrelated commits (e.g. Renovate bumping an action version) landed in between.
 - **`templates-build-check.yaml`** (PR and push to `main`, paths `templates/**`/`build.py`/`requirements.txt`): runs `build.py` and fails if it errors. A smoke test that templates still render, nothing more (there's no committed output to compare against).
-- **`images-khaddict.yaml`** builds and pushes the `images-build/` Docker image (gallery photos + tech-stack icons, resized and stickered at build time) to `ghcr.io/khaddict/images-khaddict`, tagged with the commit's short SHA and `latest`.
+- **`media-khaddict.yaml`** builds and pushes the `media-build/` Docker image (gallery photos, tech-stack icons resized and stickered at build time, and raw video clips) to `ghcr.io/khaddict/media-khaddict`, tagged with the commit's short SHA and `latest`.
 
-Neither workflow writes back to `voidnode`. Renovate watches `voidnode`'s `Chart.yaml` dependency version and the `images-khaddict` image tag in `values.yaml`, and opens a PR there when either one moves. This repo has its own `.github/renovate.jsonc` to keep the Dockerfile base images and the GitHub Actions versions in `.github/workflows/` current.
+Neither workflow writes back to `voidnode`. Renovate watches `voidnode`'s `Chart.yaml` dependency version and the `media-khaddict` image tag in `values.yaml`, and opens a PR there when either one moves. This repo has its own `.github/renovate.jsonc` to keep the Dockerfile base images and the GitHub Actions versions in `.github/workflows/` current.
 
 ## Adding a blog post
 
