@@ -12,18 +12,18 @@
   <meta property="og:url" content="{{ og_url }}" />
   <meta property="og:title" content="khaddict" />
   <meta property="og:description" content="{{ meta_description }}" />
-  <meta property="og:image" content="https://media.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta property="og:image" content="{{ brand_icon_src }}" />
   <meta property="og:locale" content="{{ og_locale }}" />
   <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
   <link rel="canonical" href="{{ canonical_url }}" />
-  <link rel="alternate" hreflang="en" href="https://khaddict.com/" />
-  <link rel="alternate" hreflang="fr" href="https://khaddict.com/fr/" />
-  <link rel="alternate" hreflang="x-default" href="https://khaddict.com/" />
+  <link rel="alternate" hreflang="en" href="{{ hreflang_en_href }}" />
+  <link rel="alternate" hreflang="fr" href="{{ hreflang_fr_href }}" />
+  <link rel="alternate" hreflang="x-default" href="{{ hreflang_x_default_href }}" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="khaddict" />
-  <meta name="twitter:image" content="https://media.khaddict.com/icons/khazix-pc-flat.png" />
-  <link rel="icon" href="https://media.khaddict.com/icons/khazix-pc-flat.png" type="image/png" />
-  <link rel="apple-touch-icon" href="https://media.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta name="twitter:image" content="{{ brand_icon_src }}" />
+  <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
+  <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -61,17 +61,17 @@
       align-items: center;
       justify-content: center;
       gap: 3rem;
-      max-width: 1180px;
+      max-width: 1400px;
       width: 100%;
     }
 
-    .hero-copy { flex: 1 1 320px; text-align: left; }
+    .hero-copy { flex: 0 1 500px; text-align: left; }
 
     .hero h1 {
       font-size: clamp(1.5rem, 4vw, 2.1rem);
       font-weight: 700;
       line-height: 1.4;
-      max-width: 420px;
+      max-width: 500px;
       letter-spacing: -.02em;
     }
 
@@ -154,13 +154,12 @@
       font-size: .78rem;
       color: var(--muted);
       line-height: 1.6;
-      max-width: 620px;
-      white-space: nowrap;
+      max-width: 660px;
     }
 
     @media (max-width: 940px) {
       .deploy-panel { flex: none; }
-      .deploy-sub { white-space: normal; max-width: 420px; }
+      .deploy-sub { max-width: 420px; }
     }
 
     .deploy-btn {

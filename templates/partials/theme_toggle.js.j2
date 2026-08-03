@@ -6,7 +6,7 @@
     }
     function setThemeCookie(value) {
       try {
-        document.cookie = 'khaddict-theme=' + encodeURIComponent(value) + '; domain=.khaddict.com; path=/; max-age=31536000; SameSite=Lax; Secure';
+        document.cookie = 'khaddict-theme=' + encodeURIComponent(value) + '; domain={{ cookie_domain }}; path=/; max-age=31536000; SameSite=Lax{{ cookie_secure_attr }}';
       } catch (e) { /* cookies unavailable */ }
     }
     (function () {

@@ -13,19 +13,19 @@
   <meta property="og:url" content="{{ og_url }}" />
   <meta property="og:title" content="{{ i18n['title.post'] }}" />
   <meta property="og:description" content="{{ meta_description }}" />
-  <meta property="og:image" content="https://media.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta property="og:image" content="{{ brand_icon_src }}" />
   <meta property="og:locale" content="{{ og_locale }}" />
   <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
   <link rel="canonical" href="{{ canonical_url }}" />
-  <link rel="alternate" hreflang="en" href="https://blog.khaddict.com/posts/{{ slug }}/" />
-  <link rel="alternate" hreflang="fr" href="https://blog.khaddict.com/fr/posts/{{ slug }}/" />
-  <link rel="alternate" hreflang="x-default" href="https://blog.khaddict.com/posts/{{ slug }}/" />
+  <link rel="alternate" hreflang="en" href="{{ hreflang_en_href }}" />
+  <link rel="alternate" hreflang="fr" href="{{ hreflang_fr_href }}" />
+  <link rel="alternate" hreflang="x-default" href="{{ hreflang_x_default_href }}" />
   <link rel="alternate" type="application/rss+xml" title="khaddict blog" href="{{ rss_href }}" />
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="{{ i18n['title.post'] }}" />
-  <meta name="twitter:image" content="https://media.khaddict.com/icons/khazix-pc-flat.png" />
-  <link rel="icon" href="https://media.khaddict.com/icons/khazix-pc-flat.png" type="image/png" />
-  <link rel="apple-touch-icon" href="https://media.khaddict.com/icons/khazix-pc-flat.png" />
+  <meta name="twitter:image" content="{{ brand_icon_src }}" />
+  <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
+  <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
@@ -101,6 +101,90 @@
       margin-bottom: 1rem;
     }
     .post-body p:last-child { margin-bottom: 0; }
+
+    .post-body a,
+    .post-body a:visited {
+      color: var(--accent);
+    }
+
+    .post-body img,
+    .post-body video {
+      display: block;
+      max-width: 100%;
+      max-height: 420px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      margin: 1rem 0;
+    }
+
+    /* spans, not div/figure/figcaption: this whole block sits inside a
+       single <p>, which only allows phrasing content - a div or figure in
+       there gets auto-closed out of the p by the parser, duplicating the
+       rest of the paragraph. display:flex etc. don't care that the tag is
+       a span either way, so the visual result is identical. */
+    .post-body .render-pair {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: nowrap;
+      margin: 1rem 0;
+    }
+    .post-body .render-pair .render-item {
+      display: block;
+      flex: 0 1 auto;
+      min-width: 0;
+      margin: 0;
+      text-align: center;
+    }
+    .post-body .render-pair img,
+    .post-body .render-pair video {
+      margin: 0;
+      max-width: 100%;
+      height: auto;
+      max-height: 420px;
+    }
+    .post-body .render-pair .render-item:has(video) {
+      flex-basis: 320px;
+      max-width: 320px;
+    }
+    .post-body .render-pair .render-caption {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      text-align: center;
+      margin-top: .5rem;
+    }
+
+    /* inline glossary term: hover/focus bubble instead of linking out */
+    .term {
+      position: relative;
+      border-bottom: 1px dotted var(--muted);
+      cursor: help;
+    }
+    .term-tip {
+      position: absolute;
+      bottom: calc(100% + .5rem);
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      width: max-content;
+      max-width: 280px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 12px 32px var(--shadow);
+      padding: .6rem .75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      line-height: 1.5;
+      color: var(--text);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease, visibility .18s;
+      z-index: 10;
+    }
+    .term:hover .term-tip,
+    .term:focus .term-tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 
     .post-share {
       display: flex;
@@ -324,9 +408,13 @@
 
     (function () {
       window.remark_config = {
+        // host stays the real backend regardless of --domain - there's no
+        // local Remark42 to talk to. url follows canonical_url instead of
+        // being hardcoded too, so a non-prod build gets its own comment
+        // thread instead of the real post's.
         host: 'https://blog.khaddict.com/remark42',
         site_id: 'khaddict-blog',
-        url: 'https://blog.khaddict.com/posts/{{ slug }}/',
+        url: '{{ canonical_url }}',
         theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
         locale: currentLang,
         no_footer: true,

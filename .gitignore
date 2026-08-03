@@ -6,3 +6,4 @@ files/media/**/index.html
 files/shared/404.html
 _preview/
 .venv/
+__pycache__/
