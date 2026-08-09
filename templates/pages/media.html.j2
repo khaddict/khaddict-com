@@ -731,9 +731,9 @@
       const tree = document.getElementById('tree');
       try {
         const dirs = await Promise.all([
-          loadDir('tabs.icons',   '/icons/',   'contain'),
           loadDir('tabs.gallery', '/gallery/', 'cover'),
-          loadDir('tabs.videos',  '/videos/',  'cover')
+          loadDir('tabs.videos',  '/videos/',  'cover'),
+          loadDir('tabs.icons',   '/icons/',   'contain')
         ]);
 
         const tabs   = document.createElement('div');
