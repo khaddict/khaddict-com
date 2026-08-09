@@ -3,7 +3,7 @@ RUN apk add --no-cache vips-tools imagemagick
 COPY media/ /data/
 COPY process-icons.sh /tmp/process-icons.sh
 RUN chmod +x /tmp/process-icons.sh && /tmp/process-icons.sh && rm -f /data/icons/no-outline
-RUN rm -f /data/videos/.gitkeep
+RUN rm -f /data/videos/.gitkeep /data/videos/README.md
 RUN mkdir -p /data/icons/thumbs /data/gallery/thumbs \
  && find /data/icons -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' \) \
       -exec sh -c 'vipsthumbnail "$1" --size 90x90 -o "/data/icons/thumbs/$(basename "$1")"' _ {} \; \

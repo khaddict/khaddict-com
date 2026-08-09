@@ -21,7 +21,8 @@ files/
   blog/posts/<slug>/     # generated per-post pages, gitignored
   blog/feed.xml          # generated RSS feed (+ fr/feed.xml), gitignored
   shared/                # 404 page (generated, gitignored) plus hand-maintained default.conf, security-headers.conf, robots.txt
-  <site>/security.txt, sitemap.xml   # hand-maintained, not generated
+  <site>/security.txt    # hand-maintained, not generated
+  www/sitemap.xml        # generated from posts.yaml, gitignored (always the real khaddict.com, even in a --domain preprod build)
 media-build/             # Docker build context for the media-khaddict icons/gallery/videos image
                          # (excluded from the Helm chart via .helmignore, published separately)
 vps-fallback/            # generated 503 page for the VPS-side fallback, committed (see below)
@@ -62,7 +63,7 @@ More involved than a blog post, since it needs its own template, data, and Kuber
 
 1. Add `templates/pages/<name>.html.j2` and `templates/data/i18n/<name>.yaml` (see `projects.html.j2`/`projects.yaml` as a starting point).
 2. Wire it into `build.py`: load its i18n yaml, add a per-locale metadata dict (description/og/canonical URLs), add a render loop for `en`/`fr`.
-3. Add `files/<name>/security.txt` (hand-maintained, not generated) and, if it needs one, a `sitemap.xml`.
+3. Add `files/<name>/security.txt` (hand-maintained, not generated), and add the new site's URLs to `build_sitemap_entries()` in `build.py` so they land in the shared `sitemap.xml`.
 4. Add the nav link to `templates/partials/header.html.j2`, the one shared partial every page includes, so this is a single edit.
 5. In `voidnode`, add the new site to `argocd/apps/khaddict/values.yaml`'s `sites:` list. Deployment/Service/HTTPRoute/ConfigMap are generated from that list already, no template changes needed there.
 6. `voidnode` also needs: a DNS CNAME, a `revproxy` HAProxy ACL + backend, the new hostname added to the VPS-side nginx configs (`role/vps/files/`) and the fallback TLS cert's SAN list. See `documentation/KHADDICT-VPS.md` in `voidnode`.
