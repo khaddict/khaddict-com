@@ -743,7 +743,7 @@
         dirs.forEach((d, i) => {
           const panel = document.createElement('div');
           panel.className = 'tab-panel' + (i === 0 ? ' active' : '');
-          panel.appendChild(i === 0 ? renderDock(d) : renderGalleryGrid(d));
+          panel.appendChild(d.path === '/icons/' ? renderDock(d) : renderGalleryGrid(d));
           panels.appendChild(panel);
 
           const tab = document.createElement('button');
