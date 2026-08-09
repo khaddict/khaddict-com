@@ -228,6 +228,31 @@ def build_rss_hrefs(domain, scheme):
     }
 
 
+# sitemap.xml always represents the real public site, same reasoning as
+# vps-fallback: it's submitted to search engines, so it must never point at a
+# --domain preprod build even when this script is run with one.
+def build_sitemap_entries(posts):
+    base = "https://khaddict.com"
+    blog = "https://blog.khaddict.com"
+    projects = "https://projects.khaddict.com"
+    media = "https://media.khaddict.com"
+
+    entries = []
+
+    def add(en_url, fr_url):
+        entries.append({"loc": en_url, "en": en_url, "fr": fr_url, "x_default": en_url})
+        entries.append({"loc": fr_url, "en": en_url, "fr": fr_url, "x_default": en_url})
+
+    add(f"{base}/", f"{base}/fr/")
+    add(f"{blog}/", f"{blog}/fr/")
+    for slug in sorted(posts, key=lambda s: posts[s]["date"], reverse=True):
+        add(f"{blog}/posts/{slug}/", f"{blog}/fr/posts/{slug}/")
+    add(f"{projects}/", f"{projects}/fr/")
+    add(f"{media}/", f"{media}/fr/")
+
+    return entries
+
+
 RSS_HREFS = None
 
 
@@ -289,7 +314,7 @@ def render(env, template_name, out_path, **context):
     print(f"wrote {out_path}")
 
 
-PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "404", "posts", "feed"]
+PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "404", "posts", "feed", "sitemap"]
 
 
 def main():
@@ -633,6 +658,14 @@ def main():
                 language="fr-fr" if locale == "fr" else "en-us",
                 items=build_feed_items(posts, locale, args.domain, args.scheme),
             )
+
+    if only in (None, "sitemap"):
+        render(
+            env,
+            "pages/sitemap.xml.j2",
+            out_root / "files/www/sitemap.xml",
+            entries=build_sitemap_entries(posts),
+        )
 
 
 if __name__ == "__main__":
