@@ -40,10 +40,11 @@ for f in /data/icons/*; do
   # touches the canvas edge, dilating without headroom clips the outline.
   magick "$f" -bordercolor none -border "$radius" /tmp/padded.png
   padded_width=$(magick identify -format '%w' /tmp/padded.png)
+  padded_height=$(magick identify -format '%h' /tmp/padded.png)
 
   magick /tmp/padded.png -alpha extract /tmp/mask.png
   magick /tmp/mask.png -morphology Dilate Disk:"$radius" /tmp/mask_dilated.png
-  magick -size "${padded_width}x${padded_width}" xc:white /tmp/mask_dilated.png -alpha off \
+  magick -size "${padded_width}x${padded_height}" xc:white /tmp/mask_dilated.png -alpha off \
     -compose CopyOpacity -composite -define png:color-type=6 /tmp/outline.png
   magick /tmp/outline.png /tmp/padded.png -compose over -composite -define png:color-type=6 /tmp/sticker.png
 
