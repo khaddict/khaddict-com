@@ -29,6 +29,7 @@ ASSETS_DIR = TEMPLATES / "data" / "assets"
 # its own copy inlined as a base64 data URI instead, sized down from
 # media-build/media/icons/khazix-pc-flat.png - unaffected by --domain.
 BRAND_ICON_URL = None
+WALL_SCENE_URL = None
 
 
 def fallback_icon_data_uri():
@@ -340,9 +341,10 @@ def main():
     out_root = args.out_dir.resolve()
     only = args.only
 
-    global SITE_URLS, BRAND_ICON_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, RSS_HREFS
+    global SITE_URLS, BRAND_ICON_URL, WALL_SCENE_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, RSS_HREFS
     SITE_URLS = build_site_urls(args.domain, args.scheme)
     BRAND_ICON_URL = f"{args.scheme}://media.{args.domain}/icons/khazix-pc-flat.png"
+    WALL_SCENE_URL = f"{args.scheme}://media.{args.domain}/gallery/wall-scene.png"
     WWW_META = build_www_meta(args.domain, args.scheme)
     BLOG_META = build_blog_meta(args.domain, args.scheme)
     PROJECTS_META = build_projects_meta(args.domain, args.scheme)
@@ -396,6 +398,7 @@ def main():
                 nav_api_href=SITE_URLS[locale]["api"],
                 api_base_url=f"{args.scheme}://api.{args.domain}",
                 brand_icon_src=BRAND_ICON_URL,
+                wall_scene_src=WALL_SCENE_URL,
                 meta_description=WWW_META[locale]["description"],
                 og_url=WWW_META[locale]["og_url"],
                 og_locale=WWW_META[locale]["og_locale"],
