@@ -623,52 +623,52 @@
   <script>
     const I18N = {
       en: {
-        'nav.home': 'home',
-        'nav.blog': 'blog',
-        'nav.projects': 'projects',
-        'nav.media': 'media',
-        'nav.dashboard': 'dashboard',
-        'nav.api': 'api',
-        'status.label': 'status',
-        'status.checking': 'checking systems…',
-        'status.viewFull': 'view full status ↗',
-        'status.unreachable': 'could not reach status page',
-        'status.allUp': 'All systems operational',
-        'status.partial': 'Partial outage',
-        'status.majorOutage': 'Major outage',
-        'status.updatedAgo': 'updated {n}s ago',
-        'discord.hint': 'copy username',
-        'discord.toast': 'copied',
-        'discord.ariaLabel': 'Copy Discord username',
-        'theme.ariaLabel': 'Toggle theme',
-        'lang.ariaLabel': 'Switch language',
-        'rss.ariaLabel': 'RSS feed',
-        'title.unavailable': 'Unavailable | khaddict',
-        'error.message': 'This page is currently unavailable.',
+        'nav.home': "home",
+        'nav.blog': "blog",
+        'nav.projects': "projects",
+        'nav.media': "media",
+        'nav.dashboard': "dashboard",
+        'nav.api': "api",
+        'status.label': "status",
+        'status.checking': "checking systems\u2026",
+        'status.viewFull': "view full status \u2197",
+        'status.unreachable': "could not reach status page",
+        'status.allUp': "All systems operational",
+        'status.partial': "Partial outage",
+        'status.majorOutage': "Major outage",
+        'status.updatedAgo': "updated {n}s ago",
+        'discord.hint': "copy username",
+        'discord.toast': "copied",
+        'discord.ariaLabel': "Copy Discord username",
+        'theme.ariaLabel': "Toggle theme",
+        'lang.ariaLabel': "Switch language",
+        'rss.ariaLabel': "RSS feed",
+        'title.unavailable': "Unavailable | khaddict",
+        'error.message': "This page is currently unavailable.",
       },
       fr: {
-        'nav.home': 'accueil',
-        'nav.blog': 'blog',
-        'nav.projects': 'projets',
-        'nav.media': 'médias',
-        'nav.dashboard': 'dashboard',
-        'nav.api': 'api',
-        'status.label': 'statut',
-        'status.checking': 'vérification en cours…',
-        'status.viewFull': 'voir le statut complet ↗',
-        'status.unreachable': 'page de statut inaccessible',
-        'status.allUp': 'Tous les systèmes sont opérationnels',
-        'status.partial': 'Panne partielle',
-        'status.majorOutage': 'Panne majeure',
-        'status.updatedAgo': 'actualisé il y a {n}s',
-        'discord.hint': 'copier le pseudo',
-        'discord.toast': 'copié',
-        'discord.ariaLabel': 'Copier le pseudo Discord',
-        'theme.ariaLabel': 'Changer le thème',
-        'lang.ariaLabel': 'Changer de langue',
-        'rss.ariaLabel': 'Flux RSS',
-        'title.unavailable': 'Indisponible | khaddict',
-        'error.message': 'Cette page est actuellement indisponible.',
+        'nav.home': "accueil",
+        'nav.blog': "blog",
+        'nav.projects': "projets",
+        'nav.media': "m\u00e9dias",
+        'nav.dashboard': "dashboard",
+        'nav.api': "api",
+        'status.label': "statut",
+        'status.checking': "v\u00e9rification en cours\u2026",
+        'status.viewFull': "voir le statut complet \u2197",
+        'status.unreachable': "page de statut inaccessible",
+        'status.allUp': "Tous les syst\u00e8mes sont op\u00e9rationnels",
+        'status.partial': "Panne partielle",
+        'status.majorOutage': "Panne majeure",
+        'status.updatedAgo': "actualis\u00e9 il y a {n}s",
+        'discord.hint': "copier le pseudo",
+        'discord.toast': "copi\u00e9",
+        'discord.ariaLabel': "Copier le pseudo Discord",
+        'theme.ariaLabel': "Changer le th\u00e8me",
+        'lang.ariaLabel': "Changer de langue",
+        'rss.ariaLabel': "Flux RSS",
+        'title.unavailable': "Indisponible | khaddict",
+        'error.message': "Cette page est actuellement indisponible.",
       },
     };
 
@@ -763,6 +763,9 @@
         let up = 0;
         let anyRecentDown = false;
 
+        // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
+        const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
@@ -790,7 +793,7 @@
             <div class="dropdown-line">
               <div class="dropdown-line-top">
                 <span class="dot ${dotCls}"></span>
-                <span class="dropdown-name">${m.name}</span>
+                <span class="dropdown-name">${escapeHtml(m.name)}</span>
                 <span class="pct ${pctCls}">${p}</span>
               </div>
               <div class="heartbeat">${bars}</div>

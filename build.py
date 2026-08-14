@@ -8,6 +8,7 @@ those paths, use --out-dir (e.g. --out-dir _preview, already gitignored).
 """
 import argparse
 import base64
+import json
 import pathlib
 from datetime import datetime, timezone
 from email.utils import format_datetime
@@ -70,7 +71,7 @@ def build_www_meta(domain, scheme):
     return {
         "en": {
             "description": "Personal space dedicated to homelab, self-hosted infrastructure and code.",
-            "og_url": f"{scheme}://{domain}",
+            "og_url": f"{scheme}://{domain}/",
             "og_locale": "en_US",
             "og_locale_alternate": "fr_FR",
             "canonical_url": f"{scheme}://{domain}/",
@@ -86,21 +87,6 @@ def build_www_meta(domain, scheme):
 
 
 WWW_META = None
-
-# --danger-dim only exists on the home page (used by .deploy-panel::after);
-# vps-fallback has no equivalent element so it gets no extra token at all.
-WWW_EXTRA_TOKENS = {
-    "extra_tokens_base": "--danger-dim:         rgba(239, 68, 68, .10);",
-    "extra_tokens_dark_media": "--danger-dim:          rgba(239, 68, 68, .16);",
-    "extra_tokens_light_attr": "--danger-dim: rgba(239, 68, 68, .10);",
-    "extra_tokens_dark_attr": "--danger-dim: rgba(239, 68, 68, .16);",
-}
-
-# projects/index.html carries the same --danger-dim token as the home page
-# (copy-pasted from it when projects was hand-authored) even though nothing on
-# the projects page currently references var(--danger-dim). Kept for byte
-# parity with the file as it existed before this refactor.
-PROJECTS_EXTRA_TOKENS = WWW_EXTRA_TOKENS
 
 # --tag-* tokens back the per-tag colors on blog listing cards, post tag
 # chips, and the blog's tag-filter chips. Shared by blog.html.j2 and
@@ -382,6 +368,7 @@ def main():
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
+    env.filters["tojson"] = json.dumps
 
     common = load_i18n("common")
     with open(TEMPLATES / "data" / "posts.yaml", encoding="utf-8") as f:
@@ -416,7 +403,7 @@ def main():
                 canonical_url=WWW_META[locale]["canonical_url"],
                 cookie_domain=cookie_domain,
                 cookie_secure_attr=cookie_secure_attr,
-                **WWW_EXTRA_TOKENS,
+                **NO_EXTRA_TOKENS,
                 **lang_switch_hrefs("home"),
                 **hreflang_hrefs("home"),
             )
@@ -515,7 +502,7 @@ def main():
                 canonical_url=PROJECTS_META[locale]["canonical_url"],
                 cookie_domain=cookie_domain,
                 cookie_secure_attr=cookie_secure_attr,
-                **PROJECTS_EXTRA_TOKENS,
+                **NO_EXTRA_TOKENS,
                 **lang_switch_hrefs("projects"),
                 **hreflang_hrefs("projects"),
             )

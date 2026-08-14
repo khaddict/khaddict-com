@@ -165,9 +165,9 @@
       position: absolute;
       bottom: calc(100% + .5rem);
       left: 50%;
-      transform: translateX(-50%) translateY(4px);
+      transform: translateX(calc(-50% + var(--tip-shift, 0px))) translateY(4px);
       width: max-content;
-      max-width: 280px;
+      max-width: min(280px, calc(100vw - 2rem));
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 10px;
@@ -184,7 +184,7 @@
       z-index: 10;
     }
     .term:hover .term-tip,
-    .term:focus .term-tip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+    .term:focus .term-tip { opacity: 1; visibility: visible; transform: translateX(calc(-50% + var(--tip-shift, 0px))) translateY(0); pointer-events: auto; }
 
     .post-share {
       display: flex;
@@ -348,6 +348,35 @@
     }
 
     applyLanguage();
+
+    // glossary term tooltips are centered on the term by default, which overflows the
+    // viewport (even page scrollWidth, since visibility:hidden still occupies layout
+    // space) when the term lands near a screen edge on narrow layouts, so nudge them
+    // back in via a CSS var instead of hardcoding a direction that only works sometimes
+    (function () {
+      const tips = Array.from(document.querySelectorAll('.term-tip'));
+      function repositionAll() {
+        // document.documentElement.clientWidth, not window.innerWidth: a still-overflowing
+        // tip (mid-fix, or before this runs) inflates innerWidth's layout viewport too,
+        // which would make the overflow it's supposed to detect invisible to itself
+        const viewportWidth = document.documentElement.clientWidth;
+        tips.forEach((tip) => {
+          tip.style.setProperty('--tip-shift', '0px');
+          const rect = tip.getBoundingClientRect();
+          const margin = 8;
+          let shift = 0;
+          if (rect.left < margin) shift = margin - rect.left;
+          else if (rect.right > viewportWidth - margin) shift = (viewportWidth - margin) - rect.right;
+          if (shift) tip.style.setProperty('--tip-shift', `${shift}px`);
+        });
+      }
+      repositionAll();
+      window.addEventListener('resize', repositionAll);
+      // this script runs synchronously during initial parse, before the JetBrains Mono
+      // webfont has necessarily swapped in, so the fallback-font layout it measured can
+      // be stale once the real font reflows the text into (or out of) an overflow
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(repositionAll);
+    })();
 
     const langBtn = document.getElementById('lang-btn');
     const langDropdown = document.getElementById('lang-dropdown');

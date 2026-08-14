@@ -31,6 +31,9 @@
         let up = 0;
         let anyRecentDown = false;
 
+        // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
+        const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
@@ -58,7 +61,7 @@
             <div class="dropdown-line">
               <div class="dropdown-line-top">
                 <span class="dot ${dotCls}"></span>
-                <span class="dropdown-name">${m.name}</span>
+                <span class="dropdown-name">${escapeHtml(m.name)}</span>
                 <span class="pct ${pctCls}">${p}</span>
               </div>
               <div class="heartbeat">${bars}</div>

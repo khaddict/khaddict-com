@@ -71,6 +71,8 @@
       gap: 1.6rem;
       border-bottom: 1px solid var(--border);
       margin-bottom: 1.6rem;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .tab {
@@ -87,6 +89,7 @@
       display: flex;
       align-items: center;
       gap: .45rem;
+      flex-shrink: 0;
       transition: color .15s ease, border-color .15s ease;
     }
     .tab:hover { color: var(--text); }
@@ -515,6 +518,11 @@
       return /\.(mp4|webm|mov)$/i.test(name);
     }
 
+    // filenames come from nginx's directory listing, not this codebase, escape before templating into innerHTML
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
     async function loadDir(label, path, fit) {
       const res   = await fetch(path);
       const items = await res.json();
@@ -663,9 +671,9 @@
         item.target = '_blank';
         item.rel = 'noopener';
         item.innerHTML =
-          '<img src="' + path + 'thumbs/' + f.name + '" loading="lazy" alt="' + altFromName(f.name) + ' icon" style="object-fit:' + fit + '">' +
+          '<img src="' + path + 'thumbs/' + encodeURIComponent(f.name) + '" loading="lazy" alt="' + escapeHtml(altFromName(f.name)) + ' icon" style="object-fit:' + fit + '">' +
           '<span class="dock-size">' + fmt(f.size) + '</span>' +
-          '<span class="dock-tooltip">' + f.name + '</span>';
+          '<span class="dock-tooltip">' + escapeHtml(f.name) + '</span>';
         item.addEventListener('click', (e) => {
           if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
           e.preventDefault();
@@ -710,7 +718,7 @@
           )
           : (
             '<div class="gallery-thumb">' +
-              '<img src="' + path + 'thumbs/' + f.name + '" loading="lazy" alt="' + altFromName(f.name) + '">' +
+              '<img src="' + path + 'thumbs/' + encodeURIComponent(f.name) + '" loading="lazy" alt="' + escapeHtml(altFromName(f.name)) + '">' +
               '<span class="gallery-size">' + fmt(f.size) + '</span>' +
             '</div>'
           );

@@ -51,9 +51,9 @@
     .hero {
       flex: 1;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      padding: 3rem 1.5rem;
+      padding: 1.25rem 1.5rem;
       animation: fade-up .45s ease both;
     }
 
@@ -113,14 +113,14 @@
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: .75rem;
-      padding: 1.4rem 1.75rem;
+      gap: .6rem;
+      padding: 1.1rem 1.5rem;
       border-radius: 16px;
       background: var(--surface);
       border: 1px solid var(--border);
       box-shadow: 0 20px 50px var(--shadow);
-      flex: 1 1 620px;
-      max-width: 720px;
+      flex: 1 1 520px;
+      max-width: 650px;
       width: 100%;
       transition: background-color .2s ease, border-color .2s ease;
     }
@@ -148,11 +148,14 @@
       font-weight: 600;
       color: var(--text);
       background: var(--up-bg);
+      transition: background .3s ease;
       padding: .28rem .6rem .28rem .5rem;
       border-radius: 999px;
       flex-shrink: 0;
       white-space: nowrap;
     }
+
+    .wall-live-pill.down { background: var(--down-bg); }
 
     .wall-card h2 {
       font-size: 1.05rem;
@@ -161,25 +164,86 @@
       margin: -.4rem 0 0;
     }
 
-    .wall-sub {
-      font-size: .8rem;
-      color: var(--muted);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-    .screen-shell {
-      background: #050507;
-      border-radius: 8px;
-      padding: .85rem;
-      box-shadow: inset 0 2px 12px rgba(0, 0, 0, .55);
-    }
-
-    .screen-shell canvas {
-      display: block;
+    .wall-scene {
+      position: relative;
       width: 100%;
-      height: auto;
+      aspect-ratio: 1672 / 941;
+      border-radius: 8px;
+      overflow: hidden;
+      background-image: url('/wall-scene.png');
+      background-size: cover;
+      background-position: center;
+    }
+
+    .wall-scene canvas {
+      position: absolute;
+      left: 25.60%;
+      top: 62.38%;
+      width: 12.74%;
+      height: 4.78%;
+      display: block;
       image-rendering: pixelated;
+    }
+
+    .wall-port-led {
+      position: absolute;
+      width: 1.6%;
+      height: .75%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(70, 255, 140, 1) 0%, rgba(70, 255, 140, .55) 45%, rgba(70, 255, 140, 0) 80%);
+      transform: translate(-50%, -50%);
+      mix-blend-mode: screen;
+      animation: port-led-flicker 2.4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .wall-port-led.amber {
+      background: radial-gradient(ellipse at center, rgba(255, 190, 60, 1) 0%, rgba(255, 190, 60, .55) 45%, rgba(255, 190, 60, 0) 80%);
+    }
+
+    @keyframes port-led-flicker {
+      0%, 100% { opacity: .8; }
+      4% { opacity: .25; }
+      7% { opacity: .9; }
+      10% { opacity: .3; }
+      14% { opacity: 1; }
+      45% { opacity: .8; }
+      60% { opacity: .3; }
+      64% { opacity: 1; }
+      90% { opacity: .8; }
+    }
+
+    .wall-crystal-aura {
+      position: absolute;
+      left: 93.3%;
+      top: 8.5%;
+      width: 7%;
+      height: 14%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(140, 110, 255, .55) 0%, rgba(110, 80, 255, .25) 40%, rgba(110, 80, 255, 0) 70%);
+      animation: crystal-aura-pulse 4s ease-in-out infinite;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .wall-keyboard-glow {
+      position: absolute;
+      left: 48.6%;
+      top: 93.62%;
+      width: 34%;
+      height: 1.2%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(160, 60, 255, .75) 0%, rgba(140, 50, 255, .35) 40%, rgba(140, 50, 255, 0) 65%);
+      animation: crystal-aura-pulse 3.6s ease-in-out infinite;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    @keyframes crystal-aura-pulse {
+      0%, 100% { opacity: .55; transform: translate(-50%, -50%) scale(.9); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
     }
 
     .wall-toolbar {
@@ -285,7 +349,7 @@
       transition: border-color .15s ease, background .15s ease;
     }
 
-    .wall-drop-zone:hover, .wall-drop-zone:focus-visible {
+    .wall-drop-zone:hover, .wall-drop-zone:focus-visible, .wall-drop-zone.dragover {
       border-color: var(--accent);
       background: rgba(139, 92, 246, .05);
       outline: none;
@@ -337,6 +401,13 @@
       justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
+      margin-top: .5rem;
+    }
+
+    .wall-send-group {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
     }
 
     .wall-learn-more {
@@ -366,19 +437,15 @@
     .wall-send:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
     .wall-toast {
-      position: absolute;
-      left: 1.75rem;
-      right: 1.75rem;
-      bottom: .5rem;
+      display: none;
       font-size: .74rem;
       color: var(--up);
       opacity: 0;
       transform: translateY(4px);
       transition: opacity .18s ease, transform .18s ease;
-      pointer-events: none;
     }
 
-    .wall-toast.show { opacity: 1; transform: translateY(0); }
+    .wall-toast.show { display: inline-block; opacity: 1; transform: translateY(0); }
     .wall-toast.error { color: var(--down); }
 
     @media (max-width: 940px) {
@@ -406,17 +473,22 @@
       <div class="wall-card">
         <div class="wall-head">
           <span class="wall-eyebrow" data-i18n="wall.eyebrow">{{ i18n['wall.eyebrow'] }}</span>
-          <span class="wall-live-pill"><span class="dot up"></span><span data-i18n="wall.live">{{ i18n['wall.live'] }}</span></span>
+          <span class="wall-live-pill" id="wall-live-pill"><span class="dot up" id="wall-live-dot"></span><span data-i18n="wall.live" id="wall-live-text">{{ i18n['wall.live'] }}</span></span>
         </div>
         <h2 data-i18n="wall.title">{{ i18n['wall.title'] }}</h2>
-        <p class="wall-sub" data-i18n="wall.sub">{{ i18n['wall.sub'] }}</p>
 
-        <div class="screen-shell">
+        <div class="wall-scene">
           <canvas id="wall-screen" width="288" height="64"></canvas>
+          <span class="wall-port-led" style="left:17.05%;top:45.48%;animation-duration:2.2s;animation-delay:0s"></span>
+          <span class="wall-port-led" style="left:18.24%;top:45.16%;animation-duration:2.6s;animation-delay:.9s"></span>
+          <span class="wall-port-led amber" style="left:19.44%;top:44.85%;animation-duration:1.9s;animation-delay:.4s"></span>
+          <span class="wall-port-led" style="left:20.87%;top:44.53%;animation-duration:2.4s;animation-delay:1.5s"></span>
+          <span class="wall-crystal-aura"></span>
+          <span class="wall-keyboard-glow"></span>
         </div>
 
         <div class="wall-toolbar">
-          <div class="wall-mode-toggle" role="tablist">
+          <div class="wall-mode-toggle">
             <button type="button" class="active" data-mode="text" data-i18n="wall.modeText">{{ i18n['wall.modeText'] }}</button>
             <button type="button" data-mode="image" data-i18n="wall.modeImage">{{ i18n['wall.modeImage'] }}</button>
           </div>
@@ -425,15 +497,15 @@
             <button type="button" class="wall-color-pill" id="wall-color-trigger" aria-haspopup="true" aria-expanded="false">
               <span data-i18n="wall.color.pick">{{ i18n['wall.color.pick'] }}</span>
             </button>
-            <div class="wall-color-popover" id="wall-color-popover" role="menu">
-              <button type="button" class="wall-color-swatch active" data-color="#FFFFFF" style="background:#FFFFFF" data-i18n-aria="wall.color.white"></button>
-              <button type="button" class="wall-color-swatch" data-color="#FF0000" style="background:#FF0000" data-i18n-aria="wall.color.red"></button>
-              <button type="button" class="wall-color-swatch" data-color="#FF8800" style="background:#FF8800" data-i18n-aria="wall.color.orange"></button>
-              <button type="button" class="wall-color-swatch" data-color="#FFFF00" style="background:#FFFF00" data-i18n-aria="wall.color.yellow"></button>
-              <button type="button" class="wall-color-swatch" data-color="#00FF00" style="background:#00FF00" data-i18n-aria="wall.color.green"></button>
-              <button type="button" class="wall-color-swatch" data-color="#00FFFF" style="background:#00FFFF" data-i18n-aria="wall.color.cyan"></button>
-              <button type="button" class="wall-color-swatch" data-color="#0066FF" style="background:#0066FF" data-i18n-aria="wall.color.blue"></button>
-              <button type="button" class="wall-color-swatch" data-color="#FF00FF" style="background:#FF00FF" data-i18n-aria="wall.color.magenta"></button>
+            <div class="wall-color-popover" id="wall-color-popover">
+              <button type="button" class="wall-color-swatch active" data-color="#FFFFFF" style="background:#FFFFFF" aria-label="{{ i18n['wall.color.white'] }}" data-i18n-aria="wall.color.white"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FF0000" style="background:#FF0000" aria-label="{{ i18n['wall.color.red'] }}" data-i18n-aria="wall.color.red"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FF8800" style="background:#FF8800" aria-label="{{ i18n['wall.color.orange'] }}" data-i18n-aria="wall.color.orange"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FFFF00" style="background:#FFFF00" aria-label="{{ i18n['wall.color.yellow'] }}" data-i18n-aria="wall.color.yellow"></button>
+              <button type="button" class="wall-color-swatch" data-color="#00FF00" style="background:#00FF00" aria-label="{{ i18n['wall.color.green'] }}" data-i18n-aria="wall.color.green"></button>
+              <button type="button" class="wall-color-swatch" data-color="#00FFFF" style="background:#00FFFF" aria-label="{{ i18n['wall.color.cyan'] }}" data-i18n-aria="wall.color.cyan"></button>
+              <button type="button" class="wall-color-swatch" data-color="#0066FF" style="background:#0066FF" aria-label="{{ i18n['wall.color.blue'] }}" data-i18n-aria="wall.color.blue"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FF00FF" style="background:#FF00FF" aria-label="{{ i18n['wall.color.magenta'] }}" data-i18n-aria="wall.color.magenta"></button>
             </div>
           </div>
         </div>
@@ -452,10 +524,11 @@
 
         <div class="wall-actions">
           <a class="wall-learn-more" href="{{ nav_blog_href }}{{ 'posts/busy-bar-message-wall/' if lang == 'fr' else '/posts/busy-bar-message-wall/' }}" data-i18n="wall.learnMore">{{ i18n['wall.learnMore'] }}</a>
-          <button class="wall-send" id="wall-send" type="button" data-i18n="wall.send">{{ i18n['wall.send'] }}</button>
+          <div class="wall-send-group">
+            <div class="wall-toast" id="wall-toast" data-i18n="wall.sent">{{ i18n['wall.sent'] }}</div>
+            <button class="wall-send" id="wall-send" type="button" data-i18n="wall.send">{{ i18n['wall.send'] }}</button>
+          </div>
         </div>
-
-        <div class="wall-toast" id="wall-toast" data-i18n="wall.sent">{{ i18n['wall.sent'] }}</div>
       </div>
     </div>
   </main>
@@ -537,6 +610,7 @@
 
     (function () {
       const COLS = 72, ROWS = 16;
+      const MARGIN = 3; // breathing room from both edges of the screen when the text is static
       const canvas = document.getElementById('wall-screen');
       const ctx = canvas.getContext('2d');
       const textarea = document.getElementById('wall-message');
@@ -546,7 +620,6 @@
 
       // hand-transcribed bitmap font, matches the real BUSY app pixel grid
       const FONT_H = 9;
-      const TEXT_Y = 3; // matches the real draw payload's y:3 anchor
       const Z = (w) => '0'.repeat(w);
       const FONT = {
         ' ': { w: 3, rows: [Z(3), Z(3), Z(3), Z(3), Z(3), Z(3), Z(3), Z(3), Z(3)] },
@@ -577,7 +650,7 @@
         'y': { w: 4, rows: ['0000', '0000', '1001', '1001', '1001', '1001', '0111', '0001', '0110'] },
         'z': { w: 4, rows: ['0000', '0000', '1111', '0010', '0100', '1000', '1111', '0000', '0000'] },
         '0': { w: 5, rows: ['01110', '10001', '10011', '10101', '11001', '10001', '01110', Z(5), Z(5)] },
-        '1': { w: 5, rows: ['00100', '01100', '00100', '00100', '00100', '00100', '01110', Z(5), Z(5)] },
+        '1': { w: 3, rows: ['010', '110', '010', '010', '010', '010', '111', Z(3), Z(3)] },
         '2': { w: 5, rows: ['01110', '10001', '00001', '00010', '00100', '01000', '11111', Z(5), Z(5)] },
         '3': { w: 5, rows: ['11111', '00010', '00100', '00010', '00001', '10001', '01110', Z(5), Z(5)] },
         '4': { w: 5, rows: ['00010', '00110', '01010', '10010', '11111', '00010', '00010', Z(5), Z(5)] },
@@ -603,27 +676,40 @@
         const textW = Math.max(glyphs.reduce((sum, g) => sum + g.w + 1, 0) - 1, 1);
         // gap before the text loops when scrolling, the real bar uses 2 spaces here
         const LOOP_GAP = (FONT[' '].w + 1) * 1;
-        const stripW = textW > COLS ? textW + LOOP_GAP : COLS;
+        const fits = textW <= COLS - MARGIN * 2;
+        const stripW = fits ? COLS : textW + LOOP_GAP;
         const buf = new Uint8Array(stripW * FONT_H);
-        let cx = 0;
+        let cx = fits ? MARGIN : 0;
+        let minRow = FONT_H, maxRow = -1;
         glyphs.forEach((g) => {
           for (let y = 0; y < FONT_H; y++) {
             const row = g.rows[y];
             for (let x = 0; x < g.w; x++) {
-              if (row[x] === '1') buf[y * stripW + cx + x] = 1;
+              if (row[x] === '1') {
+                buf[y * stripW + cx + x] = 1;
+                if (y < minRow) minRow = y;
+                if (y > maxRow) maxRow = y;
+              }
             }
           }
           cx += g.w + 1;
         });
-        return { buf, stripW, textW };
+        // center on the actual ink used by this text, not the full glyph box: digits
+        // (rows 0-6), x-height letters (2-6) and descenders (2-8) each need a different
+        // vertical offset to look centered, a single fixed TEXT_Y can't fit all of them
+        if (maxRow < 0) { minRow = 2; maxRow = 6; }
+        const inkHeight = maxRow - minRow + 1;
+        const topMargin = Math.ceil((ROWS - inkHeight) / 2);
+        const textY = topMargin - minRow;
+        return { buf, stripW, textW, textY };
       }
 
       function sampleTextWindow(strip, offsetX) {
         const out = new Float32Array(COLS * ROWS);
         const ox = Math.floor(offsetX);
         for (let y = 0; y < FONT_H; y++) {
-          const screenY = y + TEXT_Y;
-          if (screenY >= ROWS) break;
+          const screenY = y + strip.textY;
+          if (screenY < 0 || screenY >= ROWS) continue;
           for (let x = 0; x < COLS; x++) {
             const srcX = (ox + x) % strip.stripW;
             out[screenY * COLS + x] = strip.buf[y * strip.stripW + srcX];
@@ -658,7 +744,7 @@
 
       function setText(text) {
         const strip = textToStrip(text || ' ');
-        stripData = strip; stripW = strip.stripW; needsScroll = strip.textW > COLS; offset = 0;
+        stripData = strip; stripW = strip.stripW; needsScroll = strip.textW > COLS - MARGIN * 2; offset = 0;
         if (!needsScroll) drawBuffer(sampleTextWindow(strip, 0));
       }
 
@@ -762,21 +848,78 @@
         }
       });
 
-      dropZone.addEventListener('click', () => fileInput.click());
-      dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-      fileInput.addEventListener('change', () => {
-        const file = fileInput.files[0];
-        if (!file) return;
+      let imgErrorTimer = null;
+
+      function loadImageFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
         imageFile = file;
+        loadedImage = null;
         const img = new Image();
         img.onload = () => {
           loadedImage = img;
           drawImageBuffer(imageToBuffer(img));
         };
+        img.onerror = () => {
+          imageFile = null;
+          loadedImage = null;
+          toast.classList.add('error');
+          toast.textContent = t('wall.error');
+          toast.classList.add('show');
+          clearTimeout(imgErrorTimer);
+          imgErrorTimer = setTimeout(() => toast.classList.remove('show', 'error'), 3000);
+        };
         img.src = URL.createObjectURL(file);
+      }
+
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+      fileInput.addEventListener('change', () => loadImageFile(fileInput.files[0]));
+
+      ['dragenter', 'dragover'].forEach((evt) => {
+        dropZone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          dropZone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'dragend'].forEach((evt) => {
+        dropZone.addEventListener(evt, () => dropZone.classList.remove('dragover'));
+      });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        loadImageFile(e.dataTransfer.files[0]);
       });
 
       const API_URL = '{{ api_base_url }}';
+
+      const livePill = document.getElementById('wall-live-pill');
+      const liveDot = document.getElementById('wall-live-dot');
+      const liveText = document.getElementById('wall-live-text');
+
+      let barOnline = true;
+
+      function updateSendAvailability() {
+        sendBtn.disabled = cooling || !barOnline;
+      }
+
+      function setBarOnline(online) {
+        barOnline = online;
+        livePill.classList.toggle('down', !online);
+        liveDot.classList.toggle('up', online);
+        liveDot.classList.toggle('down', !online);
+        liveText.textContent = t(online ? 'wall.live' : 'wall.offline');
+        updateSendAvailability();
+      }
+
+      async function refreshBarStatus() {
+        try {
+          const res = await fetch(`${API_URL}/busybar/status`);
+          const data = await res.json();
+          setBarOnline(!!data.online);
+        } catch {
+          setBarOnline(false);
+        }
+      }
 
       function reportResult(res) {
         if (res.ok) {
@@ -809,7 +952,7 @@
           if (secs <= 0) {
             clearInterval(iv);
             cooling = false;
-            sendBtn.disabled = false;
+            updateSendAvailability();
             sendBtn.textContent = sendLabel;
             toast.classList.remove('show');
             try { localStorage.removeItem(COOLDOWN_KEY); } catch { /* storage unavailable */ }
@@ -829,7 +972,7 @@
         if (remaining > 0) startCooldown(remaining);
       })();
       sendBtn.addEventListener('click', async () => {
-        if (cooling) return;
+        if (cooling || !barOnline) return;
         if (mode === 'text') {
           const message = textarea.value.trim();
           if (!message) return;
@@ -853,7 +996,7 @@
           persistCooldown(waitSecs);
           startCooldown(waitSecs);
         } else {
-          if (!imageFile) return;
+          if (!loadedImage) return;
           cooling = true;
           sendBtn.disabled = true;
           toast.classList.remove('error');
@@ -877,6 +1020,23 @@
       updateCounter();
       setText(textarea.value);
       tick();
+      let statusInterval = null;
+
+      function startStatusPolling() {
+        refreshBarStatus();
+        if (!statusInterval) statusInterval = setInterval(refreshBarStatus, 30000);
+      }
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          clearInterval(statusInterval);
+          statusInterval = null;
+        } else {
+          startStatusPolling();
+        }
+      });
+
+      startStatusPolling();
     })();
   </script>
 </body>

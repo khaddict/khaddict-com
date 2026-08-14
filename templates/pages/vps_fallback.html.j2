@@ -1,3 +1,4 @@
+{% from "partials/js_str.j2" import js_str %}
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
@@ -95,7 +96,7 @@
 {% for locale in ['en', 'fr'] %}
       {{ locale }}: {
 {% for key, value in i18n_all[locale].items() %}
-        '{{ key }}': '{{ value }}',
+        '{{ key }}': {{ js_str(value) }},
 {% endfor %}
       },
 {% endfor %}

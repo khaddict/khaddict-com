@@ -46,4 +46,3 @@ jobs:
           tags: |
             ghcr.io/khaddict/media-khaddict:${{ steps.sha.outputs.short }}
             ghcr.io/khaddict/media-khaddict:${{ steps.version.outputs.value }}
-            ghcr.io/khaddict/media-khaddict:latest
