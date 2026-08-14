@@ -4,6 +4,7 @@ en:
   nav.projects: projects
   nav.media: media
   nav.dashboard: dashboard
+  nav.api: api
   status.label: status
   status.checking: "checking systems…"
   status.viewFull: "view full status ↗"
@@ -24,6 +25,7 @@ fr:
   nav.projects: projets
   nav.media: médias
   nav.dashboard: dashboard
+  nav.api: api
   status.label: statut
   status.checking: "vérification en cours…"
   status.viewFull: "voir le statut complet ↗"

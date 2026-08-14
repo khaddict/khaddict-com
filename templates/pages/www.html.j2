@@ -1,3 +1,4 @@
+{% from "partials/js_str.j2" import js_str %}
 <!DOCTYPE html>
 <html lang="{{ lang }}">
 <head>
@@ -102,14 +103,18 @@
     .repo-link:hover { color: var(--accent); }
     .repo-link svg { width: 14px; height: 14px; }
 
-    /* deploy gag, relocated from the now-retired blog.khaddict.com */
-    .deploy-panel {
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* busy bar wall */
+    .wall-card {
       position: relative;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 1.1rem;
-      padding: 1.75rem 2rem;
+      gap: .75rem;
+      padding: 1.4rem 1.75rem;
       border-radius: 16px;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -117,154 +122,269 @@
       flex: 1 1 620px;
       max-width: 720px;
       width: 100%;
-      overflow: hidden;
       transition: background-color .2s ease, border-color .2s ease;
     }
 
-    .deploy-panel::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--down), transparent);
+    .wall-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
-    .deploy-panel::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--danger-dim), transparent 70%);
-      pointer-events: none;
-    }
-
-    .deploy-label {
-      position: relative;
-      font-family: 'JetBrains Mono', monospace;
+    .wall-eyebrow {
       font-size: .68rem;
       font-weight: 600;
-      color: var(--down);
-      letter-spacing: .14em;
+      letter-spacing: .1em;
       text-transform: uppercase;
-      opacity: .85;
+      color: var(--accent);
     }
 
-    .deploy-title { position: relative; font-size: 1.02rem; font-weight: 700; line-height: 1.5; }
-    .deploy-title strong { color: var(--down); font-weight: 800; }
-
-    .deploy-sub {
-      position: relative;
-      font-size: .78rem;
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 660px;
-    }
-
-    @media (max-width: 940px) {
-      .deploy-panel { flex: none; }
-      .deploy-sub { max-width: 420px; }
-    }
-
-    .deploy-btn {
-      position: relative;
+    .wall-live-pill {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: .5rem;
-      padding: .6rem 1.4rem;
-      border-radius: 10px;
-      border: 1px solid rgba(239, 68, 68, .35);
-      background: rgba(239, 68, 68, .08);
-      color: var(--down);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .82rem;
+      gap: .4rem;
+      font-size: .7rem;
       font-weight: 600;
-      letter-spacing: .03em;
-      cursor: pointer;
-      transition: background .2s, border-color .2s, box-shadow .2s, transform .15s cubic-bezier(.34, 1.56, .64, 1);
+      color: var(--text);
+      background: var(--up-bg);
+      padding: .28rem .6rem .28rem .5rem;
+      border-radius: 999px;
+      flex-shrink: 0;
+      white-space: nowrap;
     }
 
-    .deploy-btn:hover:not(:disabled) {
-      background: rgba(239, 68, 68, .16);
-      border-color: rgba(239, 68, 68, .65);
-      box-shadow: 0 0 24px rgba(239, 68, 68, .2);
-      transform: translateY(-3px);
+    .wall-card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      margin: -.4rem 0 0;
     }
 
-    .deploy-btn.deploying {
-      cursor: not-allowed;
-      transform: none;
-      animation: deploy-progress 16.85s linear forwards;
+    .wall-sub {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0;
     }
 
-    @keyframes deploy-progress {
-      0%   { background: rgba(239, 68, 68, .10); border-color: rgba(239, 68, 68, .4);  color: #ef4444; }
-      100% { background: rgba(34, 197, 94, .10); border-color: rgba(34, 197, 94, .45); color: #22c55e; }
+    .screen-shell {
+      background: #050507;
+      border-radius: 8px;
+      padding: .85rem;
+      box-shadow: inset 0 2px 12px rgba(0, 0, 0, .55);
     }
 
-    .deploy-btn:disabled { opacity: .75; }
-
-    .deploy-spinner {
-      width: 13px; height: 13px;
-      border: 2px solid var(--border);
-      border-top-color: currentColor;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
+    .screen-shell canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      image-rendering: pixelated;
     }
 
-    .confetti-container {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 999;
+    .wall-toolbar {
+      display: flex;
+      align-items: center;
+      align-self: flex-start;
+      gap: .6rem;
     }
 
-    .confetti-piece {
-      position: fixed;
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
-      animation: confetti-burst .9s ease-out forwards;
+    .wall-mode-toggle {
+      display: inline-flex;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
     }
 
-    @keyframes confetti-burst {
-      to {
-        transform: translate(var(--dx), calc(var(--dy) + 240px)) rotate(var(--rot));
-        opacity: 0;
-      }
-    }
-
-    #deploy-log {
-      position: relative;
-      display: none;
-      width: calc(100% + 4rem);
-      margin: .5rem -2rem -1.75rem;
-      padding: .85rem 1.5rem 1.1rem;
-      background: #0a0a0f;
-      border-top: 1px solid var(--border);
+    .wall-mode-toggle button {
       font-family: 'JetBrains Mono', monospace;
       font-size: .72rem;
-      line-height: 1.8;
-      text-align: left;
-      white-space: pre-wrap;
-      overflow-y: auto;
-      overflow-x: hidden;
-      user-select: none;
+      font-weight: 600;
+      color: var(--muted);
+      background: none;
+      border: none;
+      border-radius: 999px;
+      padding: .35rem .8rem;
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease;
     }
 
-    #deploy-log.open { display: flex; flex-direction: column; height: min(300px, 40dvh); }
+    .wall-mode-toggle button.active {
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
 
-    #deploy-log .la { color: var(--accent); }
-    #deploy-log .lg { color: #4ade80; }
-    #deploy-log .lm { color: #8a8a96; }
+    .wall-color-picker {
+      position: relative;
+    }
 
-    #deploy-log::-webkit-scrollbar { width: 3px; }
-    #deploy-log::-webkit-scrollbar-track { background: transparent; }
-    #deploy-log::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .12); border-radius: 2px; }
-    #deploy-log::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .22); }
+    .wall-color-pill {
+      display: inline-flex;
+      align-items: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--text);
+      background: var(--border);
+      border: none;
+      border-radius: 999px;
+      padding: .28rem .7rem;
+      cursor: pointer;
+      transition: background .15s ease;
+    }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .wall-color-popover {
+      display: none;
+      position: absolute;
+      top: calc(100% + .5rem);
+      left: 0;
+      align-items: center;
+      gap: .4rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: .35rem;
+      box-shadow: 0 8px 20px var(--shadow);
+      z-index: 5;
+    }
 
-    @keyframes fade-up {
-      from { opacity: 0; transform: translateY(10px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .wall-color-popover.open { display: flex; }
+
+    .wall-color-swatch {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15);
+      transition: transform .12s ease;
+    }
+
+    .wall-color-swatch:hover { transform: scale(1.15); }
+
+    .wall-color-swatch.active {
+      outline: 2px solid var(--text);
+      outline-offset: 2px;
+    }
+
+    #wall-image-field { height: 3rem; }
+
+    .wall-drop-zone {
+      height: 100%;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: .4rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease;
+    }
+
+    .wall-drop-zone:hover, .wall-drop-zone:focus-visible {
+      border-color: var(--accent);
+      background: rgba(139, 92, 246, .05);
+      outline: none;
+    }
+
+    .wall-drop-zone p {
+      margin: 0;
+      font-size: .76rem;
+      color: var(--muted);
+    }
+
+    .wall-drop-zone strong { color: var(--text); }
+
+    .wall-text-row { position: relative; height: 3rem; }
+
+    .wall-text-row input {
+      width: 100%;
+      height: 100%;
+      box-sizing: border-box;
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-ligatures: none;
+      -webkit-font-feature-settings: "liga" 0, "calt" 0;
+      font-feature-settings: "liga" 0, "calt" 0;
+      font-size: .85rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0 3.4rem 0 .7rem;
+    }
+
+    .wall-text-row input:focus { outline: none; border-color: var(--accent); }
+
+    .wall-counter {
+      position: absolute;
+      right: .7rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: .64rem;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wall-counter.warn { color: var(--accent-2); }
+
+    .wall-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .wall-learn-more {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .15s ease;
+    }
+
+    .wall-learn-more:hover { color: var(--accent); }
+
+    .wall-send {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border: none;
+      border-radius: 999px;
+      padding: .55rem 1.3rem;
+      cursor: pointer;
+      transition: transform .12s ease, opacity .15s ease;
+    }
+
+    .wall-send:hover:not(:disabled) { transform: translateY(-1px); }
+    .wall-send:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .wall-toast {
+      position: absolute;
+      left: 1.75rem;
+      right: 1.75rem;
+      bottom: .5rem;
+      font-size: .74rem;
+      color: var(--up);
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity .18s ease, transform .18s ease;
+      pointer-events: none;
+    }
+
+    .wall-toast.show { opacity: 1; transform: translateY(0); }
+    .wall-toast.error { color: var(--down); }
+
+    @media (max-width: 940px) {
+      .wall-card { flex: none; }
+      .wall-head { flex-direction: column; gap: .5rem; }
+      .wall-actions { justify-content: center; }
     }
 {% include "partials/responsive.css.j2" %}
   </style>
@@ -283,12 +403,59 @@
         </a>
       </div>
 
-      <div class="deploy-panel">
-        <span class="deploy-label" data-i18n="deploy.warning">{{ i18n['deploy.warning'] }}</span>
-        <p class="deploy-title" data-i18n="deploy.title">{{ i18n['deploy.title'] | safe }}</p>
-        <p class="deploy-sub" data-i18n="deploy.sub">{{ i18n['deploy.sub'] }}</p>
-        <button class="deploy-btn" id="deploy-btn" type="button" data-i18n="deploy.button">{{ i18n['deploy.button'] }}</button>
-        <div id="deploy-log"></div>
+      <div class="wall-card">
+        <div class="wall-head">
+          <span class="wall-eyebrow" data-i18n="wall.eyebrow">{{ i18n['wall.eyebrow'] }}</span>
+          <span class="wall-live-pill"><span class="dot up"></span><span data-i18n="wall.live">{{ i18n['wall.live'] }}</span></span>
+        </div>
+        <h2 data-i18n="wall.title">{{ i18n['wall.title'] }}</h2>
+        <p class="wall-sub" data-i18n="wall.sub">{{ i18n['wall.sub'] }}</p>
+
+        <div class="screen-shell">
+          <canvas id="wall-screen" width="288" height="64"></canvas>
+        </div>
+
+        <div class="wall-toolbar">
+          <div class="wall-mode-toggle" role="tablist">
+            <button type="button" class="active" data-mode="text" data-i18n="wall.modeText">{{ i18n['wall.modeText'] }}</button>
+            <button type="button" data-mode="image" data-i18n="wall.modeImage">{{ i18n['wall.modeImage'] }}</button>
+          </div>
+
+          <div class="wall-color-picker" id="wall-color-picker">
+            <button type="button" class="wall-color-pill" id="wall-color-trigger" aria-haspopup="true" aria-expanded="false">
+              <span data-i18n="wall.color.pick">{{ i18n['wall.color.pick'] }}</span>
+            </button>
+            <div class="wall-color-popover" id="wall-color-popover" role="menu">
+              <button type="button" class="wall-color-swatch active" data-color="#FFFFFF" style="background:#FFFFFF" data-i18n-aria="wall.color.white"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FF0000" style="background:#FF0000" data-i18n-aria="wall.color.red"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FF8800" style="background:#FF8800" data-i18n-aria="wall.color.orange"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FFFF00" style="background:#FFFF00" data-i18n-aria="wall.color.yellow"></button>
+              <button type="button" class="wall-color-swatch" data-color="#00FF00" style="background:#00FF00" data-i18n-aria="wall.color.green"></button>
+              <button type="button" class="wall-color-swatch" data-color="#00FFFF" style="background:#00FFFF" data-i18n-aria="wall.color.cyan"></button>
+              <button type="button" class="wall-color-swatch" data-color="#0066FF" style="background:#0066FF" data-i18n-aria="wall.color.blue"></button>
+              <button type="button" class="wall-color-swatch" data-color="#FF00FF" style="background:#FF00FF" data-i18n-aria="wall.color.magenta"></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="wall-text-row" id="wall-text-field">
+          <input type="text" id="wall-message" maxlength="60">
+          <span class="wall-counter" id="wall-counter">0/60</span>
+        </div>
+
+        <div id="wall-image-field" style="display:none;">
+          <div class="wall-drop-zone" id="wall-drop-zone" tabindex="0">
+            <p data-i18n="wall.dropZone">{{ i18n['wall.dropZone'] | safe }}</p>
+          </div>
+          <input type="file" id="wall-file-input" accept="image/png,image/jpeg,image/webp" style="display:none;">
+        </div>
+
+        <div class="wall-actions">
+          <a class="wall-learn-more" href="{{ nav_blog_href }}{{ 'posts/busy-bar-message-wall/' if lang == 'fr' else '/posts/busy-bar-message-wall/' }}" data-i18n="wall.learnMore">{{ i18n['wall.learnMore'] }}</a>
+          <button class="wall-send" id="wall-send" type="button" data-i18n="wall.send">{{ i18n['wall.send'] }}</button>
+        </div>
+
+        <div class="wall-toast" id="wall-toast" data-i18n="wall.sent">{{ i18n['wall.sent'] }}</div>
       </div>
     </div>
   </main>
@@ -300,7 +467,7 @@
 {% for locale in ['en', 'fr'] %}
       {{ locale }}: {
 {% for key, value in i18n_all[locale].items() %}
-        '{{ key }}': '{{ value }}',
+        '{{ key }}': {{ js_str(value) }},
 {% endfor %}
       },
 {% endfor %}
@@ -368,457 +535,348 @@
       });
     })();
 
-    // deploy gag, relocated verbatim from blog.khaddict.com, scoped so its
-    // identifiers (btn, log, deploy...) never collide with the rest of the page.
     (function () {
-      const deployBtn = document.getElementById('deploy-btn');
-      const deployLog = document.getElementById('deploy-log');
-      const RICK = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
-      let fired = false;
-      let parrotInterval = null;
-      let cancelHandler = null;
-      let stopParrot = null;
+      const COLS = 72, ROWS = 16;
+      const canvas = document.getElementById('wall-screen');
+      const ctx = canvas.getContext('2d');
+      const textarea = document.getElementById('wall-message');
+      const counter = document.getElementById('wall-counter');
+      const sendBtn = document.getElementById('wall-send');
+      const toast = document.getElementById('wall-toast');
 
-      function line(text, cls, delay) {
-        setTimeout(() => {
-          const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-          const d = document.createElement('div');
-          if (cls) d.className = cls;
-          d.textContent = text;
-          deployLog.appendChild(d);
-          if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
-        }, delay);
+      // hand-transcribed bitmap font, matches the real BUSY app pixel grid
+      const FONT_H = 9;
+      const TEXT_Y = 3; // matches the real draw payload's y:3 anchor
+      const Z = (w) => '0'.repeat(w);
+      const FONT = {
+        ' ': { w: 3, rows: [Z(3), Z(3), Z(3), Z(3), Z(3), Z(3), Z(3), Z(3), Z(3)] },
+        'a': { w: 4, rows: ['0000', '0000', '0110', '0001', '0111', '1001', '0111', Z(4), Z(4)] },
+        'b': { w: 4, rows: ['1000', '1000', '1110', '1001', '1001', '1001', '1110', Z(4), Z(4)] },
+        'c': { w: 4, rows: ['0000', '0000', '0111', '1000', '1000', '1000', '0111', Z(4), Z(4)] },
+        'd': { w: 4, rows: ['0001', '0001', '0111', '1001', '1001', '1001', '0111', Z(4), Z(4)] },
+        'e': { w: 4, rows: ['0000', '0000', '0110', '1001', '1111', '1000', '0110', Z(4), Z(4)] },
+        'f': { w: 4, rows: ['0010', '0101', '0100', '1111', '0100', '0100', '0100', Z(4), Z(4)] },
+        'g': { w: 4, rows: ['0000', '0000', '0111', '1001', '1001', '1001', '0111', '0001', '0110'] },
+        'h': { w: 4, rows: ['1000', '1000', '1110', '1001', '1001', '1001', '1001', Z(4), Z(4)] },
+        'i': { w: 3, rows: ['010', '000', '110', '010', '010', '010', '111', Z(3), Z(3)] },
+        'j': { w: 3, rows: ['001', '000', '111', '001', '001', '001', '001', '001', '110'] },
+        'k': { w: 4, rows: ['1000', '1000', '1001', '1010', '1100', '1010', '1001', Z(4), Z(4)] },
+        'l': { w: 3, rows: ['110', '010', '010', '010', '010', '010', '011', Z(3), Z(3)] },
+        'm': { w: 5, rows: ['00000', '00000', '11110', '10101', '10101', '10101', '10101', Z(5), Z(5)] },
+        'n': { w: 4, rows: ['0000', '0000', '1110', '1001', '1001', '1001', '1001', Z(4), Z(4)] },
+        'o': { w: 4, rows: ['0000', '0000', '0110', '1001', '1001', '1001', '0110', Z(4), Z(4)] },
+        'p': { w: 4, rows: ['0000', '0000', '1110', '1001', '1001', '1001', '1110', '1000', '1000'] },
+        'q': { w: 4, rows: ['0000', '0000', '0111', '1001', '1001', '1001', '0111', '0001', '0001'] },
+        'r': { w: 3, rows: ['000', '000', '101', '110', '100', '100', '100', '000', '000'] },
+        's': { w: 4, rows: ['0000', '0000', '0111', '1000', '0110', '0001', '1110', '0000', '0000'] },
+        't': { w: 4, rows: ['0100', '0100', '1111', '0100', '0100', '0100', '0011', '0000', '0000'] },
+        'u': { w: 4, rows: ['0000', '0000', '1001', '1001', '1001', '1001', '0111', '0000', '0000'] },
+        'v': { w: 5, rows: ['00000', '00000', '10001', '10001', '01010', '01010', '00100', '00000', '00000'] },
+        'w': { w: 5, rows: ['00000', '00000', '10001', '10101', '10101', '01010', '01010', '00000', '00000'] },
+        'x': { w: 5, rows: ['00000', '00000', '10001', '01010', '00100', '01010', '10001', '00000', '00000'] },
+        'y': { w: 4, rows: ['0000', '0000', '1001', '1001', '1001', '1001', '0111', '0001', '0110'] },
+        'z': { w: 4, rows: ['0000', '0000', '1111', '0010', '0100', '1000', '1111', '0000', '0000'] },
+        '0': { w: 5, rows: ['01110', '10001', '10011', '10101', '11001', '10001', '01110', Z(5), Z(5)] },
+        '1': { w: 5, rows: ['00100', '01100', '00100', '00100', '00100', '00100', '01110', Z(5), Z(5)] },
+        '2': { w: 5, rows: ['01110', '10001', '00001', '00010', '00100', '01000', '11111', Z(5), Z(5)] },
+        '3': { w: 5, rows: ['11111', '00010', '00100', '00010', '00001', '10001', '01110', Z(5), Z(5)] },
+        '4': { w: 5, rows: ['00010', '00110', '01010', '10010', '11111', '00010', '00010', Z(5), Z(5)] },
+        '5': { w: 5, rows: ['11111', '10000', '11110', '00001', '00001', '10001', '01110', Z(5), Z(5)] },
+        '6': { w: 5, rows: ['00110', '01000', '10000', '11110', '10001', '10001', '01110', Z(5), Z(5)] },
+        '7': { w: 5, rows: ['11111', '00001', '00010', '00100', '01000', '01000', '01000', Z(5), Z(5)] },
+        '8': { w: 5, rows: ['01110', '10001', '10001', '01110', '10001', '10001', '01110', Z(5), Z(5)] },
+        '9': { w: 5, rows: ['01110', '10001', '10001', '01111', '00001', '00010', '01100', Z(5), Z(5)] },
+        '?': { w: 5, rows: ['01110', '10001', '00001', '00010', '00100', Z(5), '00100', Z(5), Z(5)] },
+        '!': { w: 2, rows: ['10', '10', '10', '10', '10', Z(2), '10', Z(2), Z(2)] },
+        '-': { w: 4, rows: [Z(4), Z(4), Z(4), Z(4), '1111', Z(4), Z(4), Z(4), Z(4)] },
+        "'": { w: 2, rows: ['10', '10', Z(2), Z(2), Z(2), Z(2), Z(2), Z(2), Z(2)] },
+        '.': { w: 2, rows: [Z(2), Z(2), Z(2), Z(2), Z(2), Z(2), '10', Z(2), Z(2)] },
+        ',': { w: 2, rows: [Z(2), Z(2), Z(2), Z(2), Z(2), '10', '01', Z(2), Z(2)] },
+      };
+
+      function glyphFor(ch) {
+        return FONT[ch.toLowerCase()] || FONT[' '];
       }
 
-      function deploy() {
-        if (fired) return;
-        fired = true;
-
-        const now = new Date();
-        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        const pad  = n => String(n).padStart(2, '0');
-        const H = pad(now.getHours()), M = pad(now.getMinutes()), S = pad(now.getSeconds());
-        const Y = now.getFullYear(), mo = pad(now.getMonth() + 1), d = pad(now.getDate());
-        const tz  = now.toLocaleTimeString('en', {timeZoneName: 'short'}).split(' ').pop();
-        const ts  = `${days[now.getDay()]} ${Y}-${mo}-${d} ${H}:${M}:${S} ${tz}`;
-        const jts = `${mons[now.getMonth()]} ${d} ${H}:${M}:${S}`;
-        const inv = Array.from({length: 32}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-
-        deployBtn.disabled = true;
-        deployBtn.classList.add('deploying');
-        deployBtn.innerHTML = `<div class="deploy-spinner"></div>${t('deploy.deploying')}`;
-        deployLog.classList.add('open');
-
-        const steps = [
-          ['$ apt update', 'la', 0],
-          ['Hit:1 http://deb.debian.org/debian bookworm InRelease', 'lm', 180],
-          ['Hit:2 http://security.debian.org bookworm-security InRelease', 'lm', 340],
-          ['Get:3 http://deb.debian.org/debian bookworm-updates InRelease [55.4 kB]', 'lm', 560],
-          ['Fetched 55.4 kB in 1s (42.3 kB/s)', 'lm', 1450],
-          ['Reading package lists... Done', 'lg', 1900],
-          ['14 packages can be upgraded.', 'lm', 2080],
-
-          ['$ apt upgrade -y', 'la', 2750],
-          ['Reading package lists... Done', 'lm', 3150],
-          ['Building dependency tree... Done', 'lm', 3500],
-          ['The following packages will be upgraded:', 'lm', 3660],
-          ['  curl libcurl4 libssl3 openssl python3 tar wget zlib1g ...', 'lm', 3760],
-          ['14 upgraded, 0 newly installed, 0 to remove.', 'lm', 3910],
-          ['Need to get 8,432 kB of archives.', 'lm', 4060],
-          ['Get:1 .../curl_7.88.1-10+deb12u8_amd64.deb [386 kB]', 'lm', 4260],
-          ['Get:2 .../libssl3_3.0.14-1~deb12u1_amd64.deb [2,004 kB]', 'lm', 4960],
-          ['Get:3 .../openssl_3.0.14-1~deb12u1_amd64.deb [1,396 kB]', 'lm', 5460],
-          ['Get:4 .../wget_1.21.3-1+deb12u1_amd64.deb [976 kB]', 'lm', 5810],
-          ['Fetched 8,432 kB in 3s (2,451 kB/s)', 'lm', 7060],
-          ['(Reading database ... 52847 files currently installed.)', 'lm', 7360],
-          ['Setting up libssl3:amd64 (3.0.14-1~deb12u1) ...', 'lm', 7710],
-          ['Setting up openssl (3.0.14-1~deb12u1) ...', 'lm', 8010],
-          ['Setting up curl (7.88.1-10+deb12u8) ...', 'lm', 8310],
-          ['Processing triggers for libc-bin (2.36-9+deb12u9) ...', 'lm', 8560],
-
-          ['$ apt install -y nginx', 'la', 9060],
-          ['Reading package lists... Done', 'lm', 9410],
-          ['Building dependency tree... Done', 'lm', 9710],
-          ['The following NEW packages will be installed: nginx nginx-common', 'lm', 9860],
-          ['0 upgraded, 2 newly installed, 0 to remove.', 'lm', 9980],
-          ['Need to get 613 kB of archives.', 'lm', 10130],
-          ['Get:1 .../nginx-common_1.24.0-2+deb12u3_all.deb [113 kB]', 'lm', 10330],
-          ['Get:2 .../nginx_1.24.0-2+deb12u3_amd64.deb [500 kB]', 'lm', 10780],
-          ['Fetched 613 kB in 0s (1,842 kB/s)', 'lm', 10930],
-          ['Unpacking nginx-common (1.24.0-2+deb12u3) ...', 'lm', 11180],
-          ['Unpacking nginx (1.24.0-2+deb12u3) ...', 'lm', 11430],
-          ['Setting up nginx (1.24.0-2+deb12u3) ...', 'lm', 11780],
-          ['Processing triggers for systemd (252.26-1~deb12u2) ...', 'lm', 12080],
-
-          ['', '', 12580],
-          ['$ cp /tmp/blog-khaddict.conf /etc/nginx/sites-available/blog-khaddict.conf', 'la', 12880],
-          ['$ ln -s /etc/nginx/sites-available/blog-khaddict.conf /etc/nginx/sites-enabled/blog-khaddict.conf', 'la', 13380],
-
-          ['$ nginx -t', 'la', 13780],
-          ['nginx: the configuration file /etc/nginx/nginx.conf syntax is ok', 'lg', 14030],
-          ['nginx: configuration file /etc/nginx/nginx.conf test is successful', 'lg', 14030],
-          ['', '', 14230],
-
-          ['$ systemctl restart nginx', 'la', 14530],
-
-          ['$ systemctl status nginx', 'la', 15130],
-          ['● nginx.service - A high performance web server and a reverse proxy server', 'lm', 15330],
-          ['     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: enabled)', 'lm', 15330],
-          [`     Active: active (running) since ${ts}; 1s ago`, 'lg', 15330],
-          [` Invocation: ${inv}`, 'lm', 15330],
-          ['       Docs: man:nginx(8)', 'lm', 15330],
-          ['    Process: 294512 ExecStartPre=/usr/sbin/nginx -t -q (code=exited, status=0/SUCCESS)', 'lm', 15330],
-          ['    Process: 294514 ExecStart=/usr/sbin/nginx -g daemon on; (code=exited, status=0/SUCCESS)', 'lm', 15330],
-          ['   Main PID: 294542 (nginx)', 'lm', 15330],
-          ['      Tasks: 3 (limit: 4655)', 'lm', 15330],
-          ['     Memory: 2.9M (peak: 7.2M)', 'lm', 15330],
-          ['        CPU: 20ms', 'lm', 15330],
-          ['     CGroup: /system.slice/nginx.service', 'lm', 15330],
-          ['             ├─294542 "nginx: master process /usr/sbin/nginx"', 'lm', 15330],
-          ['             ├─294544 "nginx: worker process"', 'lm', 15330],
-          ['             └─294545 "nginx: worker process"', 'lm', 15330],
-          ['', '', 15330],
-          [`${jts} voidnode systemd[1]: Starting nginx.service...`, 'lm', 15330],
-          [`${jts} voidnode systemd[1]: Started nginx.service - A high performance web server.`, 'lm', 15330],
-          ['', '', 15980],
-
-          ['$ dig +short TXT khaddict.com', 'la', 16050],
-          ['"hello curious diggers, nothing to see here"', 'lm', 16350],
-        ];
-
-        steps.forEach(([t, c, d]) => line(t, c, d));
-
-        setTimeout(() => {
-          const nearBottom0 = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-          const cmdLine = document.createElement('div');
-          cmdLine.innerHTML = '<span class="la">$ curl parrot.live</span><span class="lm">  # ^C or tap to stop</span>';
-          deployLog.appendChild(cmdLine);
-          if (nearBottom0) deployLog.scrollTop = deployLog.scrollHeight;
-
-          setTimeout(() => {
-            const wrap = document.createElement('div');
-            wrap.style.fontSize = '0.50rem';
-            wrap.style.lineHeight = '1.25';
-            deployLog.appendChild(wrap);
-
-            const poses = [
-              [
-                "                         .cccc;;cc;';c.           ",
-                "                      .,:dkdc:;;:c:,:d:.          ",
-                "                     .loc'.,cc::c:::,..;:.        ",
-                "                   .cl;....;dkdccc::,...c;        ",
-                "                  .c:,';:'..ckc',;::;....;c.      ",
-                "                .c:'.,dkkoc:ok:;llllc,,c,';:.     ",
-                "               .;c,';okkkkkkkk:;lllll,:kd;.;:,.   ",
-                "               co..:kkkkkkkkkk:;llllc':kkc..oNc   ",
-                "             .cl;.,oxkkkkkkkkkc,:cll;,okkc'.cO;   ",
-                "             ;k:..ckkkkkkkkkkkl..,;,.;xkko:',l'   ",
-                "            .,...';dkkkkkkkkkkd;.....ckkkl'.cO;   ",
-                "         .,,:,.;oo:ckkkkkkkkkkkdoc;;cdkkkc..cd,   ",
-                "      .cclo;,ccdkkl;llccdkkkkkkkkkkkkkkkd,.c;     ",
-                "     .lol:;;okkkkkxooc::coodkkkkkkkkkkkko'.oc     ",
-                "   .c:'..lkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkd,.oc     ",
-                "  .lo;,:cdkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkd,.c;     ",
-                ",dx:..;lllllllllllllllllllllllllllllllllc'...     ",
-                "cNO;........................................      ",
-              ],
-              [
-                "                .ckx;'........':c.                ",
-                "             .,:c:::::oxxocoo::::,',.             ",
-                "            .odc'..:lkkoolllllo;..;d,             ",
-                "            ;c..:o:..;:..',;'.......;.            ",
-                "           ,c..:0Xx::o:.,cllc:,'::,.,c.           ",
-                "           ;c;lkXKXXXXl.;lllll;lKXOo;':c.         ",
-                "         ,dc.oXXXXXXXXl.,lllll;lXXXXx,c0:         ",
-                "         ;Oc.oXXXXXXXXo.':ll:;'oXXXXO;,l'         ",
-                "         'l;;kXXXXXXXXd'.'::'..dXXXXO;,l'         ",
-                "         'l;:0XXXXXXXX0x:...,:o0XXXXx,:x,         ",
-                "         'l;;kXXXXXXXXXKkol;oXXXXXXXO;oNc         ",
-                "        ,c'..ckk0XXXXXXXXXX00XXXXXXX0:;o:.        ",
-                "      .':;..:do::ooookXXXXXXXXXXXXXXXo..c;        ",
-                "    .',',:co0XX0kkkxxOXXXXXXXXXXXXXXXOc..;l.      ",
-                "  .:;'..oXXXXXXXXXXXXXXXXXXXXXXXXXXXXXko;';:.     ",
-                ".ldc..:oOXKXXXXXXKXXKXXXXXXXXXXXXXXXXXXXo..oc     ",
-                ":0o...:dxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxo,.:,     ",
-                "cNo........................................;'     ",
-              ],
-              [
-                "            .cc;.  ...  .;c.                      ",
-                "         .,,cc:cc:lxxxl:ccc:;,.                   ",
-                "        .lo;...lKKklllookl..cO;                   ",
-                "      .cl;.,:'.okl;..''.;,..';:.                  ",
-                "     .:o;;dkd,.ll..,cc::,..,'.;:,.                ",
-                "     co..lKKKkokl.':lloo;''ol..;dl.               ",
-                "   .,c;.,xKKKKKKo.':llll;.'oOxl,.cl,.             ",
-                "   cNo..lKKKKKKKo'';llll;;okKKKl..oNc             ",
-                "   cNo..lKKKKKKKko;':c:,'lKKKKKo'.oNc             ",
-                "   cNo..lKKKKKKKKKl.....'dKKKKKxc,l0:             ",
-                "   .c:'.lKKKKKKKKKk;....lKKKKKKo'.oNc             ",
-                "     ,:.'oxOKKKKKKKOxxxxOKKKKKKxc,;ol:.           ",
-                "     ;c..'':oookKKKKKKKKKKKKKKKKKk:.'clc.         ",
-                "   ,xl'.,oxo;'';oxOKKKKKKKKKKKKKKKOxxl:::;,.      ",
-                "  .dOc..lKKKkoooookKKKKKKKKKKKKKKKKKKKxl,;ol.     ",
-                "  cx,';okKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKl..;lc.   ",
-                "  co..:dddddddddddddddddddddddddddddddddl::',::.  ",
-                "  co...........................................   ",
-              ],
-              [
-                "           .ccccccc.                              ",
-                "      .,,,;cooolccoo;;,,.                         ",
-                "     .dOx;..;lllll;..;xOd.                        ",
-                "   .cdo;',loOXXXXXkll;';odc.                      ",
-                "  ,ol:;c,':oko:cccccc,...ckl.                     ",
-                "  ;c.;kXo..::..;c::'.......oc                     ",
-                ",dc..oXX0kk0o.':lll;..cxxc.,ld,                   ",
-                "kNo.'oXXXXXXo',:lll;..oXXOo;cOd.                  ",
-                "KOc;oOXXXXXXo.':lol;..dXXXXl';xc                  ",
-                "Ol,:k0XXXXXX0c.,clc'.:0XXXXx,.oc                  ",
-                "KOc;dOXXXXXXXl..';'..lXXXXXo..oc                  ",
-                "dNo..oXXXXXXXOx:..'lxOXXXXXk,.:; ..               ",
-                "cNo..lXXXXXXXXXOolkXXXXXXXXXkl,..;:';.            ",
-                ".,;'.,dkkkkk0XXXXXXXXXXXXXXXXXOxxl;,;,;l:.        ",
-                "  ;c.;:''''':doOXXXXXXXXXXXXXXXXXXOdo;';clc.      ",
-                "  ;c.lOdood:'''oXXXXXXXXXXXXXXXXXXXXXk,..;ol.     ",
-                "  ';.:xxxxxocccoxxxxxxxxxxxxxxxxxxxxxxl::'.';;.   ",
-                "  ';........................................;l'   ",
-              ],
-              [
-                "        .;:;;,.,;;::,.                            ",
-                "     .;':;........'co:.                           ",
-                "   .clc;'':cllllc::,.':c.                         ",
-                "  .lo;;o:coxdllllllc;''::,,.                      ",
-                ".c:'.,cl,.'l:',,;;'......cO;                      ",
-                "do;';oxoc;:l;;llllc'.';;'.,;.                     ",
-                "c..ckkkkkkkd,;llllc'.:kkd;.':c.                   ",
-                "'.,okkkkkkkkc;lllll,.:kkkdl,cO;                   ",
-                "..;xkkkkkkkkc,ccll:,;okkkkk:,co,                  ",
-                "..,dkkkkkkkkc..,;,'ckkkkkkkc;ll.                  ",
-                "..'okkkkkkkko,....'okkkkkkkc,:c.                  ",
-                "c..ckkkkkkkkkdl;,:okkkkkkkkd,.',';.               ",
-                "d..':lxkkkkkkkkxxkkkkkkkkkkkdoc;,;'..'.,.         ",
-                "o...'';llllldkkkkkkkkkkkkkkkkkkdll;..'cdo.        ",
-                "o..,l;'''''';dkkkkkkkkkkkkkkkkkkkkdlc,..;lc.      ",
-                "o..;lc;;;;;;,,;clllllllllllllllllllllc'..,:c.     ",
-                "o..........................................;'     ",
-                "                                                  ",
-              ],
-              [
-                "                                                  ",
-                "           .,,,,,,,,,.                            ",
-                "         .ckKxodooxOOdcc.                         ",
-                "      .cclooc'....';;cool.                        ",
-                "     .loc;;;;clllllc;;;;;:;,.                     ",
-                "   .c:'.,okd;;cdo:::::cl,..oc                     ",
-                "  .:o;';okkx;';;,';::;'....,:,.                   ",
-                "  co..ckkkkkddkc,cclll;.,c:,:o:.                  ",
-                "  co..ckkkkkkkk:,cllll;.:kkd,.':c.                ",
-                ".,:;.,okkkkkkkk:,cclll;.ckkkdl;;o:.               ",
-                "cNo..ckkkkkkkkko,.;loc,.ckkkkkc..oc               ",
-                ",dd;.:kkkkkkkkkx;..;:,.'lkkkkko,.:,               ",
-                "  ;:.ckkkkkkkkkkc.....;ldkkkkkk:.,'               ",
-                ",dc..'okkkkkkkkkxoc;;cxkkkkkkkkc..,;,.            ",
-                "kNo..':lllllldkkkkkkkkkkkkkkkkkdcc,.;l.           ",
-                "KOc,c;''''''';lldkkkkkkkkkkkkkkkkkc..;lc.         ",
-                "xx:':;;;;,.,,...,;;cllllllllllllllc;'.;od,        ",
-                "cNo.....................................oc        ",
-              ],
-              [
-                "                                                  ",
-                "                                                  ",
-                "                   .ccccccc.                      ",
-                "               .ccckNKOOOOkdcc.                   ",
-                "            .;;cc:ccccccc:,:c::,,.                ",
-                "         .c;:;.,cccllxOOOxlllc,;ol.               ",
-                "        .lkc,coxo:;oOOxooooooo;..:,               ",
-                "      .cdc.,dOOOc..cOd,.',,;'....':l.             ",
-                "      cNx'.lOOOOxlldOc..;lll;.....cO;             ",
-                "     ,do;,:dOOOOOOOOOl'':lll;..:d:''c,            ",
-                "     co..lOOOOOOOOOOOl'':lll;.'lOd,.cd.           ",
-                "     co.'dOOOOOOOOOOOo,.;llc,.,dOOc..dc           ",
-                "     co..lOOOOOOOOOOOOc.';:,..cOOOl..oc           ",
-                "   .,:;.'::lxOOOOOOOOOo:'...,:oOOOc.'dc           ",
-                "   ;Oc..cl'':lldOOOOOOOOdcclxOOOOx,.cd.           ",
-                "  .:;';lxl''''':lldOOOOOOOOOOOOOOc..oc            ",
-                ",dl,.'cooc:::,....,::coooooooooooc'.c:            ",
-                "cNo.................................oc            ",
-              ],
-              [
-                "                                                  ",
-                "                                                  ",
-                "                                                  ",
-                "                        .cccccccc.                ",
-                "                  .,,,;;cc:cccccc:;;,.            ",
-                "                .cdxo;..,::cccc::,..;l.           ",
-                "               ,do:,,:c:coxxdllll:;,';:,.         ",
-                "             .cl;.,oxxc'.,cc,.';;;'...oNc         ",
-                "             ;Oc..cxxxc'.,c;..;lll;...cO;         ",
-                "           .;;',:ldxxxdoldxc..;lll:'...'c,        ",
-                "           ;c..cxxxxkxxkxxxc'.;lll:'','.cdc.      ",
-                "         .c;.;odxxxxxxxxxxxd;.,cll;.,l:.'dNc      ",
-                "        .:,''ccoxkxxkxxxxxxx:..,:;'.:xc..oNc      ",
-                "      .lc,.'lc':dxxxkxxxxxxxol,...',lx:..dNc      ",
-                "     .:,',coxoc;;ccccoxxxxxxxxo:::oxxo,.cdc.      ",
-                "  .;':;.'oxxxxxc''''';cccoxxxxxxxxxxxc..oc        ",
-                ",do:'..,:llllll:;;;;;;,..,;:lllllllll;..oc        ",
-                "cNo.....................................oc        ",
-              ],
-              [
-                "                                                  ",
-                "                                                  ",
-                "                              .ccccc.             ",
-                "                         .cc;'coooxkl;.           ",
-                "                     .:c:::c:,,,,,;c;;,.'.        ",
-                "                   .clc,',:,..:xxocc;'..c;        ",
-                "                  .c:,';:ox:..:c,,,,,,...cd,      ",
-                "                .c:'.,oxxxxl::l:.,loll;..;ol.     ",
-                "                ;Oc..:xxxxxxxxx:.,llll,....oc     ",
-                "             .,;,',:loxxxxxxxxx:.,llll;.,,.'ld,   ",
-                "            .lo;..:xxxxxxxxxxxx:.'cllc,.:l:'cO;   ",
-                "           .:;...'cxxxxxxxxxxxxoc;,::,..cdl;;l'   ",
-                "         .cl;':,'';oxxxxxxdxxxxxx:....,cooc,cO;   ",
-                "     .,,,::;,lxoc:,,:lxxxxxxxxxxxo:,,;lxxl;'oNc   ",
-                "   .cdxo;':lxxxxxxc'';cccccoxxxxxxxxxxxxo,.;lc.   ",
-                "  .loc'.'lxxxxxxxxocc;''''';ccoxxxxxxxxx:..oc     ",
-                "olc,..',:cccccccccccc:;;;;;;;;:ccccccccc,.'c,     ",
-                "Ol;......................................;l'      ",
-              ],
-              [
-                "                                                  ",
-                "                              ,ddoodd,            ",
-                "                         .cc' ,ooccoo,'cc.        ",
-                "                      .ccldo;...',,...;oxdc.      ",
-                "                   .,,:cc;.,'..;lol;;,'..lkl.     ",
-                "                  .dOc';:ccl;..;dl,.''.....oc     ",
-                "                .,lc',cdddddlccld;.,;c::'..,cc:.  ",
-                "                cNo..:ddddddddddd;':clll;,c,';xc  ",
-                "               .lo;,clddddddddddd;':clll;:kc..;'  ",
-                "             .,c;..:ddddddddddddd:';clll,;ll,..   ",
-                "             ;Oc..';:ldddddddddddl,.,c:;';dd;..   ",
-                "           .''',:c:,'cdddddddddddo:,''..'cdd;..   ",
-                "         .cdc';lddd:';lddddddddddddd;.';lddl,..   ",
-                "      .,;::;,cdddddol;;lllllodddddddlcldddd:.'l;  ",
-                "     .dOc..,lddddddddlcc:;'';cclddddddddddd;;ll.  ",
-                "   .coc,;::ldddddddddddddlcccc:ldddddddddl:,cO;   ",
-                ",xl::,..,cccccccccccccccccccccccccccccccc:;':xx,  ",
-                "cNd.........................................;lOc  ",
-              ],
-            ];
-
-            const RAINBOW = [
-              '#cd0000', '#00cd00', '#cdcd00', '#0000ee',
-              '#cd00cd', '#00cdcd', '#e5e5e5',
-            ];
-
-            let fi = 0;
-            parrotInterval = setInterval(() => {
-              const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-              const lines = poses[fi % poses.length];
-              const color = RAINBOW[Math.floor(Math.random() * RAINBOW.length)];
-              fi++;
-              wrap.innerHTML = '';
-              wrap.style.color = color;
-              lines.forEach(txt => {
-                const d = document.createElement('div');
-                d.textContent = txt;
-                wrap.appendChild(d);
-              });
-              if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
-            }, 75);
-
-            stopParrot = () => {
-              clearInterval(parrotInterval);
-              document.removeEventListener('keydown', cancelHandler);
-              deployLog.removeEventListener('click', stopParrot);
-              window.open(RICK, '_blank', 'noopener');
-              awaitReturnAndCelebrate();
-
-              const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-              wrap.innerHTML = '';
-              wrap.style.color = '';
-
-              const ctrlC = document.createElement('div');
-              ctrlC.className = 'lm';
-              ctrlC.textContent = '^C';
-              deployLog.appendChild(ctrlC);
-
-              const cmd = document.createElement('div');
-              cmd.innerHTML = '<span class="la">$ cat ~/.gotcha</span>';
-              deployLog.appendChild(cmd);
-
-              const gotcha = document.createElement('div');
-              gotcha.className = 'lg';
-              gotcha.textContent = 'well played... by me. 🕺';
-              deployLog.appendChild(gotcha);
-
-              if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
-            };
-            cancelHandler = (e) => {
-              const isCtrlC = (e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C');
-              if (!isCtrlC) return;
-              e.preventDefault();
-              stopParrot();
-            };
-            document.addEventListener('keydown', cancelHandler);
-            deployLog.addEventListener('click', stopParrot);
-
-          }, 400);
-        }, 16850);
+      function textToStrip(text) {
+        const glyphs = Array.from(text || ' ').map(glyphFor);
+        const textW = Math.max(glyphs.reduce((sum, g) => sum + g.w + 1, 0) - 1, 1);
+        // gap before the text loops when scrolling, the real bar uses 2 spaces here
+        const LOOP_GAP = (FONT[' '].w + 1) * 1;
+        const stripW = textW > COLS ? textW + LOOP_GAP : COLS;
+        const buf = new Uint8Array(stripW * FONT_H);
+        let cx = 0;
+        glyphs.forEach((g) => {
+          for (let y = 0; y < FONT_H; y++) {
+            const row = g.rows[y];
+            for (let x = 0; x < g.w; x++) {
+              if (row[x] === '1') buf[y * stripW + cx + x] = 1;
+            }
+          }
+          cx += g.w + 1;
+        });
+        return { buf, stripW, textW };
       }
 
-      function awaitReturnAndCelebrate() {
-        const onVisible = () => {
-          if (document.visibilityState !== 'visible') return;
-          document.removeEventListener('visibilitychange', onVisible);
-          setTimeout(() => {
-            deployBtn.innerHTML = `${t('deploy.deployed')} <span aria-hidden="true">✓</span>`;
-            spawnConfetti(deployBtn);
-          }, 1000);
-        };
-        document.addEventListener('visibilitychange', onVisible);
-      }
-
-      function spawnConfetti(anchor) {
-        const rect = anchor.getBoundingClientRect();
-        const originX = rect.left + rect.width / 2;
-        const originY = rect.top + rect.height / 2;
-        const colors = ['#8b5cf6', '#c026d3', '#4ade80', '#fbbf24', '#38bdf8'];
-
-        const container = document.createElement('div');
-        container.className = 'confetti-container';
-        document.body.appendChild(container);
-
-        for (let i = 0; i < 110; i++) {
-          const piece = document.createElement('span');
-          piece.className = 'confetti-piece';
-          const angle = Math.random() * Math.PI * 2;
-          const distance = 80 + Math.random() * 160;
-          piece.style.left = originX + 'px';
-          piece.style.top = originY + 'px';
-          piece.style.background = colors[i % colors.length];
-          piece.style.setProperty('--dx', (Math.cos(angle) * distance) + 'px');
-          piece.style.setProperty('--dy', (Math.sin(angle) * distance - 60) + 'px');
-          piece.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
-          piece.style.animationDelay = (Math.random() * .15) + 's';
-          container.appendChild(piece);
+      function sampleTextWindow(strip, offsetX) {
+        const out = new Float32Array(COLS * ROWS);
+        const ox = Math.floor(offsetX);
+        for (let y = 0; y < FONT_H; y++) {
+          const screenY = y + TEXT_Y;
+          if (screenY >= ROWS) break;
+          for (let x = 0; x < COLS; x++) {
+            const srcX = (ox + x) % strip.stripW;
+            out[screenY * COLS + x] = strip.buf[y * strip.stripW + srcX];
+          }
         }
-
-        setTimeout(() => container.remove(), 1500);
+        return out;
       }
 
-      deployBtn.addEventListener('click', deploy);
+      let stripData = null, stripW = 0, needsScroll = false, offset = 0;
+      let selectedColor = '#FFFFFF';
 
-      window.addEventListener('pageshow', () => {
-        fired = false;
-        if (parrotInterval) clearInterval(parrotInterval);
-        if (cancelHandler) document.removeEventListener('keydown', cancelHandler);
-        if (stopParrot) deployLog.removeEventListener('click', stopParrot);
-        deployBtn.disabled = false;
-        deployBtn.classList.remove('deploying');
-        deployBtn.textContent = t('deploy.button');
-        deployLog.classList.remove('open');
-        deployLog.innerHTML = '';
+      function colorPillBackground(hex) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, .3)`;
+      }
+
+      function drawBuffer(buf) {
+        // real LED pixels are hard on/off, no anti-aliasing
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cell = canvas.width / COLS;
+        ctx.fillStyle = selectedColor;
+        const gap = Math.max(1, cell * 0.12);
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            if (buf[y * COLS + x] < 0.5) continue;
+            ctx.fillRect(x * cell + gap, y * cell + gap, cell - gap * 2, cell - gap * 2);
+          }
+        }
+      }
+
+      function setText(text) {
+        const strip = textToStrip(text || ' ');
+        stripData = strip; stripW = strip.stripW; needsScroll = strip.textW > COLS; offset = 0;
+        if (!needsScroll) drawBuffer(sampleTextWindow(strip, 0));
+      }
+
+      function tick() {
+        if (needsScroll && stripData) {
+          offset = (offset + 0.15) % stripData.stripW;
+          drawBuffer(sampleTextWindow(stripData, offset));
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function updateCounter() {
+        const len = textarea.value.length;
+        counter.textContent = `${len}/60`;
+        counter.classList.toggle('warn', len > 50);
+      }
+
+      textarea.addEventListener('input', () => { updateCounter(); setText(textarea.value); });
+
+      let mode = 'text';
+      let imageFile = null;
+      let loadedImage = null;
+      const textField = document.getElementById('wall-text-field');
+      const imageField = document.getElementById('wall-image-field');
+      const dropZone = document.getElementById('wall-drop-zone');
+      const fileInput = document.getElementById('wall-file-input');
+
+      function imageToBuffer(img) {
+        const tmp = document.createElement('canvas');
+        tmp.width = COLS; tmp.height = ROWS;
+        const tctx = tmp.getContext('2d');
+        const scale = Math.min(COLS / img.width, ROWS / img.height);
+        const dw = img.width * scale, dh = img.height * scale;
+        tctx.drawImage(img, (COLS - dw) / 2, (ROWS - dh) / 2, dw, dh);
+        return tctx.getImageData(0, 0, COLS, ROWS).data; // RGBA, the bar's screen is color
+      }
+
+      function drawImageBuffer(data) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const cell = canvas.width / COLS;
+        for (let y = 0; y < ROWS; y++) {
+          for (let x = 0; x < COLS; x++) {
+            const i = (y * COLS + x) * 4;
+            const a = data[i + 3] / 255;
+            if (a < 0.05) continue;
+            ctx.globalAlpha = a;
+            ctx.fillStyle = `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
+            ctx.beginPath();
+            ctx.arc(x * cell + cell / 2, y * cell + cell / 2, cell * 0.32, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      const colorPicker = document.getElementById('wall-color-picker');
+      const colorTrigger = document.getElementById('wall-color-trigger');
+      const colorPopover = document.getElementById('wall-color-popover');
+
+      document.querySelectorAll('.wall-mode-toggle button').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.wall-mode-toggle button').forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          mode = btn.dataset.mode;
+          textField.style.display = mode === 'text' ? '' : 'none';
+          imageField.style.display = mode === 'image' ? '' : 'none';
+          colorPicker.style.display = mode === 'text' ? '' : 'none';
+          needsScroll = false;
+          if (mode === 'text') {
+            setText(textarea.value);
+          } else if (loadedImage) {
+            drawImageBuffer(imageToBuffer(loadedImage));
+          } else {
+            drawImageBuffer(new Uint8ClampedArray(COLS * ROWS * 4));
+          }
+        });
       });
+
+      colorTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = colorPopover.classList.toggle('open');
+        colorTrigger.setAttribute('aria-expanded', String(isOpen));
+      });
+
+      document.querySelectorAll('.wall-color-swatch').forEach((sw) => {
+        sw.addEventListener('click', () => {
+          document.querySelectorAll('.wall-color-swatch').forEach((s) => s.classList.remove('active'));
+          sw.classList.add('active');
+          selectedColor = sw.dataset.color;
+          colorTrigger.style.background = colorPillBackground(selectedColor);
+          colorPopover.classList.remove('open');
+          colorTrigger.setAttribute('aria-expanded', 'false');
+          if (mode === 'text' && stripData) drawBuffer(sampleTextWindow(stripData, offset));
+        });
+      });
+
+      document.addEventListener('click', (e) => {
+        if (colorPopover.classList.contains('open') && !colorPopover.contains(e.target) && e.target !== colorTrigger) {
+          colorPopover.classList.remove('open');
+          colorTrigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+
+      dropZone.addEventListener('click', () => fileInput.click());
+      dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        imageFile = file;
+        const img = new Image();
+        img.onload = () => {
+          loadedImage = img;
+          drawImageBuffer(imageToBuffer(img));
+        };
+        img.src = URL.createObjectURL(file);
+      });
+
+      const API_URL = '{{ api_base_url }}';
+
+      function reportResult(res) {
+        if (res.ok) {
+          toast.textContent = t('wall.sent');
+          return 30;
+        }
+        toast.textContent = res.status === 429 ? t('wall.rateLimited') : t('wall.error');
+        toast.classList.add('error');
+        if (res.status === 429) {
+          const retryAfter = parseInt(res.headers.get('Retry-After'), 10);
+          if (Number.isFinite(retryAfter) && retryAfter > 0) return retryAfter;
+        }
+        return 30;
+      }
+
+      const sendLabel = sendBtn.textContent;
+      const COOLDOWN_KEY = 'wallCooldownUntil';
+
+      function persistCooldown(waitSecs) {
+        try { localStorage.setItem(COOLDOWN_KEY, String(Date.now() + waitSecs * 1000)); } catch { /* storage unavailable */ }
+      }
+
+      function startCooldown(initialSecs) {
+        let secs = initialSecs || 30;
+        cooling = true;
+        sendBtn.disabled = true;
+        sendBtn.textContent = `${secs}s`;
+        const iv = setInterval(() => {
+          secs -= 1;
+          if (secs <= 0) {
+            clearInterval(iv);
+            cooling = false;
+            sendBtn.disabled = false;
+            sendBtn.textContent = sendLabel;
+            toast.classList.remove('show');
+            try { localStorage.removeItem(COOLDOWN_KEY); } catch { /* storage unavailable */ }
+          } else {
+            sendBtn.textContent = `${secs}s`;
+          }
+        }, 1000);
+      }
+
+      let cooling = false;
+
+      // persist the cooldown so a refresh mid-wait doesn't show a clickable Send again
+      (function restoreCooldown() {
+        let until = 0;
+        try { until = parseInt(localStorage.getItem(COOLDOWN_KEY), 10) || 0; } catch { /* storage unavailable */ }
+        const remaining = Math.ceil((until - Date.now()) / 1000);
+        if (remaining > 0) startCooldown(remaining);
+      })();
+      sendBtn.addEventListener('click', async () => {
+        if (cooling) return;
+        if (mode === 'text') {
+          const message = textarea.value.trim();
+          if (!message) return;
+          cooling = true;
+          sendBtn.disabled = true;
+          toast.classList.remove('error');
+          toast.textContent = t('wall.sending');
+          toast.classList.add('show');
+          let waitSecs = 30;
+          try {
+            const res = await fetch(`${API_URL}/wall/message`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ message, color: selectedColor }),
+            });
+            waitSecs = reportResult(res);
+          } catch {
+            toast.textContent = t('wall.error');
+            toast.classList.add('error');
+          }
+          persistCooldown(waitSecs);
+          startCooldown(waitSecs);
+        } else {
+          if (!imageFile) return;
+          cooling = true;
+          sendBtn.disabled = true;
+          toast.classList.remove('error');
+          toast.textContent = t('wall.sending');
+          toast.classList.add('show');
+          let waitSecs = 30;
+          try {
+            const form = new FormData();
+            form.append('file', imageFile);
+            const res = await fetch(`${API_URL}/wall/image`, { method: 'POST', body: form });
+            waitSecs = reportResult(res);
+          } catch {
+            toast.textContent = t('wall.error');
+            toast.classList.add('error');
+          }
+          persistCooldown(waitSecs);
+          startCooldown(waitSecs);
+        }
+      });
+
+      updateCounter();
+      setText(textarea.value);
+      tick();
     })();
   </script>
 </body>

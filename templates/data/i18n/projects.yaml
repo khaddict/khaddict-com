@@ -1,6 +1,12 @@
 en:
   title.projects: "Projects | khaddict"
   projects.title: 'Things I <span class="highlight">build</span> and run.'
+  deploy.inProgress: "In progress"
+  deploy.title: 'The project is on hold. Do <strong>NOT</strong> press the red button.'
+  deploy.sub: "Controlled environment. Any action may have irreversible consequences."
+  deploy.button: "Deploy to production"
+  deploy.deploying: "Deploying..."
+  deploy.deployed: Deployed
   projects.voidnode: "Single-node homelab: Proxmox as the hypervisor, Kubernetes for container orchestration, OPNsense for network segmentation, SaltStack for configuration management. Less redundant than my former homelab project."
   projects.khaddictcom: "Static HTML/CSS/JS for the khaddict.com subdomains (www, blog, media, projects), packaged as a Helm subchart integrated into voidnode."
   projects.homelab: "My former three-node highly-available homelab: Proxmox as the hypervisor, Kubernetes for container orchestration, Ceph for distributed storage. More redundant than my current project, voidnode."
@@ -11,6 +17,12 @@ en:
 fr:
   title.projects: "Projets | khaddict"
   projects.title: 'Ce que je <span class="highlight">construis</span> et fais tourner.'
+  deploy.inProgress: "En cours"
+  deploy.title: 'Projet en pause. Ne <strong>PAS</strong> appuyer sur le bouton rouge.'
+  deploy.sub: "Environnement contrôlé. Toute action pourrait avoir des conséquences irréversibles."
+  deploy.button: "Déployer en production"
+  deploy.deploying: "Déploiement…"
+  deploy.deployed: Déployé
   projects.voidnode: "Homelab mono-nœud : Proxmox comme hyperviseur, Kubernetes pour l’orchestration de conteneurs, OPNsense pour la segmentation réseau, SaltStack pour la gestion de configuration. Setup avec moins de redondance que mon ancien projet homelab."
   projects.khaddictcom: "HTML/CSS/JS statiques des sous-domaines khaddict.com (www, blog, media, projects), packagés en sous-chart Helm intégré à voidnode."
   projects.homelab: "Mon ancien homelab hautement disponible à trois nœuds : Proxmox comme hyperviseur, Kubernetes pour l’orchestration de conteneurs, Ceph pour le stockage distribué. Setup avec plus de redondance que mon projet actuel, voidnode."
