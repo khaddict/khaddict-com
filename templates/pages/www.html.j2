@@ -772,10 +772,14 @@
         const cell = canvas.width / COLS;
         ctx.fillStyle = selectedColor;
         const gap = Math.max(1, cell * 0.12);
+        // at small cell sizes (dynamic resize can land on cell=2, sometimes less) the
+        // gap's 1px floor can eat the whole cell, leaving a zero-or-negative square
+        // that silently draws nothing - clamp so there's always a visible dot
+        const size = Math.max(1, cell - gap * 2);
         for (let y = 0; y < ROWS; y++) {
           for (let x = 0; x < COLS; x++) {
             if (buf[y * COLS + x] < 0.5) continue;
-            ctx.fillRect(x * cell + gap, y * cell + gap, cell - gap * 2, cell - gap * 2);
+            ctx.fillRect(x * cell + gap, y * cell + gap, size, size);
           }
         }
       }
@@ -831,7 +835,7 @@
             ctx.globalAlpha = a;
             ctx.fillStyle = `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
             ctx.beginPath();
-            ctx.arc(x * cell + cell / 2, y * cell + cell / 2, cell * 0.32, 0, Math.PI * 2);
+            ctx.arc(x * cell + cell / 2, y * cell + cell / 2, Math.max(0.75, cell * 0.32), 0, Math.PI * 2);
             ctx.fill();
           }
         }
