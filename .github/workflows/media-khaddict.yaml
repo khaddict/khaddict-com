@@ -15,6 +15,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      version: ${{ steps.version.outputs.value }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -47,6 +49,13 @@ jobs:
             ghcr.io/khaddict/media-khaddict:${{ steps.sha.outputs.short }}
             ghcr.io/khaddict/media-khaddict:${{ steps.version.outputs.value }}
 
+  bump-voidnode:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
       - name: Checkout voidnode
         uses: actions/checkout@v7.0.1
         with:
@@ -56,28 +65,59 @@ jobs:
 
       - name: Bump media-khaddict tag in voidnode
         env:
-          VERSION: ${{ steps.version.outputs.value }}
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
           python3 -c "
           import re, os
-          path = 'voidnode/argocd/apps/khaddict/values.yaml'
           version = os.environ['VERSION']
+
+          # argocd/apps/khaddict/values.yaml: repository: / tag: \"x\" on separate lines
+          path = 'voidnode/argocd/apps/khaddict/values.yaml'
           content = open(path).read()
-          content = re.sub(r'(repository: ghcr\.io/khaddict/media-khaddict\n\s+tag: \")[^\"]+(\")', rf'\g<1>{version}\g<2>', content, count=1)
-          open(path, 'w').write(content)
+          updated = re.sub(
+              r'(repository: ghcr\.io/khaddict/media-khaddict\n\s+tag: \")[^\"]+(\")',
+              rf'\g<1>{version}\g<2>',
+              content,
+              count=1,
+          )
+          if updated == content:
+              raise SystemExit(f'media-khaddict tag pattern not found in {path}, refusing to commit a no-op change')
+          open(path, 'w').write(updated)
+
+          # saltmaster local-dev compose: inline image: repo:tag
+          path = 'voidnode/role/saltmaster/files/website-dev/docker-compose.yml'
+          content = open(path).read()
+          updated = re.sub(
+              r'(ghcr\.io/khaddict/media-khaddict:)[^\"\s]+',
+              rf'\g<1>{version}',
+              content,
+              count=1,
+          )
+          if updated == content:
+              raise SystemExit(f'media-khaddict tag pattern not found in {path}, refusing to commit a no-op change')
+          open(path, 'w').write(updated)
           "
 
-      - name: Commit and push
+      - name: Open PR against voidnode
         working-directory: voidnode
         env:
-          VERSION: ${{ steps.version.outputs.value }}
+          VERSION: ${{ needs.build.outputs.version }}
+          GH_TOKEN: ${{ secrets.VOIDNODE_REPO_TOKEN }}
         run: |
           git config user.name "khaddict-com-ci"
           git config user.email "ci@khaddict.com"
-          git add argocd/apps/khaddict/values.yaml
+          git add argocd/apps/khaddict/values.yaml role/saltmaster/files/website-dev/docker-compose.yml
           if git diff --cached --quiet; then
             echo "No change, skipping"
-          else
-            git commit -m "Update ghcr.io/khaddict/media-khaddict Docker tag to v$VERSION"
-            git push
+            exit 0
           fi
+          BRANCH="bump-media-khaddict-$VERSION"
+          git checkout -b "$BRANCH"
+          git commit -m "Update ghcr.io/khaddict/media-khaddict Docker tag to v$VERSION"
+          git push -f origin "$BRANCH"
+          gh pr create \
+            --title "Update ghcr.io/khaddict/media-khaddict Docker tag to v$VERSION" \
+            --body "Automated bump from khaddict-com's media-khaddict.yaml CI, triggered by ${{ github.sha }}. Bumps both the production chart and the saltmaster local-dev preview to keep them in sync." \
+            --base main \
+            --head "$BRANCH" \
+            || echo "PR for $BRANCH may already exist, skipping"

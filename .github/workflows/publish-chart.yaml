@@ -17,6 +17,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      version: ${{ steps.version.outputs.value }}
     steps:
       - uses: actions/checkout@v7.0.1
         with:
@@ -49,6 +51,13 @@ jobs:
           helm push "/tmp/chart-out/khaddict-com-${VERSION}.tgz" oci://ghcr.io/khaddict/charts
           echo "value=$VERSION" >> "$GITHUB_OUTPUT"
 
+  bump-voidnode:
+    needs: publish
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
       - name: Checkout voidnode
         uses: actions/checkout@v7.0.1
         with:
@@ -58,28 +67,39 @@ jobs:
 
       - name: Bump khaddict-com chart version in voidnode
         env:
-          VERSION: ${{ steps.version.outputs.value }}
+          VERSION: ${{ needs.publish.outputs.version }}
         run: |
           python3 -c "
           import re, os
           path = 'voidnode/argocd/apps/khaddict/Chart.yaml'
           version = os.environ['VERSION']
           content = open(path).read()
-          content = re.sub(r'(name: khaddict-com\n\s+version: \")[^\"]+(\")', rf'\g<1>{version}\g<2>', content, count=1)
-          open(path, 'w').write(content)
+          updated = re.sub(r'(name: khaddict-com\n\s+version: \")[^\"]+(\")', rf'\g<1>{version}\g<2>', content, count=1)
+          if updated == content:
+              raise SystemExit('khaddict-com version pattern not found in Chart.yaml, refusing to commit a no-op change')
+          open(path, 'w').write(updated)
           "
 
-      - name: Commit and push
+      - name: Open PR against voidnode
         working-directory: voidnode
         env:
-          VERSION: ${{ steps.version.outputs.value }}
+          VERSION: ${{ needs.publish.outputs.version }}
+          GH_TOKEN: ${{ secrets.VOIDNODE_REPO_TOKEN }}
         run: |
           git config user.name "khaddict-com-ci"
           git config user.email "ci@khaddict.com"
           git add argocd/apps/khaddict/Chart.yaml
           if git diff --cached --quiet; then
             echo "No change, skipping"
-          else
-            git commit -m "Update khaddict-com chart to $VERSION"
-            git push
+            exit 0
           fi
+          BRANCH="bump-khaddict-com-chart-$VERSION"
+          git checkout -b "$BRANCH"
+          git commit -m "Update khaddict-com chart to $VERSION"
+          git push -f origin "$BRANCH"
+          gh pr create \
+            --title "Update khaddict-com chart to $VERSION" \
+            --body "Automated bump from khaddict-com's publish-chart.yaml CI, triggered by ${{ github.sha }}." \
+            --base main \
+            --head "$BRANCH" \
+            || echo "PR for $BRANCH may already exist, skipping"

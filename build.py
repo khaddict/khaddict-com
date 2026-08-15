@@ -12,7 +12,6 @@ import json
 import pathlib
 from datetime import datetime, timezone
 from email.utils import format_datetime
-from xml.sax.saxutils import escape as xml_escape
 
 import yaml
 from jinja2 import Environment, FileSystemLoader
@@ -283,10 +282,10 @@ def build_feed_items(posts, locale, domain, scheme):
         pub_date = datetime.strptime(post["date"], "%Y-%m-%d").replace(tzinfo=timezone.utc)
         link = f"{scheme}://blog.{domain}/{'fr/' if locale == 'fr' else ''}posts/{slug}/"
         items.append({
-            "title": xml_escape(post["title"][locale]),
+            "title": post["title"][locale],
             "link": link,
             "pub_date": format_datetime(pub_date),
-            "description": xml_escape(post["excerpt"][locale]),
+            "description": post["excerpt"][locale],
         })
     return items
 
@@ -386,7 +385,7 @@ def main():
 
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATES)),
-        autoescape=False,
+        autoescape=True,
         trim_blocks=True,
         lstrip_blocks=True,
         keep_trailing_newline=True,
@@ -719,7 +718,7 @@ def main():
                 out_root / out_rel,
                 channel_link=BLOG_META[locale]["canonical_url"],
                 rss_href=RSS_HREFS[locale],
-                channel_description=xml_escape(BLOG_META[locale]["description"]),
+                channel_description=BLOG_META[locale]["description"],
                 language="fr-fr" if locale == "fr" else "en-us",
                 items=build_feed_items(posts, locale, args.domain, args.scheme),
             )

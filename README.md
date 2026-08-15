@@ -41,17 +41,21 @@ python3 -m venv .venv
 This renders every page to its real path (`files/www/index.html`, `vps-fallback/index.html`, etc.). All of it is gitignored and never committed, except `vps-fallback/index.html` (see "vps-fallback" below). Two useful flags:
 
 - `--out-dir <dir>`: render to a different directory instead of the real paths (e.g. `--out-dir _preview`, already gitignored), for previewing changes without touching what a local Helm test or a manual deploy would pick up.
-- `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `media`, `404`, `posts`, `feed`.
+- `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `media`, `api`, `404`, `posts`, `feed`.
 
 ## Publishing
 
-Two independent CI workflows:
+Two independent CI workflows, each split into two jobs so the credential used against `voidnode` never shares a job with this repo's own build code:
 
-- **`publish-chart.yaml`** (push to `main`, paths `Chart.yaml`/`files/**`/`templates/**`/`build.py`/`requirements.txt`): installs the Python deps, runs `build.py` to regenerate the site fresh, then packages and pushes to `oci://ghcr.io/khaddict/charts`. Version is `0.1.$(git rev-list --count HEAD)`, the repo's total commit count at build time rather than a sequential publish counter, so it can jump by more than 1 between two publishes if unrelated commits (e.g. Renovate bumping an action version) landed in between.
+- **`publish-chart.yaml`** (push to `main`, paths `Chart.yaml`/`files/**`/`templates/**`/`build.py`/`requirements.txt`): the `publish` job installs the Python deps, runs `build.py` to regenerate the site fresh, then packages and pushes to `oci://ghcr.io/khaddict/charts`. Version is `0.1.$(git rev-list --count HEAD)`, the repo's total commit count at build time rather than a sequential publish counter, so it can jump by more than 1 between two publishes if unrelated commits landed in between. A second `bump-voidnode` job (only on `main`, `needs: publish`) then bumps `voidnode`'s `argocd/apps/khaddict/Chart.yaml` and opens a PR there; see "Cross-repo automation" below.
 - **`templates-build-check.yaml`** (PR and push to `main`, paths `templates/**`/`build.py`/`requirements.txt`): runs `build.py` and fails if it errors. A smoke test that templates still render, nothing more (there's no committed output to compare against).
-- **`media-khaddict.yaml`** builds and pushes the `media-build/` Docker image (gallery photos, tech-stack icons resized and stickered at build time, and raw video clips) to `ghcr.io/khaddict/media-khaddict`, tagged with the commit's short SHA and the `0.1.x` version (no `latest` tag, so a node's cached image is never silently mistaken for a newer one).
+- **`media-khaddict.yaml`**: the `build` job builds and pushes the `media-build/` Docker image (gallery photos, tech-stack icons resized and stickered at build time, and raw video clips) to `ghcr.io/khaddict/media-khaddict`, tagged with the commit's short SHA and the `0.1.x` version (no `latest` tag, so a node's cached image is never silently mistaken for a newer one). A second `bump-voidnode` job then bumps both `voidnode`'s production tag (`argocd/apps/khaddict/values.yaml`) and its saltmaster local-dev preview tag (`role/saltmaster/files/website-dev/docker-compose.yml`) in the same PR, so the two never drift.
 
-Neither workflow writes back to `voidnode`. Renovate watches `voidnode`'s `Chart.yaml` dependency version and the `media-khaddict` image tag in `values.yaml`, and opens a PR there when either one moves. This repo has its own `.github/renovate.jsonc` to keep the Dockerfile base images and the GitHub Actions versions in `.github/workflows/` current.
+### Cross-repo automation
+
+Neither workflow pushes directly to `voidnode`'s `main`. Each `bump-voidnode` job commits to a fresh branch and opens a PR there via a fine-grained PAT (`VOIDNODE_REPO_TOKEN`, `Contents: Read and write` scoped to that one repo only), so every bump still needs a human merge. The `bump-voidnode` job is gated with `if: github.ref == 'refs/heads/main'`, so a manual `workflow_dispatch` run against any other branch still builds/publishes but never touches `voidnode`.
+
+Renovate no longer tracks the `khaddict-com` chart or the `media-khaddict` image inside `voidnode`. Both `packageRules` are explicitly disabled in `voidnode/.github/renovate.jsonc` now that these two workflows cover them directly. Renovate still handles everything else in both repos, including this repo's own Python dependencies, Dockerfile base images, and GitHub Actions versions via its own `.github/renovate.jsonc`.
 
 ## Adding a blog post
 
@@ -81,6 +85,20 @@ git commit
 ```
 
 Once that lands on `main`, the VPS picks it up on its next Salt highstate (ETag comparison against GitHub's raw content; no polling delay-sensitive deploy step to run here).
+
+## api page
+
+`files/api/index.html` and `files/api/fr/index.html` are the site-styled documentation page served at `api.khaddict.com`'s root path. Like `vps-fallback/index.html`, they're committed and fetched directly from GitHub raw, but by the `api` VM (`role.api` in `voidnode`, one `file.managed` state per locale), not the VPS. The FastAPI backend itself is untouched by this repo: it keeps serving `/wall/*`, `/busybar/status`, `/healthz`, `/openapi.json`, and `/docs` (stock Swagger UI) from `voidnode`'s `role/api`. This page fetches that same `/openapi.json` client-side at runtime and renders it with the site's own components (grouped by tag, with "Try it" forms built from each endpoint's schema) instead of Swagger's stock widget.
+
+After editing `templates/pages/api.html.j2` (or `templates/data/i18n/api.yaml`), regenerate and commit both locales:
+
+```
+.venv/bin/python3 build.py --only api
+git add files/api/index.html files/api/fr/index.html
+git commit
+```
+
+Once that lands on `main`, the `api` VM picks it up on its next Salt highstate (same ETag-based fetch as `vps-fallback`).
 
 ## Testing locally
 

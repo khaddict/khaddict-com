@@ -221,7 +221,7 @@
       <h1 class="post-title" data-i18n="post.title">{{ i18n['post.title'] }}</h1>
       <div class="post-tags" id="post-tags"></div>
       <div class="post-body">
-        <p data-i18n="post.body">{{ i18n['post.body'] }}</p>
+        <p data-i18n="post.body">{{ i18n['post.body'] | safe }}</p>
       </div>
 
       <div class="post-share">
@@ -333,8 +333,15 @@
     function applyLanguage() {
       document.documentElement.lang = currentLang;
       document.title = t('title.post');
+      const HTML_I18N_KEYS = new Set(['hero.title', 'wall.dropZone', 'projects.title', 'deploy.title', 'post.body']);
       document.querySelectorAll('[data-i18n]').forEach((el) => {
-        el.innerHTML = t(el.getAttribute('data-i18n'));
+        const i18nKey = el.getAttribute('data-i18n');
+        const value = t(i18nKey);
+        if (HTML_I18N_KEYS.has(i18nKey)) {
+          el.innerHTML = value;
+        } else {
+          el.textContent = value;
+        }
       });
       document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
         el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));

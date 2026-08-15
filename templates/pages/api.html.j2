@@ -386,8 +386,15 @@
     function applyLanguage() {
       document.documentElement.lang = currentLang;
       document.title = t('title.api');
+      const HTML_I18N_KEYS = new Set(['hero.title', 'wall.dropZone', 'projects.title', 'deploy.title']);
       document.querySelectorAll('[data-i18n]').forEach((el) => {
-        el.innerHTML = t(el.getAttribute('data-i18n'));
+        const i18nKey = el.getAttribute('data-i18n');
+        const value = t(i18nKey);
+        if (HTML_I18N_KEYS.has(i18nKey)) {
+          el.innerHTML = value;
+        } else {
+          el.textContent = value;
+        }
       });
       document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
         el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
