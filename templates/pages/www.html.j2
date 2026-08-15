@@ -1059,7 +1059,32 @@
         }
       });
 
+      // the canvas's backing buffer is fixed at build time (288x64, 4 raw px per LED
+      // cell) and stretched via CSS to whatever size the responsive layout computes;
+      // at a browser zoom or window size where that CSS size isn't a clean multiple
+      // of 72x16, the stretch lands on fractional device pixels and LED cells render
+      // as uneven blocks instead of crisp uniform squares. Re-sizing the actual buffer
+      // to an integer number of device pixels per cell (and redrawing) fixes that.
+      function resizeCanvasForDisplay() {
+        const rect = canvas.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const dpr = window.devicePixelRatio || 1;
+        const cell = Math.max(1, Math.round((rect.width * dpr) / COLS));
+        const newWidth = cell * COLS;
+        const newHeight = cell * ROWS;
+        if (canvas.width === newWidth && canvas.height === newHeight) return;
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        if (mode === 'image' && loadedImage) {
+          drawImageBuffer(imageToBuffer(loadedImage));
+        } else if (!needsScroll && stripData) {
+          drawBuffer(sampleTextWindow(stripData, offset));
+        }
+      }
+      new ResizeObserver(resizeCanvasForDisplay).observe(canvas);
+
       updateCounter();
+      resizeCanvasForDisplay();
       setText(textarea.value);
       tick();
       let statusInterval = null;
