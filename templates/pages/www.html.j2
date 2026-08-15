@@ -25,9 +25,6 @@
   <meta name="twitter:image" content="{{ brand_icon_src }}" />
   <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
   <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Matomo -->
   <script>
@@ -132,12 +129,29 @@
       gap: 1rem;
     }
 
+    .wall-head-left {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      flex-wrap: wrap;
+    }
+
     .wall-eyebrow {
       font-size: .68rem;
       font-weight: 600;
       letter-spacing: .1em;
       text-transform: uppercase;
       color: var(--accent);
+    }
+
+    .wall-messages-counter {
+      font-size: .68rem;
+      color: var(--muted);
+    }
+
+    .wall-messages-counter::before {
+      content: "·";
+      margin-right: .55rem;
     }
 
     .wall-live-pill {
@@ -505,7 +519,10 @@
 
       <div class="wall-card">
         <div class="wall-head">
-          <span class="wall-eyebrow" data-i18n="wall.eyebrow">{{ i18n['wall.eyebrow'] }}</span>
+          <div class="wall-head-left">
+            <span class="wall-eyebrow" data-i18n="wall.eyebrow">{{ i18n['wall.eyebrow'] }}</span>
+            <span class="wall-messages-counter" id="wall-messages-counter" hidden></span>
+          </div>
           <span class="wall-live-pill warn" id="wall-live-pill"><span class="dot warn" id="wall-live-dot"></span><span data-i18n="wall.checking" id="wall-live-text">{{ i18n['wall.checking'] }}</span></span>
         </div>
         <h2 data-i18n="wall.title">{{ i18n['wall.title'] }}</h2>
@@ -944,6 +961,13 @@
       const livePill = document.getElementById('wall-live-pill');
       const liveDot = document.getElementById('wall-live-dot');
       const liveText = document.getElementById('wall-live-text');
+      const wallMessagesCounter = document.getElementById('wall-messages-counter');
+
+      function setMessagesToday(count) {
+        if (!Number.isFinite(count)) return;
+        wallMessagesCounter.textContent = `${count} ${t(count === 1 ? 'wall.messageToday' : 'wall.messagesToday')}`;
+        wallMessagesCounter.hidden = false;
+      }
 
       // starts false (Send stays disabled) until refreshBarStatus resolves, so there's
       // no window where the pill optimistically claims "online" before the real check lands
@@ -969,6 +993,7 @@
           const res = await fetch(`${API_URL}/busybar/status`);
           const data = await res.json();
           setBarOnline(!!data.online);
+          setMessagesToday(data.messages_today);
         } catch {
           setBarOnline(false);
         }

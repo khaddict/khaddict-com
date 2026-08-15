@@ -40,9 +40,6 @@
   <meta name="twitter:image" content="https://media.khaddict.com/icons/khazix-pc-flat.png" />
   <link rel="icon" href="https://media.khaddict.com/icons/khazix-pc-flat.png" type="image/png" />
   <link rel="apple-touch-icon" href="https://media.khaddict.com/icons/khazix-pc-flat.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
 
   <!-- Matomo -->
   <script>
@@ -60,6 +57,35 @@
   <!-- End Matomo -->
 
   <style>
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('https://media.khaddict.com/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('https://media.khaddict.com/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('https://media.khaddict.com/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'JetBrains Mono';
+      src: url('https://media.khaddict.com/fonts/JetBrainsMono-ExtraBold.woff2') format('woff2');
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
     :root {
       --bg:                 #ffffff;
       --text:               #18181b;
@@ -855,11 +881,13 @@
             </a>
             <a class="lang-option" data-lang="en" href="https://api.khaddict.com/">
               <svg class="lang-flag" viewBox="0 0 30 30" preserveAspectRatio="xMidYMid slice">
-                <rect width="30" height="30" fill="#6D82B8"/>
-                <path d="M0,0 L30,30 M30,0 L0,30" stroke="#F7F6F2" stroke-width="4"/>
-                <path d="M0,0 L30,30 M30,0 L0,30" stroke="#DB7A70" stroke-width="1.5"/>
-                <path d="M15,0 V30 M0,15 H30" stroke="#F7F6F2" stroke-width="6"/>
-                <path d="M15,0 V30 M0,15 H30" stroke="#DB7A70" stroke-width="3"/>
+                <rect width="30" height="30" fill="#F7F6F2"/>
+                <rect y="0" width="30" height="3" fill="#DB7A70"/>
+                <rect y="6" width="30" height="3" fill="#DB7A70"/>
+                <rect y="12" width="30" height="3" fill="#DB7A70"/>
+                <rect y="18" width="30" height="3" fill="#DB7A70"/>
+                <rect y="24" width="30" height="3" fill="#DB7A70"/>
+                <rect width="13" height="15" fill="#6D82B8"/>
               </svg>
               English
             </a>
