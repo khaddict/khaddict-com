@@ -1,0 +1,412 @@
+{% from "partials/js_str.j2" import js_str %}
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+{% include "partials/theme_toggle.js.j2" %}
+  </script>
+  <title>{{ i18n['title.api'] }}</title>
+  <meta name="description" content="{{ meta_description }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ og_url }}" />
+  <meta property="og:title" content="{{ i18n['title.api'] }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <meta property="og:image" content="{{ brand_icon_src }}" />
+  <meta property="og:locale" content="{{ og_locale }}" />
+  <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
+  <link rel="canonical" href="{{ canonical_url }}" />
+  <link rel="alternate" hreflang="en" href="{{ hreflang_en_href }}" />
+  <link rel="alternate" hreflang="fr" href="{{ hreflang_fr_href }}" />
+  <link rel="alternate" hreflang="x-default" href="{{ hreflang_x_default_href }}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ i18n['title.api'] }}" />
+  <meta name="twitter:image" content="{{ brand_icon_src }}" />
+  <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
+  <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Matomo -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u="//matomo.khaddict.com/";
+      _paq.push(['setTrackerUrl', u+'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+    })();
+  </script>
+  <!-- End Matomo -->
+
+  <style>
+{% include "partials/head_tokens.css.j2" %}
+{% include "partials/status_widget.css.j2" %}
+    /* api docs */
+    .api-hero {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      animation: fade-up .45s ease both;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .api-inner { max-width: 860px; width: 100%; }
+
+    .api-intro { margin-bottom: 2rem; }
+
+    .api-intro h1 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: .6rem;
+    }
+
+    .api-sub {
+      font-size: .85rem;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 620px;
+    }
+
+    .api-sub code {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--border);
+      padding: .1rem .35rem;
+      border-radius: 4px;
+    }
+
+    .api-group { margin-bottom: 2rem; }
+
+    .api-group-title {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: .8rem;
+    }
+
+    .api-endpoints {
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+    }
+
+    .api-endpoint {
+      padding: 1.1rem 1.3rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      transition: border-color .15s ease;
+    }
+
+    .api-endpoint:hover { border-color: var(--accent); }
+
+    .api-endpoint-head {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      flex-wrap: wrap;
+    }
+
+    .api-method {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      font-weight: 700;
+      color: #fff;
+      padding: .2rem .55rem;
+      border-radius: 999px;
+      letter-spacing: .03em;
+      flex-shrink: 0;
+    }
+
+    .api-method.post { background: var(--accent); }
+    .api-method.get { background: var(--accent-2); }
+    .api-method.delete { background: var(--down); }
+    .api-method.put, .api-method.patch { background: var(--warn); }
+
+    .api-path {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .85rem;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .api-summary {
+      font-size: .8rem;
+      color: var(--muted);
+      margin-top: .5rem;
+      line-height: 1.6;
+    }
+
+    .api-detail-title {
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: .8rem 0 .35rem;
+    }
+
+    .api-fields {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+    }
+
+    .api-field-name { color: var(--text); font-weight: 600; }
+    .api-field-type { color: var(--accent-2); }
+    .api-field-required { color: var(--down); font-size: .68rem; margin-left: .3rem; }
+
+    .api-responses {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+    }
+
+    .api-response-code {
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .api-status {
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 2rem 0;
+      text-align: center;
+    }
+
+    .api-status.error { color: var(--down); }
+{% include "partials/responsive.css.j2" %}
+  </style>
+</head>
+
+<body>
+{% include "partials/header.html.j2" %}
+
+  <main class="api-hero">
+    <div class="api-inner">
+      <div class="api-intro">
+        <h1 data-i18n="api.title">{{ i18n['api.title'] }}</h1>
+        <p class="api-sub" data-i18n="api.sub">{{ i18n['api.sub'] | safe }}</p>
+        <p class="api-sub"><span data-i18n="api.baseUrl">{{ i18n['api.baseUrl'] }}</span> <code>{{ api_base_url }}</code></p>
+      </div>
+
+      <div id="api-status" class="api-status" data-i18n="api.loading">{{ i18n['api.loading'] }}</div>
+      <div id="api-groups"></div>
+    </div>
+  </main>
+
+{% include "partials/footer.html.j2" %}
+
+  <script>
+    const I18N = {
+{% for locale in ['en', 'fr'] %}
+      {{ locale }}: {
+{% for key, value in i18n_all[locale].items() %}
+        '{{ key }}': {{ js_str(value) }},
+{% endfor %}
+      },
+{% endfor %}
+    };
+
+    let currentLang = '{{ lang }}';
+
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.title = t('title.api');
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        el.innerHTML = t(el.getAttribute('data-i18n'));
+      });
+      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+      });
+      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
+      document.querySelectorAll('.lang-option').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
+      });
+    }
+
+    applyLanguage();
+
+    const langBtn = document.getElementById('lang-btn');
+    const langDropdown = document.getElementById('lang-dropdown');
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = langDropdown.classList.toggle('open');
+      langBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', (e) => {
+      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
+        langDropdown.classList.remove('open');
+        langBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+{% include "partials/status_widget.js.j2" %}
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      setThemeCookie(next);
+    });
+
+    (function () {
+      const discordBtn = document.getElementById('discord-btn');
+      const discordToast = document.getElementById('discord-toast');
+      let toastTimer = null;
+
+      discordBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
+        discordBtn.classList.add('copied');
+        discordToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          discordToast.classList.remove('show');
+          discordBtn.classList.remove('copied');
+        }, 900);
+      });
+    })();
+
+    // fetches the live OpenAPI spec and renders it with the site's own
+    // components instead of Swagger's stock widget
+    (function () {
+      const API_BASE_URL = '{{ api_base_url }}';
+      const statusEl = document.getElementById('api-status');
+      const groupsEl = document.getElementById('api-groups');
+      const METHOD_ORDER = ['post', 'get', 'put', 'patch', 'delete'];
+      const GROUP_ORDER = ['BUSY Bar', 'System'];
+
+      function resolveSchema(spec, schema) {
+        if (!schema) return null;
+        if (schema.$ref) {
+          const name = schema.$ref.split('/').pop();
+          return (spec.components && spec.components.schemas && spec.components.schemas[name]) || null;
+        }
+        return schema;
+      }
+
+      function schemaTypeLabel(prop) {
+        if (!prop) return 'any';
+        if (prop.type === 'array') return `${(prop.items && prop.items.type) || 'any'}[]`;
+        return prop.type || 'any';
+      }
+
+      function renderRequestFields(spec, operation) {
+        const body = operation.requestBody;
+        if (!body || !body.content) return '';
+        const media = body.content['application/json'] || body.content['multipart/form-data'];
+        if (!media) return '';
+        const schema = resolveSchema(spec, media.schema);
+        if (!schema || !schema.properties) return '';
+        const required = new Set(schema.required || []);
+        const rows = Object.entries(schema.properties).map(([name, prop]) => `
+          <div>
+            <span class="api-field-name">${name}</span>
+            <span class="api-field-type">${schemaTypeLabel(prop)}</span>
+            ${required.has(name) ? `<span class="api-field-required">${t('api.required')}</span>` : ''}
+          </div>
+        `).join('');
+        return `<div class="api-detail-title">${t('api.body')}</div><div class="api-fields">${rows}</div>`;
+      }
+
+      function renderParams(operation) {
+        const params = operation.parameters;
+        if (!params || !params.length) return '';
+        const rows = params.map((p) => `
+          <div>
+            <span class="api-field-name">${p.name}</span>
+            <span class="api-field-type">${schemaTypeLabel(p.schema)} · ${p.in}</span>
+            ${p.required ? `<span class="api-field-required">${t('api.required')}</span>` : ''}
+          </div>
+        `).join('');
+        return `<div class="api-detail-title">${t('api.params')}</div><div class="api-fields">${rows}</div>`;
+      }
+
+      function renderResponses(operation) {
+        const responses = operation.responses;
+        if (!responses) return '';
+        const chips = Object.keys(responses).map((code) => `<span class="api-response-code">${code}</span>`).join('');
+        return `<div class="api-detail-title">${t('api.responses')}</div><div class="api-responses">${chips}</div>`;
+      }
+
+      function endpointHtml(spec, path, method, operation) {
+        const summary = operation.summary || operation.description || '';
+        return `
+          <article class="api-endpoint">
+            <div class="api-endpoint-head">
+              <span class="api-method ${method}">${method.toUpperCase()}</span>
+              <code class="api-path">${path}</code>
+            </div>
+            ${summary ? `<p class="api-summary">${summary}</p>` : ''}
+            ${renderParams(operation)}
+            ${renderRequestFields(spec, operation)}
+            ${renderResponses(operation)}
+          </article>
+        `;
+      }
+
+      async function loadSpec() {
+        try {
+          const res = await fetch(`${API_BASE_URL}/openapi.json`);
+          if (!res.ok) throw new Error('bad response');
+          const spec = await res.json();
+
+          const groups = new Map();
+          Object.entries(spec.paths || {}).forEach(([path, methods]) => {
+            METHOD_ORDER.forEach((method) => {
+              const operation = methods[method];
+              if (!operation) return;
+              const tag = (operation.tags && operation.tags[0]) || 'Other';
+              if (!groups.has(tag)) groups.set(tag, []);
+              groups.get(tag).push({ path, method, operation });
+            });
+          });
+
+          const orderedTags = [
+            ...GROUP_ORDER.filter((tag) => groups.has(tag)),
+            ...[...groups.keys()].filter((tag) => !GROUP_ORDER.includes(tag)),
+          ];
+
+          groupsEl.innerHTML = orderedTags.map((tag) => `
+            <section class="api-group">
+              <h2 class="api-group-title">${tag}</h2>
+              <div class="api-endpoints">
+                ${groups.get(tag).map((e) => endpointHtml(spec, e.path, e.method, e.operation)).join('')}
+              </div>
+            </section>
+          `).join('');
+
+          statusEl.style.display = 'none';
+        } catch {
+          statusEl.textContent = t('api.error');
+          statusEl.classList.add('error');
+        }
+      }
+
+      loadSpec();
+    })();
+  </script>
+</body>
+</html>

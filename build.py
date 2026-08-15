@@ -55,7 +55,7 @@ def build_site_urls(domain, scheme):
             "projects": f"{scheme}://projects.{domain}",
             "media": f"{scheme}://media.{domain}",
             "dashboard": f"{scheme}://dashboard.{domain}",
-            "api": f"{scheme}://api.{domain}/docs",
+            "api": f"{scheme}://api.{domain}",
         },
         "fr": {
             "brand": "/fr/",
@@ -64,7 +64,7 @@ def build_site_urls(domain, scheme):
             "projects": f"{scheme}://projects.{domain}/fr/",
             "media": f"{scheme}://media.{domain}/fr/",
             "dashboard": f"{scheme}://dashboard.{domain}",
-            "api": f"{scheme}://api.{domain}/docs",
+            "api": f"{scheme}://api.{domain}/fr/",
         },
     }
 
@@ -203,9 +203,29 @@ def build_media_meta(domain, scheme):
     }
 
 
+def build_api_meta(domain, scheme):
+    return {
+        "en": {
+            "description": "Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar.",
+            "og_url": f"{scheme}://api.{domain}/",
+            "og_locale": "en_US",
+            "og_locale_alternate": "fr_FR",
+            "canonical_url": f"{scheme}://api.{domain}/",
+        },
+        "fr": {
+            "description": "Passerelle publique qui pilote des devices IoT du homelab, à commencer par la BUSY Bar.",
+            "og_url": f"{scheme}://api.{domain}/fr/",
+            "og_locale": "fr_FR",
+            "og_locale_alternate": "en_US",
+            "canonical_url": f"{scheme}://api.{domain}/fr/",
+        },
+    }
+
+
 BLOG_META = None
 PROJECTS_META = None
 MEDIA_META = None
+API_META = None
 
 NOT_FOUND_DESCRIPTION = "This page doesn't exist."
 
@@ -303,7 +323,7 @@ def render(env, template_name, out_path, **context):
     print(f"wrote {out_path}")
 
 
-PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "404", "posts", "feed", "sitemap"]
+PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "api", "404", "posts", "feed", "sitemap"]
 
 
 def main():
@@ -341,7 +361,7 @@ def main():
     out_root = args.out_dir.resolve()
     only = args.only
 
-    global SITE_URLS, BRAND_ICON_URL, WALL_SCENE_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, RSS_HREFS
+    global SITE_URLS, BRAND_ICON_URL, WALL_SCENE_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, API_META, RSS_HREFS
     SITE_URLS = build_site_urls(args.domain, args.scheme)
     BRAND_ICON_URL = f"{args.scheme}://media.{args.domain}/icons/khazix-pc-flat.png"
     WALL_SCENE_URL = f"{args.scheme}://media.{args.domain}/gallery/wall-scene.png"
@@ -349,6 +369,7 @@ def main():
     BLOG_META = build_blog_meta(args.domain, args.scheme)
     PROJECTS_META = build_projects_meta(args.domain, args.scheme)
     MEDIA_META = build_media_meta(args.domain, args.scheme)
+    API_META = build_api_meta(args.domain, args.scheme)
     RSS_HREFS = build_rss_hrefs(args.domain, args.scheme)
 
     # vps-fallback always represents the real public site (that's its whole
@@ -551,6 +572,40 @@ def main():
                 **NO_EXTRA_TOKENS,
                 **lang_switch_hrefs("media"),
                 **hreflang_hrefs("media"),
+            )
+
+    if only in (None, "api"):
+        api_yaml = load_i18n("api")
+        api_i18n_all = merged_i18n(common, api_yaml)
+        for locale, out_rel in (("en", "files/api/index.html"), ("fr", "files/api/fr/index.html")):
+            render(
+                env,
+                "pages/api.html.j2",
+                out_root / out_rel,
+                lang=locale,
+                lang_mode="url",
+                lang_current=locale.upper(),
+                i18n=api_i18n_all[locale],
+                i18n_all=api_i18n_all,
+                brand_href=SITE_URLS[locale]["home"],
+                nav_home_href=SITE_URLS[locale]["home"],
+                nav_blog_href=SITE_URLS[locale]["blog"],
+                nav_projects_href=SITE_URLS[locale]["projects"],
+                nav_media_href=SITE_URLS[locale]["media"],
+                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
+                nav_api_href=SITE_URLS[locale]["api"],
+                brand_icon_src=BRAND_ICON_URL,
+                meta_description=API_META[locale]["description"],
+                og_url=API_META[locale]["og_url"],
+                og_locale=API_META[locale]["og_locale"],
+                og_locale_alternate=API_META[locale]["og_locale_alternate"],
+                canonical_url=API_META[locale]["canonical_url"],
+                cookie_domain=cookie_domain,
+                cookie_secure_attr=cookie_secure_attr,
+                api_base_url=f"{args.scheme}://api.{args.domain}",
+                **NO_EXTRA_TOKENS,
+                **lang_switch_hrefs("api"),
+                **hreflang_hrefs("api"),
             )
 
     if only in (None, "404"):

@@ -46,3 +46,38 @@ jobs:
           tags: |
             ghcr.io/khaddict/media-khaddict:${{ steps.sha.outputs.short }}
             ghcr.io/khaddict/media-khaddict:${{ steps.version.outputs.value }}
+
+      - name: Checkout voidnode
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: khaddict/voidnode
+          token: ${{ secrets.VOIDNODE_REPO_TOKEN }}
+          path: voidnode
+
+      - name: Bump media-khaddict tag in voidnode
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          python3 -c "
+          import re, os
+          path = 'voidnode/argocd/apps/khaddict/values.yaml'
+          version = os.environ['VERSION']
+          content = open(path).read()
+          content = re.sub(r'(repository: ghcr\.io/khaddict/media-khaddict\n\s+tag: \")[^\"]+(\")', rf'\g<1>{version}\g<2>', content, count=1)
+          open(path, 'w').write(content)
+          "
+
+      - name: Commit and push
+        working-directory: voidnode
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          git config user.name "khaddict-com-ci"
+          git config user.email "ci@khaddict.com"
+          git add argocd/apps/khaddict/values.yaml
+          if git diff --cached --quiet; then
+            echo "No change, skipping"
+          else
+            git commit -m "Update ghcr.io/khaddict/media-khaddict Docker tag to v$VERSION"
+            git push
+          fi

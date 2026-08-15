@@ -42,7 +42,44 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
 
       - name: Package and push chart
+        id: version
         run: |
           VERSION="0.1.$(git rev-list --count HEAD)"
           helm package . --version "$VERSION" --app-version "$VERSION" -d /tmp/chart-out
           helm push "/tmp/chart-out/khaddict-com-${VERSION}.tgz" oci://ghcr.io/khaddict/charts
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout voidnode
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: khaddict/voidnode
+          token: ${{ secrets.VOIDNODE_REPO_TOKEN }}
+          path: voidnode
+
+      - name: Bump khaddict-com chart version in voidnode
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          python3 -c "
+          import re, os
+          path = 'voidnode/argocd/apps/khaddict/Chart.yaml'
+          version = os.environ['VERSION']
+          content = open(path).read()
+          content = re.sub(r'(name: khaddict-com\n\s+version: \")[^\"]+(\")', rf'\g<1>{version}\g<2>', content, count=1)
+          open(path, 'w').write(content)
+          "
+
+      - name: Commit and push
+        working-directory: voidnode
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          git config user.name "khaddict-com-ci"
+          git config user.email "ci@khaddict.com"
+          git add argocd/apps/khaddict/Chart.yaml
+          if git diff --cached --quiet; then
+            echo "No change, skipping"
+          else
+            git commit -m "Update khaddict-com chart to $VERSION"
+            git push
+          fi
