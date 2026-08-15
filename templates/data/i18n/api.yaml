@@ -1,7 +1,5 @@
 en:
   title.api: "API | khaddict"
-  api.title: "Public API"
-  api.sub: "The gateway that drives IoT devices around the homelab, starting with the BUSY Bar."
   api.baseUrl: "Base URL:"
   api.loading: "Loading endpoints…"
   api.error: "Couldn't load the API spec. Try again later"
@@ -12,10 +10,10 @@ en:
   api.execute: "Execute"
   api.sending: "Sending…"
   api.networkError: "Network error"
+  api.chooseFile: "Choose file"
+  api.noFileChosen: "No file chosen"
 fr:
   title.api: "API | khaddict"
-  api.title: "API publique"
-  api.sub: "La passerelle qui pilote les devices IoT du homelab, à commencer par la BUSY Bar."
   api.baseUrl: "URL de base :"
   api.loading: "Chargement des endpoints…"
   api.error: "Impossible de charger la spec de l'API. Réessaie plus tard"
@@ -26,3 +24,5 @@ fr:
   api.execute: "Exécuter"
   api.sending: "Envoi…"
   api.networkError: "Erreur réseau"
+  api.chooseFile: "Choisir un fichier"
+  api.noFileChosen: "Aucun fichier choisi"

@@ -504,14 +504,7 @@
 
     .api-inner { max-width: 860px; width: 100%; }
 
-    .api-intro { margin-bottom: 2rem; }
-
-    .api-intro h1 {
-      font-size: clamp(1.5rem, 4vw, 2.1rem);
-      font-weight: 700;
-      letter-spacing: -.02em;
-      margin-bottom: .6rem;
-    }
+    .api-intro { margin-bottom: 1.2rem; }
 
     .api-sub {
       font-size: .85rem;
@@ -683,6 +676,48 @@
 
     .api-try-btn:disabled { opacity: .6; cursor: default; }
 
+    .api-try-file {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      flex-wrap: wrap;
+    }
+
+    .api-try-file-input {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    .api-try-file-btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      font-weight: 600;
+      padding: .4rem .85rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color .15s ease;
+    }
+
+    .api-try-file-btn:hover { border-color: var(--accent); }
+
+    .api-try-file:has(.api-try-file-input:focus-visible) .api-try-file-btn {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .api-try-file-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .76rem;
+      color: var(--muted);
+    }
+
     .api-try-response {
       display: none;
       margin-top: .7rem;
@@ -780,8 +815,6 @@
   <main class="api-hero">
     <div class="api-inner">
       <div class="api-intro">
-        <h1 data-i18n="api.title">Public API</h1>
-        <p class="api-sub" data-i18n="api.sub">The gateway that drives IoT devices around the homelab, starting with the BUSY Bar.</p>
         <p class="api-sub"><span data-i18n="api.baseUrl">Base URL:</span> <code>https://api.khaddict.com</code></p>
       </div>
 
@@ -834,8 +867,6 @@
         'lang.ariaLabel': "Switch language",
         'rss.ariaLabel': "RSS feed",
         'title.api': "API | khaddict",
-        'api.title': "Public API",
-        'api.sub': "The gateway that drives IoT devices around the homelab, starting with the BUSY Bar.",
         'api.baseUrl': "Base URL:",
         'api.loading': "Loading endpoints\u2026",
         'api.error': "Couldn't load the API spec. Try again later",
@@ -846,6 +877,8 @@
         'api.execute': "Execute",
         'api.sending': "Sending\u2026",
         'api.networkError': "Network error",
+        'api.chooseFile': "Choose file",
+        'api.noFileChosen': "No file chosen",
       },
       fr: {
         'nav.home': "accueil",
@@ -869,8 +902,6 @@
         'lang.ariaLabel': "Changer de langue",
         'rss.ariaLabel': "Flux RSS",
         'title.api': "API | khaddict",
-        'api.title': "API publique",
-        'api.sub': "La passerelle qui pilote les devices IoT du homelab, \u00e0 commencer par la BUSY Bar.",
         'api.baseUrl': "URL de base :",
         'api.loading': "Chargement des endpoints\u2026",
         'api.error': "Impossible de charger la spec de l'API. R\u00e9essaie plus tard",
@@ -881,6 +912,8 @@
         'api.execute': "Ex\u00e9cuter",
         'api.sending': "Envoi\u2026",
         'api.networkError': "Erreur r\u00e9seau",
+        'api.chooseFile': "Choisir un fichier",
+        'api.noFileChosen': "Aucun fichier choisi",
       },
     };
 
@@ -1136,7 +1169,13 @@
           return `<select class="api-try-input" id="${fieldId}" data-field="${name}">${options}</select>`;
         }
         if (prop && (prop.format === 'binary' || prop.contentMediaType)) {
-          return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="file" accept="image/png,image/jpeg,image/webp" ${required ? 'required' : ''} />`;
+          return `
+            <div class="api-try-file">
+              <label class="api-try-file-btn" for="${fieldId}">${t('api.chooseFile')}</label>
+              <span class="api-try-file-name" id="${fieldId}-name">${t('api.noFileChosen')}</span>
+              <input class="api-try-file-input" id="${fieldId}" data-field="${name}" type="file" accept="image/png,image/jpeg,image/webp" ${required ? 'required' : ''} />
+            </div>
+          `;
         }
         if (prop && (prop.type === 'integer' || prop.type === 'number')) {
           return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="number" ${required ? 'required' : ''} />`;
@@ -1241,6 +1280,13 @@
           statusEl.classList.add('error');
         }
       }
+
+      groupsEl.addEventListener('change', (e) => {
+        const input = e.target.closest('input[type="file"][data-field]');
+        if (!input) return;
+        const nameEl = document.getElementById(`${input.id}-name`);
+        if (nameEl) nameEl.textContent = input.files[0] ? input.files[0].name : t('api.noFileChosen');
+      });
 
       groupsEl.addEventListener('click', async (e) => {
         const btn = e.target.closest('[data-action="execute"]');
