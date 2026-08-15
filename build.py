@@ -370,7 +370,17 @@ def main():
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
-    env.filters["tojson"] = json.dumps
+    def safe_tojson(value):
+        # plain json.dumps doesn't escape </script>, which would end the
+        # enclosing <script> block early regardless of JS-string quoting
+        return (
+            json.dumps(value)
+            .replace("<", "\\u003c")
+            .replace(">", "\\u003e")
+            .replace("&", "\\u0026")
+        )
+
+    env.filters["tojson"] = safe_tojson
 
     common = load_i18n("common")
     with open(TEMPLATES / "data" / "posts.yaml", encoding="utf-8") as f:

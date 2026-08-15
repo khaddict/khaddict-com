@@ -49,7 +49,7 @@ Two independent CI workflows:
 
 - **`publish-chart.yaml`** (push to `main`, paths `Chart.yaml`/`files/**`/`templates/**`/`build.py`/`requirements.txt`): installs the Python deps, runs `build.py` to regenerate the site fresh, then packages and pushes to `oci://ghcr.io/khaddict/charts`. Version is `0.1.$(git rev-list --count HEAD)`, the repo's total commit count at build time rather than a sequential publish counter, so it can jump by more than 1 between two publishes if unrelated commits (e.g. Renovate bumping an action version) landed in between.
 - **`templates-build-check.yaml`** (PR and push to `main`, paths `templates/**`/`build.py`/`requirements.txt`): runs `build.py` and fails if it errors. A smoke test that templates still render, nothing more (there's no committed output to compare against).
-- **`media-khaddict.yaml`** builds and pushes the `media-build/` Docker image (gallery photos, tech-stack icons resized and stickered at build time, and raw video clips) to `ghcr.io/khaddict/media-khaddict`, tagged with the commit's short SHA and `latest`.
+- **`media-khaddict.yaml`** builds and pushes the `media-build/` Docker image (gallery photos, tech-stack icons resized and stickered at build time, and raw video clips) to `ghcr.io/khaddict/media-khaddict`, tagged with the commit's short SHA and the `0.1.x` version (no `latest` tag, so a node's cached image is never silently mistaken for a newer one).
 
 Neither workflow writes back to `voidnode`. Renovate watches `voidnode`'s `Chart.yaml` dependency version and the `media-khaddict` image tag in `values.yaml`, and opens a PR there when either one moves. This repo has its own `.github/renovate.jsonc` to keep the Dockerfile base images and the GitHub Actions versions in `.github/workflows/` current.
 

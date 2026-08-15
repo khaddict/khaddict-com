@@ -35,6 +35,8 @@ jobs:
 
       - name: Set up Helm
         uses: azure/setup-helm@v5
+        with:
+          version: "v4.2.4"
 
       - name: Login to ghcr.io
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
