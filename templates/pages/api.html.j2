@@ -194,6 +194,70 @@
     }
 
     .api-status.error { color: var(--down); }
+
+    .api-try {
+      margin-top: .9rem;
+      padding-top: .9rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .api-try-fields {
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+      margin-bottom: .7rem;
+    }
+
+    .api-try-label {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: .25rem;
+    }
+
+    .api-try-input {
+      width: 100%;
+      max-width: 360px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      padding: .4rem .55rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .api-try-btn {
+      font-size: .76rem;
+      font-weight: 600;
+      padding: .45rem 1rem;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #1a1a22;
+      cursor: pointer;
+      transition: opacity .15s ease;
+    }
+
+    .api-try-btn:disabled { opacity: .6; cursor: default; }
+
+    .api-try-response {
+      display: none;
+      margin-top: .7rem;
+      padding: .7rem .85rem;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .74rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .api-try-response.ok, .api-try-response.err { display: block; }
+    .api-try-response.ok { border-color: var(--accent-2); }
+    .api-try-response.err { border-color: var(--down); color: var(--down); }
 {% include "partials/responsive.css.j2" %}
   </style>
 </head>
@@ -298,6 +362,18 @@
       const METHOD_ORDER = ['post', 'get', 'put', 'patch', 'delete'];
       const GROUP_ORDER = ['BUSY Bar', 'System'];
 
+      // mirrors the swatches offered by the wall widget on the homepage
+      const WALL_COLORS = [
+        { name: 'White', hex: '#FFFFFF' },
+        { name: 'Red', hex: '#FF0000' },
+        { name: 'Orange', hex: '#FF8800' },
+        { name: 'Yellow', hex: '#FFFF00' },
+        { name: 'Green', hex: '#00FF00' },
+        { name: 'Cyan', hex: '#00FFFF' },
+        { name: 'Blue', hex: '#0066FF' },
+        { name: 'Magenta', hex: '#FF00FF' },
+      ];
+
       function resolveSchema(spec, schema) {
         if (!schema) return null;
         if (schema.$ref) {
@@ -351,7 +427,65 @@
         return `<div class="api-detail-title">${t('api.responses')}</div><div class="api-responses">${chips}</div>`;
       }
 
-      function endpointHtml(spec, path, method, operation) {
+      function fieldInputHtml(fieldId, name, prop, required) {
+        if (name === 'color') {
+          const options = WALL_COLORS.map((c) => `
+            <option value="${c.hex}" ${prop && prop.default === c.hex ? 'selected' : ''}>${c.name}</option>
+          `).join('');
+          return `<select class="api-try-input" id="${fieldId}" data-field="${name}">${options}</select>`;
+        }
+        if (prop && (prop.format === 'binary' || prop.contentMediaType)) {
+          return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="file" accept="image/png,image/jpeg,image/webp" ${required ? 'required' : ''} />`;
+        }
+        if (prop && (prop.type === 'integer' || prop.type === 'number')) {
+          return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="number" ${required ? 'required' : ''} />`;
+        }
+        const maxLength = prop && prop.maxLength ? `maxlength="${prop.maxLength}"` : '';
+        return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="text" ${maxLength} ${required ? 'required' : ''} />`;
+      }
+
+      function renderTryForm(spec, path, method, operation, formId) {
+        const params = operation.parameters || [];
+        const body = operation.requestBody;
+        let bodyKind = '';
+        let bodySchema = null;
+        if (body && body.content) {
+          if (body.content['application/json']) {
+            bodyKind = 'json';
+            bodySchema = resolveSchema(spec, body.content['application/json'].schema);
+          } else if (body.content['multipart/form-data']) {
+            bodyKind = 'multipart';
+            bodySchema = resolveSchema(spec, body.content['multipart/form-data'].schema);
+          }
+        }
+
+        const required = new Set((bodySchema && bodySchema.required) || []);
+        const bodyFields = bodySchema && bodySchema.properties
+          ? Object.entries(bodySchema.properties).map(([name, prop]) => `
+              <div>
+                <label class="api-try-label" for="${formId}-${name}">${name}</label>
+                ${fieldInputHtml(`${formId}-${name}`, name, prop, required.has(name))}
+              </div>
+            `).join('')
+          : '';
+
+        const paramFields = params.map((p) => `
+          <div>
+            <label class="api-try-label" for="${formId}-${p.name}">${p.name} · ${p.in}</label>
+            ${fieldInputHtml(`${formId}-${p.name}`, p.name, p.schema, p.required)}
+          </div>
+        `).join('');
+
+        return `
+          <div class="api-try" id="${formId}" data-path="${path}" data-method="${method}" data-body-kind="${bodyKind}">
+            ${(bodyFields || paramFields) ? `<div class="api-try-fields">${paramFields}${bodyFields}</div>` : ''}
+            <button type="button" class="api-try-btn" data-action="execute">${t('api.execute')}</button>
+            <pre class="api-try-response"></pre>
+          </div>
+        `;
+      }
+
+      function endpointHtml(spec, path, method, operation, index) {
         const summary = operation.summary || operation.description || '';
         return `
           <article class="api-endpoint">
@@ -363,6 +497,7 @@
             ${renderParams(operation)}
             ${renderRequestFields(spec, operation)}
             ${renderResponses(operation)}
+            ${renderTryForm(spec, path, method, operation, `ep-${index}`)}
           </article>
         `;
       }
@@ -374,13 +509,14 @@
           const spec = await res.json();
 
           const groups = new Map();
+          let epIndex = 0;
           Object.entries(spec.paths || {}).forEach(([path, methods]) => {
             METHOD_ORDER.forEach((method) => {
               const operation = methods[method];
               if (!operation) return;
               const tag = (operation.tags && operation.tags[0]) || 'Other';
               if (!groups.has(tag)) groups.set(tag, []);
-              groups.get(tag).push({ path, method, operation });
+              groups.get(tag).push({ path, method, operation, index: epIndex++ });
             });
           });
 
@@ -393,7 +529,7 @@
             <section class="api-group">
               <h2 class="api-group-title">${tag}</h2>
               <div class="api-endpoints">
-                ${groups.get(tag).map((e) => endpointHtml(spec, e.path, e.method, e.operation)).join('')}
+                ${groups.get(tag).map((e) => endpointHtml(spec, e.path, e.method, e.operation, e.index)).join('')}
               </div>
             </section>
           `).join('');
@@ -404,6 +540,58 @@
           statusEl.classList.add('error');
         }
       }
+
+      groupsEl.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action="execute"]');
+        if (!btn) return;
+        const container = btn.closest('.api-try');
+        const responseEl = container.querySelector('.api-try-response');
+        const path = container.dataset.path;
+        const method = container.dataset.method;
+        const bodyKind = container.dataset.bodyKind;
+        const inputs = container.querySelectorAll('[data-field]');
+
+        const opts = { method: method.toUpperCase() };
+        if (bodyKind === 'json') {
+          const payload = {};
+          inputs.forEach((el) => {
+            payload[el.dataset.field] = el.type === 'number' ? Number(el.value) : el.value;
+          });
+          opts.headers = { 'Content-Type': 'application/json' };
+          opts.body = JSON.stringify(payload);
+        } else if (bodyKind === 'multipart') {
+          const fd = new FormData();
+          inputs.forEach((el) => {
+            if (el.type === 'file') {
+              if (el.files[0]) fd.append(el.dataset.field, el.files[0]);
+            } else {
+              fd.append(el.dataset.field, el.value);
+            }
+          });
+          opts.body = fd;
+        }
+
+        btn.disabled = true;
+        const originalLabel = btn.textContent;
+        btn.textContent = t('api.sending');
+        responseEl.textContent = '';
+        responseEl.className = 'api-try-response';
+
+        try {
+          const res = await fetch(`${API_BASE_URL}${path}`, opts);
+          const raw = await res.text();
+          let bodyText = raw;
+          try { bodyText = JSON.stringify(JSON.parse(raw), null, 2); } catch { /* not JSON, show as-is */ }
+          responseEl.textContent = `${res.status} ${res.statusText}` + (bodyText ? `\n\n${bodyText}` : '');
+          responseEl.classList.add(res.ok ? 'ok' : 'err');
+        } catch (err) {
+          responseEl.textContent = `${t('api.networkError')}: ${err.message}`;
+          responseEl.classList.add('err');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = originalLabel;
+        }
+      });
 
       loadSpec();
     })();

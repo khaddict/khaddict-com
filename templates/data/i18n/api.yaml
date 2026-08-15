@@ -9,6 +9,9 @@ en:
   api.body: "Body"
   api.params: "Parameters"
   api.responses: "Responses"
+  api.execute: "Execute"
+  api.sending: "Sending…"
+  api.networkError: "Network error"
 fr:
   title.api: "API | khaddict"
   api.title: "API publique"
@@ -20,3 +23,6 @@ fr:
   api.body: "Corps"
   api.params: "Paramètres"
   api.responses: "Réponses"
+  api.execute: "Exécuter"
+  api.sending: "Envoi…"
+  api.networkError: "Erreur réseau"
