@@ -7,6 +7,13 @@
   <script>
 {% include "partials/theme_toggle.js.j2" %}
   </script>
+  <script>
+    // this page's gallery is entirely populated by async fetch() calls, so the document
+    // is still short when the browser attempts its own scroll-position restore on reload,
+    // which races against that fetch and lands inconsistently; disable it and let every
+    // load simply start at the top instead
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  </script>
   <title>{{ i18n['title.media'] }}</title>
   <meta name="description" content="{{ meta_description }}" />
   <meta property="og:type" content="website" />
