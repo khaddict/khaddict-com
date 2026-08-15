@@ -504,22 +504,6 @@
 
     .api-inner { max-width: 860px; width: 100%; }
 
-    .api-intro { margin-bottom: 1.2rem; }
-
-    .api-sub {
-      font-size: .85rem;
-      color: var(--muted);
-      line-height: 1.6;
-      max-width: 620px;
-    }
-
-    .api-sub code {
-      font-family: 'JetBrains Mono', monospace;
-      background: var(--border);
-      padding: .1rem .35rem;
-      border-radius: 4px;
-    }
-
     .api-group { margin-bottom: 2rem; }
 
     .api-group-title {
@@ -661,6 +645,79 @@
       background: var(--bg);
       color: var(--text);
     }
+
+    .api-try-color { position: relative; }
+
+    .api-try-color-btn {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      max-width: 200px;
+      height: 34px;
+      padding: 0 .7rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      transition: border-color .15s ease;
+    }
+
+    .api-try-color-btn:hover { border-color: var(--accent); }
+    .api-try-color-btn svg { width: 10px; height: 10px; margin-left: auto; flex-shrink: 0; color: var(--muted); }
+
+    .api-try-color-swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, .25);
+    }
+
+    .api-try-color-dropdown {
+      position: absolute;
+      top: calc(100% + .4rem);
+      left: 0;
+      min-width: 160px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 12px 32px var(--shadow);
+      padding: .4rem;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 10;
+    }
+
+    .api-try-color.open .api-try-color-dropdown {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .api-try-color-option {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      width: 100%;
+      text-align: left;
+      padding: .4rem .55rem;
+      border-radius: 6px;
+      border: none;
+      background: none;
+      color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .78rem;
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease;
+    }
+
+    .api-try-color-option:hover { background: rgba(139, 92, 246, .08); color: var(--accent); }
+    .api-try-color-option.active { color: var(--accent); font-weight: 600; }
 
     .api-try-btn {
       font-size: .76rem;
@@ -814,10 +871,6 @@
 
   <main class="api-hero">
     <div class="api-inner">
-      <div class="api-intro">
-        <p class="api-sub"><span data-i18n="api.baseUrl">URL de base :</span> <code>https://api.khaddict.com</code></p>
-      </div>
-
       <div id="api-status" class="api-status" data-i18n="api.loading">Chargement des endpoints…</div>
       <div id="api-groups"></div>
     </div>
@@ -867,7 +920,6 @@
         'lang.ariaLabel': "Switch language",
         'rss.ariaLabel': "RSS feed",
         'title.api': "API | khaddict",
-        'api.baseUrl': "Base URL:",
         'api.loading': "Loading endpoints\u2026",
         'api.error': "Couldn't load the API spec. Try again later",
         'api.required': "required",
@@ -902,7 +954,6 @@
         'lang.ariaLabel': "Changer de langue",
         'rss.ariaLabel': "Flux RSS",
         'title.api': "API | khaddict",
-        'api.baseUrl': "URL de base :",
         'api.loading': "Chargement des endpoints\u2026",
         'api.error': "Impossible de charger la spec de l'API. R\u00e9essaie plus tard",
         'api.required': "requis",
@@ -1163,10 +1214,23 @@
 
       function fieldInputHtml(fieldId, name, prop, required) {
         if (name === 'color') {
+          const selected = (prop && WALL_COLORS.find((c) => c.hex === prop.default)) || WALL_COLORS[0];
           const options = WALL_COLORS.map((c) => `
-            <option value="${c.hex}" ${prop && prop.default === c.hex ? 'selected' : ''}>${c.name}</option>
+            <button type="button" class="api-try-color-option${c.hex === selected.hex ? ' active' : ''}" data-value="${c.hex}">
+              <span class="api-try-color-swatch" style="background:${c.hex}"></span>
+              <span class="api-try-color-option-label">${c.name}</span>
+            </button>
           `).join('');
-          return `<select class="api-try-input" id="${fieldId}" data-field="${name}">${options}</select>`;
+          return `
+            <div class="api-try-color" id="${fieldId}" data-field="${name}" data-value="${selected.hex}">
+              <button type="button" class="api-try-color-btn" aria-haspopup="true" aria-expanded="false">
+                <span class="api-try-color-swatch" style="background:${selected.hex}"></span>
+                <span class="api-try-color-label">${selected.name}</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+              <div class="api-try-color-dropdown">${options}</div>
+            </div>
+          `;
         }
         if (prop && (prop.format === 'binary' || prop.contentMediaType)) {
           return `
@@ -1281,11 +1345,43 @@
         }
       }
 
+      function fieldValue(el) {
+        if (el.classList.contains('api-try-color')) return el.dataset.value;
+        return el.value;
+      }
+
       groupsEl.addEventListener('change', (e) => {
         const input = e.target.closest('input[type="file"][data-field]');
         if (!input) return;
         const nameEl = document.getElementById(`${input.id}-name`);
         if (nameEl) nameEl.textContent = input.files[0] ? input.files[0].name : t('api.noFileChosen');
+      });
+
+      groupsEl.addEventListener('click', (e) => {
+        const option = e.target.closest('.api-try-color-option');
+        if (option) {
+          const wrapper = option.closest('.api-try-color');
+          wrapper.dataset.value = option.dataset.value;
+          wrapper.querySelector('.api-try-color-btn .api-try-color-swatch').style.background = option.dataset.value;
+          wrapper.querySelector('.api-try-color-btn .api-try-color-label').textContent = option.querySelector('.api-try-color-option-label').textContent;
+          wrapper.querySelectorAll('.api-try-color-option').forEach((o) => o.classList.toggle('active', o === option));
+          wrapper.classList.remove('open');
+          return;
+        }
+        const trigger = e.target.closest('.api-try-color-btn');
+        if (trigger) {
+          const wrapper = trigger.closest('.api-try-color');
+          const isOpen = wrapper.classList.toggle('open');
+          trigger.setAttribute('aria-expanded', isOpen);
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        groupsEl.querySelectorAll('.api-try-color.open').forEach((wrapper) => {
+          if (wrapper.contains(e.target)) return;
+          wrapper.classList.remove('open');
+          wrapper.querySelector('.api-try-color-btn').setAttribute('aria-expanded', 'false');
+        });
       });
 
       groupsEl.addEventListener('click', async (e) => {
@@ -1302,7 +1398,7 @@
         if (bodyKind === 'json') {
           const payload = {};
           inputs.forEach((el) => {
-            payload[el.dataset.field] = el.type === 'number' ? Number(el.value) : el.value;
+            payload[el.dataset.field] = el.type === 'number' ? Number(el.value) : fieldValue(el);
           });
           opts.headers = { 'Content-Type': 'application/json' };
           opts.body = JSON.stringify(payload);
@@ -1312,7 +1408,7 @@
             if (el.type === 'file') {
               if (el.files[0]) fd.append(el.dataset.field, el.files[0]);
             } else {
-              fd.append(el.dataset.field, el.value);
+              fd.append(el.dataset.field, fieldValue(el));
             }
           });
           opts.body = fd;

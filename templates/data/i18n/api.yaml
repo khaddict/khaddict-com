@@ -1,6 +1,5 @@
 en:
   title.api: "API | khaddict"
-  api.baseUrl: "Base URL:"
   api.loading: "Loading endpoints…"
   api.error: "Couldn't load the API spec. Try again later"
   api.required: "required"
@@ -14,7 +13,6 @@ en:
   api.noFileChosen: "No file chosen"
 fr:
   title.api: "API | khaddict"
-  api.baseUrl: "URL de base :"
   api.loading: "Chargement des endpoints…"
   api.error: "Impossible de charger la spec de l'API. Réessaie plus tard"
   api.required: "requis"
