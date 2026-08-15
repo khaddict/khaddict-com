@@ -74,7 +74,7 @@ More involved than a blog post, since it needs its own template, data, and Kuber
 
 ## vps-fallback
 
-`vps-fallback/index.html` is the standalone 503 page served from a separate fallback VPS. It's not part of the Helm chart (excluded via `.helmignore`) and not wired into any CI workflow, but unlike every other rendered page, it **is** committed: the VPS pulls it directly from this repo's raw GitHub URL (`role.vps` in `voidnode`, a `file.managed` state with `use_etag: True`), so there's nothing to deploy by hand and no separate publish step.
+`vps-fallback/index.html` is the standalone 503 page served from a separate fallback VPS. It's not part of the Helm chart (excluded via `.helmignore`) and not wired into any CI workflow, but unlike every other rendered page, it **is** committed: the VPS pulls it directly from this repo's raw GitHub URL (`role.vps` in `voidnode`, a `file.managed` state, re-fetched on every highstate), so there's nothing to deploy by hand and no separate publish step.
 
 After editing `templates/pages/vps_fallback.html.j2` (or any shared partial), regenerate and commit it:
 
@@ -84,7 +84,7 @@ git add vps-fallback/index.html
 git commit
 ```
 
-Once that lands on `main`, the VPS picks it up on its next Salt highstate (ETag comparison against GitHub's raw content; no polling delay-sensitive deploy step to run here).
+Once that lands on `main`, the VPS picks it up on its next Salt highstate (a fresh fetch against GitHub's raw content every time; no polling delay-sensitive deploy step to run here).
 
 ## api page
 
@@ -98,7 +98,7 @@ git add files/api/index.html files/api/fr/index.html
 git commit
 ```
 
-Once that lands on `main`, the `api` VM picks it up on its next Salt highstate (same ETag-based fetch as `vps-fallback`).
+Once that lands on `main`, the `api` VM picks it up on its next Salt highstate (same GitHub-raw fetch mechanism as `vps-fallback`).
 
 ## Testing locally
 

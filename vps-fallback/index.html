@@ -250,6 +250,14 @@
     }
     .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    .copying { pointer-events: none; }
+    .copying svg { animation: copy-pulse 1s ease-in-out infinite; }
+
+    @keyframes copy-pulse {
+      0%, 100% { opacity: .4; }
+      50% { opacity: .9; }
+    }
+
     .hover-hint {
       position: absolute;
       bottom: calc(100% + .5rem);

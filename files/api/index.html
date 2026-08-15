@@ -279,6 +279,14 @@
     }
     .copy-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+    .copying { pointer-events: none; }
+    .copying svg { animation: copy-pulse 1s ease-in-out infinite; }
+
+    @keyframes copy-pulse {
+      0%, 100% { opacity: .4; }
+      50% { opacity: .9; }
+    }
+
     .hover-hint {
       position: absolute;
       bottom: calc(100% + .5rem);
@@ -814,6 +822,50 @@
       word-break: break-all;
     }
 
+    .api-curl {
+      margin-top: .9rem;
+      padding-top: .9rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .api-curl-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .35rem;
+    }
+
+    .api-curl-copy {
+      position: relative;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: color .15s ease, border-color .15s ease;
+    }
+    .api-curl-copy:hover { color: var(--accent); border-color: var(--accent); }
+    .api-curl-copy svg { width: 13px; height: 13px; }
+
+    .api-curl-body {
+      margin: 0;
+      padding: .7rem .85rem;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .74rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text);
+    }
+
     .api-try-response.ok, .api-try-response.err { display: block; }
     .api-try-response.ok { border-color: var(--accent-2); }
     .api-try-response.err { border-color: var(--down); color: var(--down); }
@@ -1247,6 +1299,56 @@
         return `<div class="api-detail-title">${t('api.responses')}</div><div class="api-responses">${chips}</div>`;
       }
 
+      function exampleFieldValue(name, prop) {
+        if (name === 'color' && prop && prop.default) return prop.default;
+        if (prop && (prop.type === 'integer' || prop.type === 'number')) return 0;
+        if (prop && prop.type === 'boolean') return true;
+        return 'Hello!';
+      }
+
+      function renderCurlExample(spec, path, method, operation) {
+        const params = operation.parameters || [];
+        const body = operation.requestBody;
+        let bodyKind = '';
+        let bodySchema = null;
+        if (body && body.content) {
+          if (body.content['application/json']) {
+            bodyKind = 'json';
+            bodySchema = resolveSchema(spec, body.content['application/json'].schema);
+          } else if (body.content['multipart/form-data']) {
+            bodyKind = 'multipart';
+            bodySchema = resolveSchema(spec, body.content['multipart/form-data'].schema);
+          }
+        }
+
+        let url = `${API_BASE_URL}${path}`;
+        const queryParams = params.filter((p) => p.in === 'query');
+        if (queryParams.length) {
+          url += '?' + queryParams.map((p) => `${p.name}=${exampleFieldValue(p.name, p.schema)}`).join('&');
+        }
+
+        const lines = [`curl -X ${method.toUpperCase()} '${url}'`];
+
+        if (bodyKind === 'json' && bodySchema && bodySchema.properties) {
+          const payload = {};
+          Object.entries(bodySchema.properties).forEach(([name, prop]) => {
+            payload[name] = exampleFieldValue(name, prop);
+          });
+          lines.push(`  -H 'Content-Type: application/json'`);
+          lines.push(`  -d '${JSON.stringify(payload)}'`);
+        } else if (bodyKind === 'multipart' && bodySchema && bodySchema.properties) {
+          Object.entries(bodySchema.properties).forEach(([name, prop]) => {
+            if (prop.format === 'binary' || prop.contentMediaType) {
+              lines.push(`  -F '${name}=@/path/to/file.png'`);
+            } else {
+              lines.push(`  -F '${name}=${exampleFieldValue(name, prop)}'`);
+            }
+          });
+        }
+
+        return lines.join(' \\\n');
+      }
+
       function fieldInputHtml(fieldId, name, prop, required) {
         if (name === 'color') {
           const selected = (prop && WALL_COLORS.find((c) => c.hex === prop.default)) || WALL_COLORS[0];
@@ -1326,6 +1428,7 @@
 
       function endpointHtml(spec, path, method, operation, index) {
         const summary = operation.summary || operation.description || '';
+        const curlExample = renderCurlExample(spec, path, method, operation);
         return `
           <article class="api-endpoint">
             <div class="api-endpoint-head">
@@ -1337,6 +1440,16 @@
             ${renderRequestFields(spec, operation)}
             ${renderResponses(operation)}
             ${renderTryForm(spec, path, method, operation, `ep-${index}`)}
+            <div class="api-curl">
+              <div class="api-curl-head">
+                <span class="api-detail-title">curl</span>
+                <button type="button" class="api-curl-copy" data-action="copy-curl" aria-label="${t('discord.toast')}">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <span class="copy-toast">${t('discord.toast')}</span>
+                </button>
+              </div>
+              <pre class="api-curl-body">${curlExample}</pre>
+            </div>
           </article>
         `;
       }
@@ -1417,6 +1530,21 @@
           wrapper.classList.remove('open');
           wrapper.querySelector('.api-try-color-btn').setAttribute('aria-expanded', 'false');
         });
+      });
+
+      let curlCopyTimer = null;
+      groupsEl.addEventListener('click', async (e) => {
+        const copyBtn = e.target.closest('[data-action="copy-curl"]');
+        if (!copyBtn) return;
+        const body = copyBtn.closest('.api-curl').querySelector('.api-curl-body');
+        try { await navigator.clipboard.writeText(body.textContent); } catch { /* clipboard unavailable */ }
+        copyBtn.classList.add('copied');
+        copyBtn.querySelector('.copy-toast').classList.add('show');
+        clearTimeout(curlCopyTimer);
+        curlCopyTimer = setTimeout(() => {
+          copyBtn.querySelector('.copy-toast').classList.remove('show');
+          copyBtn.classList.remove('copied');
+        }, 900);
       });
 
       groupsEl.addEventListener('click', async (e) => {

@@ -636,8 +636,14 @@
     let lightboxCopyTimer = null;
     lightboxCopyBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
+      if (lightboxCopyBtn.classList.contains('copying')) return;
       const f = lightboxFiles[lightboxIndex];
-      try { await copyImageToClipboard(lightboxPath + f.name); } catch { /* clipboard unavailable */ }
+      lightboxCopyBtn.classList.add('copying');
+      try {
+        try { await copyImageToClipboard(lightboxPath + f.name); } catch { /* clipboard unavailable */ }
+      } finally {
+        lightboxCopyBtn.classList.remove('copying');
+      }
       lightboxCopyBtn.classList.add('copied');
       lightboxCopyToast.classList.add('show');
       clearTimeout(lightboxCopyTimer);
