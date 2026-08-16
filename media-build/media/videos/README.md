@@ -10,7 +10,7 @@ ffmpeg -y -i input.mp4 -vf "crop=1536:1080:0:0" -c:v libx264 -crf 18 -preset med
 ```
 
 - `crop=1536:1080:0:0`: keeps the leftmost 1536px, full 1080px height, from the
-  top-left corner. Assumes a 1920x1080 source - check with `ffprobe` first if a
+  top-left corner. Assumes a 1920x1080 source, check with `ffprobe` first if a
   clip comes from somewhere else:
   ```bash
   ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=p=0 input.mp4

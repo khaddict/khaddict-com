@@ -19,6 +19,8 @@ en:
   theme.ariaLabel: "Toggle theme"
   lang.ariaLabel: "Switch language"
   rss.ariaLabel: "RSS feed"
+  post.readingTime: "{n} min read"
+  post.viewsCount: "{n} views"
 fr:
   nav.home: accueil
   nav.blog: blog
@@ -40,3 +42,5 @@ fr:
   theme.ariaLabel: "Changer le thème"
   lang.ariaLabel: "Changer de langue"
   rss.ariaLabel: "Flux RSS"
+  post.readingTime: "{n} min de lecture"
+  post.viewsCount: "{n} vues"

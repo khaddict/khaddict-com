@@ -286,13 +286,15 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity .2s ease;
-      padding: 2rem;
+      /* extra bottom padding reserves room for .lightbox-toolbar (position:absolute,
+         bottom:1.5rem, ~2.9rem tall) so a tall portrait image can never grow into it */
+      padding: 2rem 2rem 5rem;
     }
     .lightbox.open { opacity: 1; pointer-events: auto; }
 
     .lightbox-img {
       max-width: min(90vw, 1100px);
-      max-height: 82vh;
+      max-height: calc(100vh - 7rem);
       border-radius: 12px;
       box-shadow: 0 30px 80px rgba(0, 0, 0, .5);
       transform: scale(.96);

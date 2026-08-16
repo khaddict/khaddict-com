@@ -999,6 +999,8 @@
         'theme.ariaLabel': "Toggle theme",
         'lang.ariaLabel': "Switch language",
         'rss.ariaLabel': "RSS feed",
+        'post.readingTime': "{n} min read",
+        'post.viewsCount': "{n} views",
         'title.api': "API | khaddict",
         'api.loading': "Loading endpoints\u2026",
         'api.error': "Couldn't load the API spec. Try again later",
@@ -1033,6 +1035,8 @@
         'theme.ariaLabel': "Changer le th\u00e8me",
         'lang.ariaLabel': "Changer de langue",
         'rss.ariaLabel': "Flux RSS",
+        'post.readingTime': "{n} min de lecture",
+        'post.viewsCount': "{n} vues",
         'title.api': "API | khaddict",
         'api.loading': "Chargement des endpoints\u2026",
         'api.error': "Impossible de charger la spec de l'API. R\u00e9essaie plus tard",
@@ -1234,6 +1238,10 @@
       const METHOD_ORDER = ['post', 'get', 'put', 'patch', 'delete'];
       const GROUP_ORDER = ['BUSY Bar', 'System'];
 
+      // keyed by the same index used for each .api-try's id ("ep-<index>"), so the
+      // live curl refresh can look up the spec/operation it needs without re-fetching
+      const endpointMeta = new Map();
+
       // mirrors the swatches offered by the wall widget on the homepage
       const WALL_COLORS = [
         { name: 'White', hex: '#FFFFFF' },
@@ -1306,7 +1314,22 @@
         return 'Hello!';
       }
 
-      function renderCurlExample(spec, path, method, operation) {
+      // reads the live value out of a Try-it form field, falling back to
+      // undefined (not a placeholder) so the caller can decide what to show
+      // when a field hasn't been touched yet
+      function curlLiveValue(container, name) {
+        if (!container) return undefined;
+        const el = container.querySelector(`[data-field="${name}"], [data-param="${name}"]`);
+        if (!el) return undefined;
+        if (el.classList.contains('api-try-color')) return el.dataset.value || undefined;
+        if (el.type === 'file') return el.files[0] ? el.files[0].name : undefined;
+        return el.value !== '' ? el.value : undefined;
+      }
+
+      // container is the .api-try form element to read live values from, when
+      // one exists yet. The very first render (before the DOM exists) omits it
+      // and falls back entirely to placeholder example values
+      function renderCurlExample(spec, path, method, operation, container) {
         const params = operation.parameters || [];
         const body = operation.requestBody;
         let bodyKind = '';
@@ -1321,10 +1344,16 @@
           }
         }
 
-        let url = `${API_BASE_URL}${path}`;
+        let resolvedPath = path;
+        params.filter((p) => p.in === 'path').forEach((p) => {
+          const value = curlLiveValue(container, p.name) ?? exampleFieldValue(p.name, p.schema);
+          resolvedPath = resolvedPath.replace(`{${p.name}}`, value);
+        });
+
+        let url = `${API_BASE_URL}${resolvedPath}`;
         const queryParams = params.filter((p) => p.in === 'query');
         if (queryParams.length) {
-          url += '?' + queryParams.map((p) => `${p.name}=${exampleFieldValue(p.name, p.schema)}`).join('&');
+          url += '?' + queryParams.map((p) => `${p.name}=${curlLiveValue(container, p.name) ?? exampleFieldValue(p.name, p.schema)}`).join('&');
         }
 
         const lines = [`curl -X ${method.toUpperCase()} '${url}'`];
@@ -1332,16 +1361,20 @@
         if (bodyKind === 'json' && bodySchema && bodySchema.properties) {
           const payload = {};
           Object.entries(bodySchema.properties).forEach(([name, prop]) => {
-            payload[name] = exampleFieldValue(name, prop);
+            const live = curlLiveValue(container, name);
+            payload[name] = live !== undefined
+              ? ((prop.type === 'integer' || prop.type === 'number') ? Number(live) : live)
+              : exampleFieldValue(name, prop);
           });
           lines.push(`  -H 'Content-Type: application/json'`);
           lines.push(`  -d '${JSON.stringify(payload)}'`);
         } else if (bodyKind === 'multipart' && bodySchema && bodySchema.properties) {
           Object.entries(bodySchema.properties).forEach(([name, prop]) => {
             if (prop.format === 'binary' || prop.contentMediaType) {
-              lines.push(`  -F '${name}=@/path/to/file.png'`);
+              const filename = curlLiveValue(container, name);
+              lines.push(`  -F '${name}=@/path/to/${filename || 'file.png'}'`);
             } else {
-              lines.push(`  -F '${name}=${exampleFieldValue(name, prop)}'`);
+              lines.push(`  -F '${name}=${curlLiveValue(container, name) ?? exampleFieldValue(name, prop)}'`);
             }
           });
         }
@@ -1349,7 +1382,7 @@
         return lines.join(' \\\n');
       }
 
-      function fieldInputHtml(fieldId, name, prop, required) {
+      function fieldInputHtml(fieldId, name, prop, required, attr = 'field') {
         if (name === 'color') {
           const selected = (prop && WALL_COLORS.find((c) => c.hex === prop.default)) || WALL_COLORS[0];
           const options = WALL_COLORS.map((c) => `
@@ -1359,7 +1392,7 @@
             </button>
           `).join('');
           return `
-            <div class="api-try-color" id="${fieldId}" data-field="${name}" data-value="${selected.hex}">
+            <div class="api-try-color" id="${fieldId}" data-${attr}="${name}" data-value="${selected.hex}">
               <button type="button" class="api-try-color-btn" aria-haspopup="true" aria-expanded="false">
                 <span class="api-try-color-swatch" style="background:${selected.hex}"></span>
                 <span class="api-try-color-label">${selected.name}</span>
@@ -1374,15 +1407,15 @@
             <div class="api-try-file">
               <label class="api-try-file-btn" for="${fieldId}">${t('api.chooseFile')}</label>
               <span class="api-try-file-name" id="${fieldId}-name">${t('api.noFileChosen')}</span>
-              <input class="api-try-file-input" id="${fieldId}" data-field="${name}" type="file" accept="image/png,image/jpeg,image/webp" ${required ? 'required' : ''} />
+              <input class="api-try-file-input" id="${fieldId}" data-${attr}="${name}" type="file" accept="image/png,image/jpeg,image/webp" ${required ? 'required' : ''} />
             </div>
           `;
         }
         if (prop && (prop.type === 'integer' || prop.type === 'number')) {
-          return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="number" ${required ? 'required' : ''} />`;
+          return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="number" ${required ? 'required' : ''} />`;
         }
         const maxLength = prop && prop.maxLength ? `maxlength="${prop.maxLength}"` : '';
-        return `<input class="api-try-input" id="${fieldId}" data-field="${name}" type="text" ${maxLength} ${required ? 'required' : ''} />`;
+        return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="text" ${maxLength} ${required ? 'required' : ''} />`;
       }
 
       function renderTryForm(spec, path, method, operation, formId) {
@@ -1413,7 +1446,7 @@
         const paramFields = params.map((p) => `
           <div>
             <label class="api-try-label" for="${formId}-${p.name}">${p.name} · ${p.in}</label>
-            ${fieldInputHtml(`${formId}-${p.name}`, p.name, p.schema, p.required)}
+            ${fieldInputHtml(`${formId}-${p.name}`, p.name, p.schema, p.required, 'param')}
           </div>
         `).join('');
 
@@ -1468,7 +1501,9 @@
               if (!operation) return;
               const tag = (operation.tags && operation.tags[0]) || 'Other';
               if (!groups.has(tag)) groups.set(tag, []);
-              groups.get(tag).push({ path, method, operation, index: epIndex++ });
+              const index = epIndex++;
+              groups.get(tag).push({ path, method, operation, index });
+              endpointMeta.set(index, { spec, path, method, operation });
             });
           });
 
@@ -1498,11 +1533,24 @@
         return el.value;
       }
 
+      function refreshCurlExample(tryForm) {
+        const meta = endpointMeta.get(Number(tryForm.id.slice(3)));
+        const curlBody = tryForm.closest('.api-endpoint').querySelector('.api-curl-body');
+        if (!meta || !curlBody) return;
+        curlBody.textContent = renderCurlExample(meta.spec, meta.path, meta.method, meta.operation, tryForm);
+      }
+
+      groupsEl.addEventListener('input', (e) => {
+        const tryForm = e.target.closest('.api-try');
+        if (tryForm) refreshCurlExample(tryForm);
+      });
+
       groupsEl.addEventListener('change', (e) => {
-        const input = e.target.closest('input[type="file"][data-field]');
+        const input = e.target.closest('input[type="file"][data-field], input[type="file"][data-param]');
         if (!input) return;
         const nameEl = document.getElementById(`${input.id}-name`);
         if (nameEl) nameEl.textContent = input.files[0] ? input.files[0].name : t('api.noFileChosen');
+        refreshCurlExample(input.closest('.api-try'));
       });
 
       groupsEl.addEventListener('click', (e) => {
@@ -1514,6 +1562,7 @@
           wrapper.querySelector('.api-try-color-btn .api-try-color-label').textContent = option.querySelector('.api-try-color-option-label').textContent;
           wrapper.querySelectorAll('.api-try-color-option').forEach((o) => o.classList.toggle('active', o === option));
           wrapper.classList.remove('open');
+          refreshCurlExample(wrapper.closest('.api-try'));
           return;
         }
         const trigger = e.target.closest('.api-try-color-btn');
@@ -1552,10 +1601,16 @@
         if (!btn) return;
         const container = btn.closest('.api-try');
         const responseEl = container.querySelector('.api-try-response');
-        const path = container.dataset.path;
         const method = container.dataset.method;
         const bodyKind = container.dataset.bodyKind;
         const inputs = container.querySelectorAll('[data-field]');
+
+        // only path params are substituted here since no endpoint uses query
+        // params yet; a query-string builder can be added if one ever does
+        let path = container.dataset.path;
+        container.querySelectorAll('[data-param]').forEach((el) => {
+          path = path.replace(`{${el.dataset.param}}`, encodeURIComponent(fieldValue(el)));
+        });
 
         const opts = { method: method.toUpperCase() };
         if (bodyKind === 'json') {

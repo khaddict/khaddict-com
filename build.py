@@ -10,6 +10,7 @@ import argparse
 import base64
 import json
 import pathlib
+import re
 from datetime import datetime, timezone
 from email.utils import format_datetime
 
@@ -26,7 +27,7 @@ ASSETS_DIR = TEMPLATES / "data" / "assets"
 # in main() same as SITE_URLS. The vps-fallback page is shown precisely when
 # the homelab (and therefore media.khaddict.com) is unreachable, so it keeps
 # its own copy inlined as a base64 data URI instead, sized down from
-# media-build/media/icons/khazix-pc-flat.png - unaffected by --domain.
+# media-build/media/icons/khazix-pc-flat.png, unaffected by --domain.
 BRAND_ICON_URL = None
 WALL_SCENE_URL = None
 
@@ -261,12 +262,24 @@ def build_sitemap_entries(posts):
     return entries
 
 
+# 225 wpm is a commonly cited average adult silent-reading speed, close enough
+# for a rough "min read" estimate. Not trying to be precise.
+READING_WPM = 225
+HTML_TAG_RE = re.compile(r"<[^>]+>")
+
+
+def reading_time_minutes(html):
+    text = HTML_TAG_RE.sub(" ", html)
+    word_count = len(text.split())
+    return max(1, round(word_count / READING_WPM))
+
+
 RSS_HREFS = None
 
 
 def hreflang_hrefs(site_key):
     """<link rel="alternate" hreflang=...> hrefs for a site's own root, en/fr/
-    x-default - same value as lang_switch_hrefs() but keyed for the hreflang
+    x-default: same value as lang_switch_hrefs() but keyed for the hreflang
     tags instead of the visible lang-switcher links."""
     en = SITE_URLS["en"][site_key] + "/"
     return {
@@ -344,8 +357,8 @@ def main():
     parser.add_argument(
         "--domain",
         default="khaddict.com",
-        help="Base domain for every self-referential link this build produces - nav, brand "
-        "link, lang switcher, canonical/OG/hreflang, icons, RSS - e.g. --domain "
+        help="Base domain for every self-referential link this build produces (nav, brand "
+        "link, lang switcher, canonical/OG/hreflang, icons, RSS), e.g. --domain "
         "website.khaddict.lab for a local/preprod build that stays fully on that environment "
         "instead of the real site. vps-fallback ignores this and always points at the real "
         "khaddict.com, since representing the real public site during an outage is its job.",
@@ -378,7 +391,7 @@ def main():
     # domain=.khaddict.com is deliberately a leading-dot cookie domain so the
     # theme cookie is shared across all khaddict.com subdomains; the local
     # equivalent shares it across www/blog/media/projects.<domain> the same
-    # way. Secure requires HTTPS - dropped for --scheme http, where the
+    # way. Secure requires HTTPS, dropped for --scheme http, where the
     # browser would otherwise silently refuse to set the cookie at all.
     cookie_domain = f".{args.domain}"
     cookie_secure_attr = "; Secure" if args.scheme == "https" else ""
@@ -405,6 +418,8 @@ def main():
     common = load_i18n("common")
     with open(TEMPLATES / "data" / "posts.yaml", encoding="utf-8") as f:
         posts = yaml.safe_load(f)
+    for post in posts.values():
+        post["reading_time"] = {locale: reading_time_minutes(post["body"][locale]) for locale in LOCALES}
 
     if only in (None, "www"):
         www_yaml = load_i18n("www")
@@ -651,7 +666,7 @@ def main():
         for slug, post in posts.items():
             post_extra = {
                 # {MEDIA} in a post body is a placeholder for the media
-                # site's own base URL, resolved here (not by Jinja - post
+                # site's own base URL, resolved here (not by Jinja, since post
                 # bodies are inserted as opaque strings, never re-parsed as
                 # templates) so embedded gallery/video links stay on
                 # --domain during a local/preprod build instead of always
@@ -702,6 +717,7 @@ def main():
                     lang_switch_fr_href=f"/fr/posts/{slug}/",
                     lang_switch_en_href=f"/posts/{slug}/",
                     rss_href=RSS_HREFS[locale],
+                    api_base_url=f"{args.scheme}://api.{args.domain}",
                     cookie_domain=cookie_domain,
                     cookie_secure_attr=cookie_secure_attr,
                     **BLOG_EXTRA_TOKENS,

@@ -302,6 +302,10 @@
           en: {{ js_str(post.excerpt.en) }},
           fr: {{ js_str(post.excerpt.fr) }},
         },
+        readingTime: {
+          en: {{ post.reading_time.en }},
+          fr: {{ post.reading_time.fr }},
+        },
       },
 {% endfor %}
     ];
@@ -371,8 +375,9 @@
       filtered.forEach((a) => {
         const card = document.createElement('article');
         card.className = 'article-card';
+        const readingTime = a.readingTime[currentLang] ?? a.readingTime.en;
         card.innerHTML = `
-          <div class="article-date">${formatArticleDate(a.date)}</div>
+          <div class="article-date">${formatArticleDate(a.date)} · ${t('post.readingTime').replace('{n}', readingTime)}</div>
           <h2 class="article-title"><a href="${currentLang === 'fr' ? '/fr/posts/' : '/posts/'}${a.slug}/">${a.title[currentLang] || a.title.en}</a></h2>
           <p class="article-excerpt">${a.excerpt[currentLang] || a.excerpt.en}</p>
           <div class="article-tags">${a.tags.map((id) => `<span class="article-tag" style="${tagStyle(id)}">${tagLabel(id)}</span>`).join('')}</div>

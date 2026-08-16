@@ -115,7 +115,7 @@
     }
 
     /* spans, not div/figure/figcaption: this whole block sits inside a
-       single <p>, which only allows phrasing content - a div or figure in
+       single <p>, which only allows phrasing content; a div or figure in
        there gets auto-closed out of the p by the parser, duplicating the
        rest of the paragraph. display:flex etc. don't care that the tag is
        a span either way, so the visual result is identical. */
@@ -306,9 +306,12 @@
 
     // ---- Post: data ----
     const POST = {
+      slug: '{{ slug }}',
       tags: [{% for tag in post.tags %}'{{ tag }}'{% if not loop.last %}, {% endif %}{% endfor %}],
       date: '{{ post.date }}',
+      readingTime: { en: {{ post.reading_time.en }}, fr: {{ post.reading_time.fr }} },
     };
+    const API_URL = '{{ api_base_url }}';
 
     function formatArticleDate(iso) {
       const d = new Date(iso + 'T00:00:00');
@@ -347,11 +350,23 @@
       document.querySelectorAll('.lang-option').forEach((el) => {
         el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
       });
-      document.getElementById('post-date').textContent = formatArticleDate(POST.date);
+      const readingTime = POST.readingTime[currentLang] ?? POST.readingTime.en;
+      document.getElementById('post-date').textContent = `${formatArticleDate(POST.date)} · ${t('post.readingTime').replace('{n}', readingTime)}`;
       renderPostTags();
     }
 
     applyLanguage();
+
+    async function trackView() {
+      try {
+        const res = await fetch(`${API_URL}/blog/views/${POST.slug}`, { method: 'POST' });
+        const data = await res.json();
+        if (!Number.isFinite(data.views)) return;
+        const dateEl = document.getElementById('post-date');
+        dateEl.textContent += ` · ${t('post.viewsCount').replace('{n}', data.views)}`;
+      } catch { /* view counter unavailable, non essential */ }
+    }
+    trackView();
 
     // glossary term tooltips are centered on the term by default, which overflows the
     // viewport (even page scrollWidth, since visibility:hidden still occupies layout
@@ -441,7 +456,7 @@
 
     (function () {
       window.remark_config = {
-        // host stays the real backend regardless of --domain - there's no
+        // host stays the real backend regardless of --domain, there's no
         // local Remark42 to talk to. url follows canonical_url instead of
         // being hardcoded too, so a non-prod build gets its own comment
         // thread instead of the real post's.
