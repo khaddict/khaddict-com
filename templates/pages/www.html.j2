@@ -1021,6 +1021,13 @@
           const data = await res.json();
           setBarOnline(!!data.online);
           setMessagesToday(data.messages_today);
+          // the rate limit is per IP server-side, so a send triggered outside
+          // this tab (curl, the api docs page, another tab) leaves this one
+          // unaware; catch up here instead of only tracking our own sends
+          if (!cooling && Number.isFinite(data.rate_limit_remaining) && data.rate_limit_remaining > 0) {
+            persistCooldown(data.rate_limit_remaining);
+            startCooldown(data.rate_limit_remaining);
+          }
         } catch {
           setBarOnline(false);
         }
