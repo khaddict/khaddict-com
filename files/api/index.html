@@ -1309,6 +1309,7 @@
 
       function exampleFieldValue(name, prop) {
         if (name === 'color' && prop && prop.default) return prop.default;
+        if (name === 'slug') return 'my-blog-post-slug';
         if (prop && (prop.type === 'integer' || prop.type === 'number')) return 0;
         if (prop && prop.type === 'boolean') return true;
         return 'Hello!';
@@ -1372,7 +1373,9 @@
           Object.entries(bodySchema.properties).forEach(([name, prop]) => {
             if (prop.format === 'binary' || prop.contentMediaType) {
               const filename = curlLiveValue(container, name);
-              lines.push(`  -F '${name}=@/path/to/${filename || 'file.png'}'`);
+              // once a real file is picked, show its actual name alone: prefixing
+              // it with the fake /path/to/ would misleadingly look like a real path
+              lines.push(`  -F '${name}=@${filename || '/path/to/file.png'}'`);
             } else {
               lines.push(`  -F '${name}=${curlLiveValue(container, name) ?? exampleFieldValue(name, prop)}'`);
             }
