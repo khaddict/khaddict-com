@@ -487,8 +487,7 @@
       });
     })();
 
-    // fetches the live OpenAPI spec and renders it with the site's own
-    // components instead of Swagger's stock widget
+    // fetches the live OpenAPI spec and renders it with the site's own components instead of Swagger's stock widget
     (function () {
       const API_BASE_URL = '{{ api_base_url }}';
       const statusEl = document.getElementById('api-status');
@@ -496,8 +495,7 @@
       const METHOD_ORDER = ['post', 'get', 'put', 'patch', 'delete'];
       const GROUP_ORDER = ['BUSY Bar', 'System'];
 
-      // keyed by the same index used for each .api-try's id ("ep-<index>"), so the
-      // live curl refresh can look up the spec/operation it needs without re-fetching
+      // keyed by the same index as each .api-try's id ("ep-<index>"), for curl refresh lookups
       const endpointMeta = new Map();
 
       // mirrors the swatches offered by the wall widget on the homepage
@@ -512,6 +510,11 @@
         { name: 'Magenta', hex: '#FF00FF' },
       ];
 
+      // escape the live spec before templating into innerHTML, even though it's our own schema
+      function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+      }
+
       function resolveSchema(spec, schema) {
         if (!schema) return null;
         if (schema.$ref) {
@@ -519,6 +522,16 @@
           return (spec.components && spec.components.schemas && spec.components.schemas[name]) || null;
         }
         return schema;
+      }
+
+      function requiresBearerAuth(spec, operation) {
+        const schemes = (spec.components && spec.components.securitySchemes) || {};
+        return (operation.security || []).some((req) =>
+          Object.keys(req).some((name) => {
+            const scheme = schemes[name];
+            return scheme && scheme.type === 'http' && scheme.scheme === 'bearer';
+          })
+        );
       }
 
       function schemaTypeLabel(prop) {
@@ -537,8 +550,8 @@
         const required = new Set(schema.required || []);
         const rows = Object.entries(schema.properties).map(([name, prop]) => `
           <div>
-            <span class="api-field-name">${name}</span>
-            <span class="api-field-type">${schemaTypeLabel(prop)}</span>
+            <span class="api-field-name">${escapeHtml(name)}</span>
+            <span class="api-field-type">${escapeHtml(schemaTypeLabel(prop))}</span>
             ${required.has(name) ? `<span class="api-field-required">${t('api.required')}</span>` : ''}
           </div>
         `).join('');
@@ -550,8 +563,8 @@
         if (!params || !params.length) return '';
         const rows = params.map((p) => `
           <div>
-            <span class="api-field-name">${p.name}</span>
-            <span class="api-field-type">${schemaTypeLabel(p.schema)} · ${p.in}</span>
+            <span class="api-field-name">${escapeHtml(p.name)}</span>
+            <span class="api-field-type">${escapeHtml(schemaTypeLabel(p.schema))} · ${escapeHtml(p.in)}</span>
             ${p.required ? `<span class="api-field-required">${t('api.required')}</span>` : ''}
           </div>
         `).join('');
@@ -568,14 +581,24 @@
       function exampleFieldValue(name, prop) {
         if (name === 'color' && prop && prop.default) return prop.default;
         if (name === 'slug') return 'my-blog-post-slug';
+        if (name === 'status') return 'firing';
+        if (name === 'groupLabels') return { alertname: 'HostOutOfDisk' };
+        if (name === 'alerts') {
+          return [{ labels: { alertname: 'HostOutOfDisk', instance: 'server.example.com', severity: 'critical' } }];
+        }
+        if (prop && prop.type === 'object') return {};
+        if (prop && prop.type === 'array') return [];
         if (prop && (prop.type === 'integer' || prop.type === 'number')) return 0;
         if (prop && prop.type === 'boolean') return true;
         return 'Hello!';
       }
 
-      // reads the live value out of a Try-it form field, falling back to
-      // undefined (not a placeholder) so the caller can decide what to show
-      // when a field hasn't been touched yet
+      function curlLiveToken(container) {
+        const el = container && container.querySelector('[data-auth="bearer"]');
+        return (el && el.value) || undefined;
+      }
+
+      // undefined (not a placeholder) lets the caller tell an untouched field from an empty one
       function curlLiveValue(container, name) {
         if (!container) return undefined;
         const el = container.querySelector(`[data-field="${name}"], [data-param="${name}"]`);
@@ -585,9 +608,7 @@
         return el.value !== '' ? el.value : undefined;
       }
 
-      // container is the .api-try form element to read live values from, when
-      // one exists yet. The very first render (before the DOM exists) omits it
-      // and falls back entirely to placeholder example values
+      // container is omitted on the very first render (before the DOM exists), falling back to placeholders
       function renderCurlExample(spec, path, method, operation, container) {
         const params = operation.parameters || [];
         const body = operation.requestBody;
@@ -617,6 +638,10 @@
 
         const lines = [`curl -X ${method.toUpperCase()} '${url}'`];
 
+        if (requiresBearerAuth(spec, operation)) {
+          lines.push(`  -H 'Authorization: Bearer ${curlLiveToken(container) || 'YOUR_TOKEN'}'`);
+        }
+
         if (bodyKind === 'json' && bodySchema && bodySchema.properties) {
           const payload = {};
           Object.entries(bodySchema.properties).forEach(([name, prop]) => {
@@ -631,9 +656,9 @@
           Object.entries(bodySchema.properties).forEach(([name, prop]) => {
             if (prop.format === 'binary' || prop.contentMediaType) {
               const filename = curlLiveValue(container, name);
-              // once a real file is picked, show its actual name alone: prefixing
-              // it with the fake /path/to/ would misleadingly look like a real path
-              lines.push(`  -F '${name}=@${filename || '/path/to/file.png'}'`);
+              // show the real filename once picked; schema can't tell audio from image, so guess from path
+              const placeholderName = path.includes('audio') ? 'recording.wav' : 'file.png';
+              lines.push(`  -F '${name}=@${filename || '/path/to/' + placeholderName}'`);
             } else {
               lines.push(`  -F '${name}=${curlLiveValue(container, name) ?? exampleFieldValue(name, prop)}'`);
             }
@@ -643,7 +668,7 @@
         return lines.join(' \\\n');
       }
 
-      function fieldInputHtml(fieldId, name, prop, required, attr = 'field') {
+      function fieldInputHtml(fieldId, name, prop, required, attr = 'field', path = '') {
         if (name === 'color') {
           const selected = (prop && WALL_COLORS.find((c) => c.hex === prop.default)) || WALL_COLORS[0];
           const options = WALL_COLORS.map((c) => `
@@ -664,11 +689,13 @@
           `;
         }
         if (prop && (prop.format === 'binary' || prop.contentMediaType)) {
+          // schema can't distinguish audio from image, so infer accept type from the path
+          const accept = path.includes('audio') ? 'audio/*' : 'image/png,image/jpeg,image/webp';
           return `
             <div class="api-try-file">
               <label class="api-try-file-btn" for="${fieldId}">${t('api.chooseFile')}</label>
               <span class="api-try-file-name" id="${fieldId}-name">${t('api.noFileChosen')}</span>
-              <input class="api-try-file-input" id="${fieldId}" data-${attr}="${name}" type="file" accept="image/png,image/jpeg,image/webp" ${required ? 'required' : ''} />
+              <input class="api-try-file-input" id="${fieldId}" data-${attr}="${name}" type="file" accept="${accept}" ${required ? 'required' : ''} />
             </div>
           `;
         }
@@ -676,7 +703,11 @@
           return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="number" ${required ? 'required' : ''} />`;
         }
         const maxLength = prop && prop.maxLength ? `maxlength="${prop.maxLength}"` : '';
-        return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="text" ${maxLength} ${required ? 'required' : ''} />`;
+        // object/array fields have no widget, so hint at the expected JSON shape
+        const placeholder = prop && (prop.type === 'object' || prop.type === 'array')
+          ? ` placeholder="${escapeHtml(JSON.stringify(exampleFieldValue(name, prop)))}"`
+          : '';
+        return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="text" ${maxLength}${placeholder} ${required ? 'required' : ''} />`;
       }
 
       function renderTryForm(spec, path, method, operation, formId) {
@@ -699,7 +730,7 @@
           ? Object.entries(bodySchema.properties).map(([name, prop]) => `
               <div>
                 <label class="api-try-label" for="${formId}-${name}">${name}</label>
-                ${fieldInputHtml(`${formId}-${name}`, name, prop, required.has(name))}
+                ${fieldInputHtml(`${formId}-${name}`, name, prop, required.has(name), 'field', path)}
               </div>
             `).join('')
           : '';
@@ -711,9 +742,16 @@
           </div>
         `).join('');
 
+        const authField = requiresBearerAuth(spec, operation) ? `
+          <div>
+            <label class="api-try-label" for="${formId}-token">${t('api.authToken')}</label>
+            <input class="api-try-input" id="${formId}-token" data-auth="bearer" type="password" />
+          </div>
+        ` : '';
+
         return `
           <div class="api-try" id="${formId}" data-path="${path}" data-method="${method}" data-body-kind="${bodyKind}">
-            ${(bodyFields || paramFields) ? `<div class="api-try-fields">${paramFields}${bodyFields}</div>` : ''}
+            ${(authField || bodyFields || paramFields) ? `<div class="api-try-fields">${authField}${paramFields}${bodyFields}</div>` : ''}
             <button type="button" class="api-try-btn" data-action="execute">${t('api.execute')}</button>
             <pre class="api-try-response"></pre>
           </div>
@@ -727,9 +765,9 @@
           <article class="api-endpoint">
             <div class="api-endpoint-head">
               <span class="api-method ${method}">${method.toUpperCase()}</span>
-              <code class="api-path">${path}</code>
+              <code class="api-path">${escapeHtml(path)}</code>
             </div>
-            ${summary ? `<p class="api-summary">${summary}</p>` : ''}
+            ${summary ? `<p class="api-summary">${escapeHtml(summary)}</p>` : ''}
             ${renderParams(operation)}
             ${renderRequestFields(spec, operation)}
             ${renderResponses(operation)}
@@ -742,7 +780,7 @@
                   <span class="copy-toast">${t('discord.toast')}</span>
                 </button>
               </div>
-              <pre class="api-curl-body">${curlExample}</pre>
+              <pre class="api-curl-body">${escapeHtml(curlExample)}</pre>
             </div>
           </article>
         `;
@@ -775,7 +813,7 @@
 
           groupsEl.innerHTML = orderedTags.map((tag) => `
             <section class="api-group">
-              <h2 class="api-group-title">${tag}</h2>
+              <h2 class="api-group-title">${escapeHtml(tag)}</h2>
               <div class="api-endpoints">
                 ${groups.get(tag).map((e) => endpointHtml(spec, e.path, e.method, e.operation, e.index)).join('')}
               </div>
@@ -866,18 +904,28 @@
         const bodyKind = container.dataset.bodyKind;
         const inputs = container.querySelectorAll('[data-field]');
 
-        // only path params are substituted here since no endpoint uses query
-        // params yet; a query-string builder can be added if one ever does
+        // only path params are substituted here, since no endpoint uses query params yet
         let path = container.dataset.path;
         container.querySelectorAll('[data-param]').forEach((el) => {
           path = path.replace(`{${el.dataset.param}}`, encodeURIComponent(fieldValue(el)));
         });
 
+        const meta = endpointMeta.get(Number(container.id.slice(3)));
+        const bodySchema = meta
+          ? resolveSchema(meta.spec, meta.operation.requestBody?.content?.['application/json']?.schema)
+          : null;
+
         const opts = { method: method.toUpperCase() };
         if (bodyKind === 'json') {
           const payload = {};
           inputs.forEach((el) => {
-            payload[el.dataset.field] = el.type === 'number' ? Number(el.value) : fieldValue(el);
+            const prop = bodySchema && bodySchema.properties && bodySchema.properties[el.dataset.field];
+            let value = el.type === 'number' ? Number(el.value) : fieldValue(el);
+            // object/array fields are typed as JSON text, not sent as a literal string
+            if (prop && (prop.type === 'object' || prop.type === 'array') && typeof value === 'string') {
+              try { value = JSON.parse(value); } catch { /* leave as-is, the API will 422 with a clear error */ }
+            }
+            payload[el.dataset.field] = value;
           });
           opts.headers = { 'Content-Type': 'application/json' };
           opts.body = JSON.stringify(payload);
@@ -892,6 +940,9 @@
           });
           opts.body = fd;
         }
+
+        const token = curlLiveToken(container);
+        if (token) opts.headers = { ...opts.headers, Authorization: `Bearer ${token}` };
 
         btn.disabled = true;
         const originalLabel = btn.textContent;

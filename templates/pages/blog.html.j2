@@ -275,8 +275,7 @@
     function tagLabel(id) {
       return (TAG_LABELS[currentLang] && TAG_LABELS[currentLang][id]) || TAG_LABELS.en[id] || id;
     }
-    // CSS custom property names can't start with a digit, so ids like "3d-printing"
-    // need a safe suffix for their --tag-* variable.
+    // CSS custom property names can't start with a digit, so "3d-printing" needs a safe suffix
     const TAG_CSS_SUFFIX = { '3d-printing': 'printing3d' };
     function tagCssVar(id) {
       return `--tag-${TAG_CSS_SUFFIX[id] || id}`;
@@ -286,8 +285,6 @@
       return `color: var(${v}); background: var(${v}-bg);`;
     }
 
-    // Placeholder posts: no real articles are written yet, these exist only to
-    // exercise the search/tag/sort UI. One per tag, honestly labeled as such.
     const ARTICLES = [
 {% for slug, post in posts.items() %}
       {

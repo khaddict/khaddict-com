@@ -22,12 +22,7 @@ TEMPLATES = ROOT / "templates"
 I18N_DIR = TEMPLATES / "data" / "i18n"
 ASSETS_DIR = TEMPLATES / "data" / "assets"
 
-# The live site links the brand icon (and og:image/twitter:image/favicon
-# everywhere else) straight to media.<domain>, built from --domain/--scheme
-# in main() same as SITE_URLS. The vps-fallback page is shown precisely when
-# the homelab (and therefore media.khaddict.com) is unreachable, so it keeps
-# its own copy inlined as a base64 data URI instead, sized down from
-# media-build/media/icons/khazix-pc-flat.png, unaffected by --domain.
+# inlined as base64: vps-fallback is shown precisely when media.<domain> is unreachable
 BRAND_ICON_URL = None
 WALL_SCENE_URL = None
 
@@ -38,14 +33,7 @@ def fallback_icon_data_uri():
 
 LOCALES = ("en", "fr")
 
-# Per-locale site URLs, used for the header nav / brand link / lang switcher -
-# the cross-subdomain links that are genuinely different hosts even in prod.
-# Built from --domain/--scheme (main()) rather than hardcoded so a non-prod
-# build (--domain website.khaddict.lab --scheme http) keeps every self-
-# referential link (nav, canonical/OG/hreflang, icons, RSS) on that same
-# environment instead of pointing out at the real site. The one deliberate
-# exception is vps-fallback, which always represents the real public site
-# (that's its whole job during an outage) and ignores --domain entirely.
+# vps-fallback never uses this: it always targets the real site regardless of --domain
 def build_site_urls(domain, scheme):
     return {
         "en": {
@@ -89,9 +77,7 @@ def build_www_meta(domain, scheme):
 
 WWW_META = None
 
-# --tag-* tokens back the per-tag colors on blog listing cards, post tag
-# chips, and the blog's tag-filter chips. Shared by blog.html.j2 and
-# post.html.j2 (both render article/post tag chips).
+# --tag-* tokens back per-tag colors; shared by blog.html.j2 and post.html.j2
 BLOG_EXTRA_TOKENS = {
     "extra_tokens_base": "\n      ".join([
         "--tag-homelab:        #7C5CBF;",
@@ -237,9 +223,7 @@ def build_rss_hrefs(domain, scheme):
     }
 
 
-# sitemap.xml always represents the real public site, same reasoning as
-# vps-fallback: it's submitted to search engines, so it must never point at a
-# --domain preprod build even when this script is run with one.
+# submitted to search engines, so like vps-fallback it always targets the real site, never --domain
 def build_sitemap_entries(posts):
     base = "https://khaddict.com"
     blog = "https://blog.khaddict.com"
@@ -262,8 +246,7 @@ def build_sitemap_entries(posts):
     return entries
 
 
-# 225 wpm is a commonly cited average adult silent-reading speed, close enough
-# for a rough "min read" estimate. Not trying to be precise.
+# average adult silent-reading speed, good enough for a rough estimate
 READING_WPM = 225
 HTML_TAG_RE = re.compile(r"<[^>]+>")
 
@@ -278,9 +261,7 @@ RSS_HREFS = None
 
 
 def hreflang_hrefs(site_key):
-    """<link rel="alternate" hreflang=...> hrefs for a site's own root, en/fr/
-    x-default: same value as lang_switch_hrefs() but keyed for the hreflang
-    tags instead of the visible lang-switcher links."""
+    """hreflang link hrefs for a site's root; same values as lang_switch_hrefs(), keyed differently."""
     en = SITE_URLS["en"][site_key] + "/"
     return {
         "hreflang_en_href": en,
@@ -304,10 +285,7 @@ def build_feed_items(posts, locale, domain, scheme):
 
 
 def lang_switch_hrefs(site_key):
-    """Locale-switcher <a> hrefs for lang_mode "url" pages: always the
-    subdomain root (with trailing slash), matching the on-disk convention
-    that predates this template (the switcher links to the sibling site
-    root, not necessarily the current page)."""
+    """Locale-switcher hrefs: always the subdomain root, not the current page (matches the pre-template convention)."""
     return {
         "lang_switch_fr_href": SITE_URLS["fr"][site_key],
         "lang_switch_en_href": SITE_URLS["en"][site_key] + "/",
@@ -370,6 +348,9 @@ def main():
         help="Scheme for --domain's links, e.g. --scheme http for a TLS-less local stack.",
     )
     args = parser.parse_args()
+    # --domain lands raw in inline <script> literals; autoescape doesn't help there
+    if not re.fullmatch(r"[A-Za-z0-9.-]+(:[0-9]+)?", args.domain):
+        parser.error(f"--domain {args.domain!r} contains characters that aren't valid in a hostname")
     out_root = args.out_dir.resolve()
     only = args.only
 
@@ -384,17 +365,12 @@ def main():
     API_META = build_api_meta(args.domain, args.scheme)
     RSS_HREFS = build_rss_hrefs(args.domain, args.scheme)
 
-    # vps-fallback always represents the real public site (that's its whole
-    # job during an outage), so its nav/cookie context ignores --domain.
+    # see build_site_urls: vps-fallback always targets the real site
     prod_site_urls = build_site_urls("khaddict.com", "https")
 
-    # domain=.khaddict.com is deliberately a leading-dot cookie domain so the
-    # theme cookie is shared across all khaddict.com subdomains; the local
-    # equivalent shares it across www/blog/media/projects.<domain> the same
-    # way. Secure requires HTTPS, dropped for --scheme http, where the
-    # browser would otherwise silently refuse to set the cookie at all.
+    # leading-dot domain shares the theme cookie across all subdomains
     cookie_domain = f".{args.domain}"
-    cookie_secure_attr = "; Secure" if args.scheme == "https" else ""
+    cookie_secure_attr = "; Secure" if args.scheme == "https" else ""  # browser needs HTTPS to accept Secure
 
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATES)),
@@ -404,8 +380,7 @@ def main():
         keep_trailing_newline=True,
     )
     def safe_tojson(value):
-        # plain json.dumps doesn't escape </script>, which would end the
-        # enclosing <script> block early regardless of JS-string quoting
+        # escapes </script> so embedding this in a <script> block can't end it early
         return (
             json.dumps(value)
             .replace("<", "\\u003c")
@@ -459,11 +434,8 @@ def main():
     if only in (None, "vps-fallback"):
         vps_yaml = load_i18n("vps_fallback")
         vps_i18n_all = merged_i18n(common, vps_yaml)
-        # vps-fallback has no /fr/ sibling: it ships one lang-agnostic build whose
-        # static (pre-JS) markup mirrors what was already on disk (English text,
-        # lang="en"), while the runtime I18N object still carries both locales for
-        # the cookie-based switcher. The lang-current placeholder is left as "FR"
-        # to match the file as it existed before this refactor.
+        # one lang-agnostic build (static markup is English), but i18n_all keeps both
+        # locales for the cookie-based switcher; lang_current="FR" matches the pre-refactor file
         render(
             env,
             "pages/vps_fallback.html.j2",
@@ -625,13 +597,8 @@ def main():
     if only in (None, "404"):
         not_found_yaml = load_i18n("404")
         not_found_i18n_all = merged_i18n(common, not_found_yaml)
-        # 404.html is a single shared file served across all 4 khaddict.com
-        # subdomains (see Helm configmap.yaml / deployment.yaml), not a per-site
-        # page like the others, so it only ever gets one "en" render. Its
-        # lang-switcher links to the site ROOT's /fr/ (not a same-page fr
-        # variant, since a 404 has no page-specific fr content), and its runtime
-        # currentLang is detected from location.pathname rather than baked in
-        # at build time.
+        # shared across all subdomains (see Helm configmap/deployment), so only one "en" render
+        # exists; its lang-switcher points at the site root's /fr/, since a 404 has no fr content
         render(
             env,
             "pages/404.html.j2",
@@ -659,20 +626,11 @@ def main():
 
     if only in (None, "posts"):
         post_yaml = load_i18n("post")
-        # posts.yaml is data, not translation strings in the i18n sense: it holds
-        # the one field (title/excerpt/body/date/tags) that's genuinely unique
-        # per blog post, keyed by slug, feeding both blog.html.j2 (the listing's
-        # ARTICLES array) and post.html.j2 (this loop) from a single source.
+        # per-post data (not i18n strings), feeding both blog.html.j2's listing and this loop
         for slug, post in posts.items():
             post_extra = {
-                # {MEDIA} in a post body is a placeholder for the media
-                # site's own base URL, resolved here (not by Jinja, since post
-                # bodies are inserted as opaque strings, never re-parsed as
-                # templates) so embedded gallery/video links stay on
-                # --domain during a local/preprod build instead of always
-                # pointing at prod. Always SITE_URLS["en"]["media"] (no
-                # trailing /fr/) regardless of locale: /gallery/ and
-                # /videos/ aren't locale-prefixed paths on the media site.
+                # {MEDIA} is resolved here since post bodies are opaque strings, not re-parsed
+                # as templates; always the en media URL, since /gallery/ and /videos/ aren't locale-prefixed
                 locale: {
                     "title.post": f"{post['title'][locale]} | khaddict blog",
                     "post.title": post["title"][locale],
@@ -724,9 +682,7 @@ def main():
                 )
 
     if only in (None, "feed"):
-        # The feed is derived entirely from posts.yaml (the same data backing the
-        # blog listing and post pages), one per locale to match the rest of the
-        # site's EN/FR split.
+        # one feed per locale, same posts.yaml data as the blog listing
         for locale, out_rel in (("en", "files/blog/feed.xml"), ("fr", "files/blog/fr/feed.xml")):
             render(
                 env,

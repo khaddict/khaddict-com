@@ -11,6 +11,7 @@ en:
   api.networkError: "Network error"
   api.chooseFile: "Choose file"
   api.noFileChosen: "No file chosen"
+  api.authToken: "Bearer token"
 fr:
   title.api: "API | khaddict"
   api.loading: "Chargement des endpoints…"
@@ -24,3 +25,4 @@ fr:
   api.networkError: "Erreur réseau"
   api.chooseFile: "Choisir un fichier"
   api.noFileChosen: "Aucun fichier choisi"
+  api.authToken: "Jeton Bearer"

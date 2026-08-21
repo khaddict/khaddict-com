@@ -8,10 +8,8 @@
 {% include "partials/theme_toggle.js.j2" %}
   </script>
   <script>
-    // this page's gallery is entirely populated by async fetch() calls, so the document
-    // is still short when the browser attempts its own scroll-position restore on reload,
-    // which races against that fetch and lands inconsistently; disable it and let every
-    // load simply start at the top instead
+    // the gallery loads via async fetch(), so the browser's scroll-restore-on-reload races
+    // it and lands inconsistently; disable it and always start at the top instead
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   </script>
   <title>{{ i18n['title.media'] }}</title>
@@ -286,8 +284,7 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity .2s ease;
-      /* extra bottom padding reserves room for .lightbox-toolbar (position:absolute,
-         bottom:1.5rem, ~2.9rem tall) so a tall portrait image can never grow into it */
+      /* extra bottom padding keeps a tall portrait image from growing into .lightbox-toolbar */
       padding: 2rem 2rem 5rem;
     }
     .lightbox.open { opacity: 1; pointer-events: auto; }
@@ -624,8 +621,7 @@
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         return;
       }
-      // Non-PNG sources (jpg, webp...) aren't universally clipboard-writable,
-      // so re-encode through a canvas to a PNG blob first.
+      // non-PNG sources (jpg, webp...) aren't universally clipboard-writable, so re-encode as PNG first
       const bitmap = await createImageBitmap(blob);
       const canvas = document.createElement('canvas');
       canvas.width  = bitmap.width;
@@ -731,7 +727,7 @@
         card.innerHTML = isVideoFile(f.name)
           ? (
             '<div class="gallery-thumb">' +
-              '<video src="' + link + '" preload="metadata" muted playsinline></video>' +
+              '<video src="' + path + encodeURIComponent(f.name) + '" preload="metadata" muted playsinline></video>' +
               '<span class="gallery-play-badge">▶</span>' +
               '<span class="gallery-size">' + fmt(f.size) + '</span>' +
             '</div>'

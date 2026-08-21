@@ -114,11 +114,8 @@
       margin: 1rem 0;
     }
 
-    /* spans, not div/figure/figcaption: this whole block sits inside a
-       single <p>, which only allows phrasing content; a div or figure in
-       there gets auto-closed out of the p by the parser, duplicating the
-       rest of the paragraph. display:flex etc. don't care that the tag is
-       a span either way, so the visual result is identical. */
+    /* spans, not div/figure: this sits inside a single <p>, which only allows phrasing
+       content, so a div/figure here would get auto-closed out of the p by the parser */
     .post-body .render-pair {
       display: flex;
       gap: 1rem;
@@ -293,8 +290,7 @@
     function tagLabel(id) {
       return (TAG_LABELS[currentLang] && TAG_LABELS[currentLang][id]) || TAG_LABELS.en[id] || id;
     }
-    // CSS custom property names can't start with a digit, so ids like "3d-printing"
-    // need a safe suffix for their --tag-* variable.
+    // CSS custom property names can't start with a digit, so "3d-printing" needs a safe suffix
     const TAG_CSS_SUFFIX = { '3d-printing': 'printing3d' };
     function tagCssVar(id) {
       return `--tag-${TAG_CSS_SUFFIX[id] || id}`;
@@ -368,16 +364,13 @@
     }
     trackView();
 
-    // glossary term tooltips are centered on the term by default, which overflows the
-    // viewport (even page scrollWidth, since visibility:hidden still occupies layout
-    // space) when the term lands near a screen edge on narrow layouts, so nudge them
-    // back in via a CSS var instead of hardcoding a direction that only works sometimes
+    // glossary tooltips are centered by default, which overflows the viewport near a screen
+    // edge on narrow layouts; nudge them back in via a CSS var instead of a fixed direction
     (function () {
       const tips = Array.from(document.querySelectorAll('.term-tip'));
       function repositionAll() {
-        // document.documentElement.clientWidth, not window.innerWidth: a still-overflowing
-        // tip (mid-fix, or before this runs) inflates innerWidth's layout viewport too,
-        // which would make the overflow it's supposed to detect invisible to itself
+        // clientWidth, not innerWidth: a still-overflowing tip inflates innerWidth's layout
+        // viewport too, hiding the overflow this is meant to detect
         const viewportWidth = document.documentElement.clientWidth;
         tips.forEach((tip) => {
           tip.style.setProperty('--tip-shift', '0px');
@@ -391,9 +384,7 @@
       }
       repositionAll();
       window.addEventListener('resize', repositionAll);
-      // this script runs synchronously during initial parse, before the JetBrains Mono
-      // webfont has necessarily swapped in, so the fallback-font layout it measured can
-      // be stale once the real font reflows the text into (or out of) an overflow
+      // runs before the JetBrains Mono webfont swaps in, so a font-driven reflow can go stale
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(repositionAll);
     })();
 
@@ -456,10 +447,8 @@
 
     (function () {
       window.remark_config = {
-        // host stays the real backend regardless of --domain, there's no
-        // local Remark42 to talk to. url follows canonical_url instead of
-        // being hardcoded too, so a non-prod build gets its own comment
-        // thread instead of the real post's.
+        // host always targets the real backend (no local Remark42), but url follows
+        // canonical_url so a non-prod build gets its own comment thread, not the real post's
         host: 'https://blog.khaddict.com/remark42',
         site_id: 'khaddict-blog',
         url: '{{ canonical_url }}',
