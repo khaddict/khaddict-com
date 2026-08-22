@@ -26,6 +26,10 @@ ASSETS_DIR = TEMPLATES / "data" / "assets"
 BRAND_ICON_URL = None
 WALL_SCENE_URL = None
 
+# the BUSY Bar API is a single real backend, not something a --domain preview
+# can stand up its own copy of, so JS calls always target the real one
+PROD_API_BASE_URL = "https://api.khaddict.com"
+
 
 def fallback_icon_data_uri():
     data = (ASSETS_DIR / "vps-fallback-icon.png").read_bytes()
@@ -416,7 +420,7 @@ def main():
                 nav_media_href=SITE_URLS[locale]["media"],
                 nav_dashboard_href=SITE_URLS[locale]["dashboard"],
                 nav_api_href=SITE_URLS[locale]["api"],
-                api_base_url=f"{args.scheme}://api.{args.domain}",
+                api_base_url=PROD_API_BASE_URL,
                 brand_icon_src=BRAND_ICON_URL,
                 wall_scene_src=WALL_SCENE_URL,
                 meta_description=WWW_META[locale]["description"],
@@ -588,7 +592,7 @@ def main():
                 canonical_url=API_META[locale]["canonical_url"],
                 cookie_domain=cookie_domain,
                 cookie_secure_attr=cookie_secure_attr,
-                api_base_url=f"{args.scheme}://api.{args.domain}",
+                api_base_url=PROD_API_BASE_URL,
                 **NO_EXTRA_TOKENS,
                 **lang_switch_hrefs("api"),
                 **hreflang_hrefs("api"),
@@ -675,7 +679,7 @@ def main():
                     lang_switch_fr_href=f"/fr/posts/{slug}/",
                     lang_switch_en_href=f"/posts/{slug}/",
                     rss_href=RSS_HREFS[locale],
-                    api_base_url=f"{args.scheme}://api.{args.domain}",
+                    api_base_url=PROD_API_BASE_URL,
                     cookie_domain=cookie_domain,
                     cookie_secure_attr=cookie_secure_attr,
                     **BLOG_EXTRA_TOKENS,
