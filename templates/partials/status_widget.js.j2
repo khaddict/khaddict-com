@@ -1,6 +1,8 @@
     const STATUS = 'https://status.khaddict.com';
     const SLUG   = 'khaddict';
 
+{% include "partials/escape_html.js.j2" %}
+
     const dot      = document.getElementById('s-dot');
     const dropdown = document.getElementById('s-dropdown');
     const inner    = document.getElementById('s-inner');
@@ -32,8 +34,6 @@
         let anyRecentDown = false;
 
         // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
-        const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];

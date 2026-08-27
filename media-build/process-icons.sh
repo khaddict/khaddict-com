@@ -16,6 +16,12 @@ is_skipped() {
   grep -qx "$1" "$SKIP_LIST"
 }
 
+resize_and_sharpen() {
+  magick "$1" -filter Lanczos \
+    -resize "512x512>" -resize "256x256>" -resize "${TARGET}x${TARGET}>" \
+    -unsharp 0x0.8+0.6+0.02 -define png:color-type=6 "$2"
+}
+
 for f in /data/icons/*; do
   [ -f "$f" ] || continue
   case "$f" in
@@ -26,9 +32,7 @@ for f in /data/icons/*; do
   name=$(basename "$f")
 
   if is_skipped "$name"; then
-    magick "$f" -filter Lanczos \
-      -resize "512x512>" -resize "256x256>" -resize "${TARGET}x${TARGET}>" \
-      -unsharp 0x0.8+0.6+0.02 -define png:color-type=6 "$f"
+    resize_and_sharpen "$f" "$f"
     continue
   fi
 
@@ -48,9 +52,7 @@ for f in /data/icons/*; do
     -compose CopyOpacity -composite -define png:color-type=6 /tmp/outline.png
   magick /tmp/outline.png /tmp/padded.png -compose over -composite -define png:color-type=6 /tmp/sticker.png
 
-  magick /tmp/sticker.png -filter Lanczos \
-    -resize "512x512>" -resize "256x256>" -resize "${TARGET}x${TARGET}>" \
-    -unsharp 0x0.8+0.6+0.02 -define png:color-type=6 "$f"
+  resize_and_sharpen /tmp/sticker.png "$f"
 
   rm -f /tmp/padded.png /tmp/mask.png /tmp/mask_dilated.png /tmp/outline.png /tmp/sticker.png
 done

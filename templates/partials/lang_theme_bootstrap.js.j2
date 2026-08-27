@@ -1,0 +1,29 @@
+{# expects `title_key` set before include; `extra_html_i18n_keys` (a list) is optional.
+   For a page whose applyLanguage() or theme-toggle handler needs its own extra logic
+   (blog, post), define those yourself and include partials/lang_dropdown.js.j2 and/or
+   partials/theme_toggle_button.js.j2 directly instead. #}
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.title = t('{{ title_key }}');
+      const HTML_I18N_KEYS = new Set(['hero.title', 'wall.dropZone', 'projects.title', 'deploy.title'{% for key in (extra_html_i18n_keys or []) %}, '{{ key }}'{% endfor %}]);
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const i18nKey = el.getAttribute('data-i18n');
+        const value = t(i18nKey);
+        if (HTML_I18N_KEYS.has(i18nKey)) {
+          el.innerHTML = value;
+        } else {
+          el.textContent = value;
+        }
+      });
+      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
+        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+      });
+      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
+      document.querySelectorAll('.lang-option').forEach((el) => {
+        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
+      });
+    }
+
+    applyLanguage();
+{% include "partials/lang_dropdown.js.j2" %}
+{% include "partials/theme_toggle_button.js.j2" %}

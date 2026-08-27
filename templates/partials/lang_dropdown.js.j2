@@ -1,0 +1,16 @@
+{# expects the including page to have already defined and called applyLanguage() #}
+    const langBtn = document.getElementById('lang-btn');
+    const langDropdown = document.getElementById('lang-dropdown');
+
+    langBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = langDropdown.classList.toggle('open');
+      langBtn.setAttribute('aria-expanded', isOpen);
+    });
+    document.addEventListener('click', (e) => {
+      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
+        langDropdown.classList.remove('open');
+        langBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+{% include "partials/status_widget.js.j2" %}

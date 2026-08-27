@@ -26,20 +26,7 @@
   <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
   <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
 
-  <!-- Matomo -->
-  <script>
-    var _paq = window._paq = window._paq || [];
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function() {
-      var u="//matomo.khaddict.com/";
-      _paq.push(['setTrackerUrl', u+'matomo.php']);
-      _paq.push(['setSiteId', '1']);
-      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
-  </script>
-  <!-- End Matomo -->
+{% include "partials/matomo.html.j2" %}
 
   <style>
 {% include "partials/head_tokens.css.j2" %}
@@ -330,83 +317,34 @@
           </div>
         </article>
 
+{% set github_svg %}<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>{% endset %}
+{% set projects = [
+  {"name": "voidnode", "desc_key": "projects.voidnode", "tags": ["Kubernetes", "ArgoCD", "SaltStack", "OPNsense", "Proxmox VE"], "repo": "voidnode"},
+  {"name": "khaddict-com", "desc_key": "projects.khaddictcom", "tags": ["Helm", "Nginx", "GitHub Actions"], "repo": "khaddict-com"},
+  {"name": "homelab", "desc_key": "projects.homelab", "tags": ["Proxmox VE", "Ceph", "Kubernetes", "StackStorm", "SaltStack"], "repo": "homelab"},
+  {"name": "homelab_cloud", "desc_key": "projects.homelabcloud", "tags": ["ArgoCD", "Kubernetes", "Helm"], "repo": "homelab_cloud"},
+  {"name": "easypki", "desc_key": "projects.easypki", "tags": ["Bash", "OpenSSL", "PKI"], "repo": "easypki"},
+  {"name": "voidpath", "desc_key": "projects.voidpath", "tags": ["HackTheBox"], "repo": none},
+] %}
+{% for p in projects %}
         <article class="project-card">
-          <h2 class="project-name">voidnode</h2>
-          <p class="project-desc" data-i18n="projects.voidnode">{{ i18n['projects.voidnode'] }}</p>
+          <h2 class="project-name">{{ p.name }}</h2>
+          <p class="project-desc" data-i18n="{{ p.desc_key }}">{{ i18n[p.desc_key] }}</p>
           <div class="project-stack">
-            <span class="project-tag">Kubernetes</span>
-            <span class="project-tag">ArgoCD</span>
-            <span class="project-tag">SaltStack</span>
-            <span class="project-tag">OPNsense</span>
-            <span class="project-tag">Proxmox VE</span>
+{% for tag in p.tags %}
+            <span class="project-tag">{{ tag }}</span>
+{% endfor %}
           </div>
-          <a class="project-link" href="https://github.com/khaddict/voidnode" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-            github.com/khaddict/voidnode
+{% if p.repo %}
+          <a class="project-link" href="https://github.com/khaddict/{{ p.repo }}" target="_blank" rel="noopener">
+            {{ github_svg | safe }}
+            github.com/khaddict/{{ p.repo }}
           </a>
-        </article>
-        <article class="project-card">
-          <h2 class="project-name">khaddict-com</h2>
-          <p class="project-desc" data-i18n="projects.khaddictcom">{{ i18n['projects.khaddictcom'] }}</p>
-          <div class="project-stack">
-            <span class="project-tag">Helm</span>
-            <span class="project-tag">Nginx</span>
-            <span class="project-tag">GitHub Actions</span>
-          </div>
-          <a class="project-link" href="https://github.com/khaddict/khaddict-com" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-            github.com/khaddict/khaddict-com
-          </a>
-        </article>
-        <article class="project-card">
-          <h2 class="project-name">homelab</h2>
-          <p class="project-desc" data-i18n="projects.homelab">{{ i18n['projects.homelab'] }}</p>
-          <div class="project-stack">
-            <span class="project-tag">Proxmox VE</span>
-            <span class="project-tag">Ceph</span>
-            <span class="project-tag">Kubernetes</span>
-            <span class="project-tag">StackStorm</span>
-            <span class="project-tag">SaltStack</span>
-          </div>
-          <a class="project-link" href="https://github.com/khaddict/homelab" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-            github.com/khaddict/homelab
-          </a>
-        </article>
-        <article class="project-card">
-          <h2 class="project-name">homelab_cloud</h2>
-          <p class="project-desc" data-i18n="projects.homelabcloud">{{ i18n['projects.homelabcloud'] }}</p>
-          <div class="project-stack">
-            <span class="project-tag">ArgoCD</span>
-            <span class="project-tag">Kubernetes</span>
-            <span class="project-tag">Helm</span>
-          </div>
-          <a class="project-link" href="https://github.com/khaddict/homelab_cloud" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-            github.com/khaddict/homelab_cloud
-          </a>
-        </article>
-        <article class="project-card">
-          <h2 class="project-name">easypki</h2>
-          <p class="project-desc" data-i18n="projects.easypki">{{ i18n['projects.easypki'] }}</p>
-          <div class="project-stack">
-            <span class="project-tag">Bash</span>
-            <span class="project-tag">OpenSSL</span>
-            <span class="project-tag">PKI</span>
-          </div>
-          <a class="project-link" href="https://github.com/khaddict/easypki" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.58 2 12.25c0 4.53 2.87 8.37 6.84 9.73.5.1.68-.22.68-.49 0-.24-.01-1.03-.01-1.87-2.78.62-3.37-1.21-3.37-1.21-.46-1.19-1.11-1.51-1.11-1.51-.91-.64.07-.62.07-.62 1 .07 1.53 1.05 1.53 1.05.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.72 0 0 .84-.28 2.75 1.05a9.3 9.3 0 0 1 5 0c1.91-1.33 2.75-1.05 2.75-1.05.55 1.41.2 2.46.1 2.72.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.79-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.25C22 6.58 17.52 2 12 2z"/></svg>
-            github.com/khaddict/easypki
-          </a>
-        </article>
-        <article class="project-card">
-          <h2 class="project-name">voidpath</h2>
-          <p class="project-desc" data-i18n="projects.voidpath">{{ i18n['projects.voidpath'] }}</p>
-          <div class="project-stack">
-            <span class="project-tag">HackTheBox</span>
-          </div>
+{% else %}
           <span class="project-badge deploy-badge" data-i18n="projects.comingSoon">{{ i18n['projects.comingSoon'] }}</span>
+{% endif %}
         </article>
+{% endfor %}
       </div>
     </div>
   </main>
@@ -430,51 +368,8 @@
       return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
     }
 
-    function applyLanguage() {
-      document.documentElement.lang = currentLang;
-      document.title = t('title.projects');
-      const HTML_I18N_KEYS = new Set(['hero.title', 'wall.dropZone', 'projects.title', 'deploy.title']);
-      document.querySelectorAll('[data-i18n]').forEach((el) => {
-        const i18nKey = el.getAttribute('data-i18n');
-        const value = t(i18nKey);
-        if (HTML_I18N_KEYS.has(i18nKey)) {
-          el.innerHTML = value;
-        } else {
-          el.textContent = value;
-        }
-      });
-      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
-        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
-      });
-      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
-      document.querySelectorAll('.lang-option').forEach((el) => {
-        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
-      });
-    }
-
-    applyLanguage();
-
-    const langBtn = document.getElementById('lang-btn');
-    const langDropdown = document.getElementById('lang-dropdown');
-
-    langBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = langDropdown.classList.toggle('open');
-      langBtn.setAttribute('aria-expanded', isOpen);
-    });
-    document.addEventListener('click', (e) => {
-      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
-        langDropdown.classList.remove('open');
-        langBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-{% include "partials/status_widget.js.j2" %}
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      setThemeCookie(next);
-    });
+{% set title_key = 'title.projects' %}
+{% include "partials/lang_theme_bootstrap.js.j2" %}
 
     (function () {
       const discordBtn = document.getElementById('discord-btn');

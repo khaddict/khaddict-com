@@ -27,20 +27,7 @@
   <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
   <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
 
-  <!-- Matomo -->
-  <script>
-    var _paq = window._paq = window._paq || [];
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function() {
-      var u="//matomo.khaddict.com/";
-      _paq.push(['setTrackerUrl', u+'matomo.php']);
-      _paq.push(['setSiteId', '1']);
-      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
-  </script>
-  <!-- End Matomo -->
+{% include "partials/matomo.html.j2" %}
 
   <style>
 {% include "partials/head_tokens.css.j2" %}
@@ -254,36 +241,7 @@
     // ---- Blog: data ----
     // canonical tag ids (stable across languages, also used as CSS var suffixes)
     const TAG_IDS = ['homelab', '3d-printing', 'tooling', 'systems', 'networking', 'cloud'];
-    const TAG_LABELS = {
-      en: {
-        'homelab': 'homelab',
-        '3d-printing': '3D printing',
-        'tooling': 'tooling',
-        'systems': 'systems',
-        'networking': 'networking',
-        'cloud': 'cloud',
-      },
-      fr: {
-        'homelab': 'homelab',
-        '3d-printing': 'impression 3D',
-        'tooling': 'technos',
-        'systems': 'système',
-        'networking': 'réseau',
-        'cloud': 'cloud',
-      },
-    };
-    function tagLabel(id) {
-      return (TAG_LABELS[currentLang] && TAG_LABELS[currentLang][id]) || TAG_LABELS.en[id] || id;
-    }
-    // CSS custom property names can't start with a digit, so "3d-printing" needs a safe suffix
-    const TAG_CSS_SUFFIX = { '3d-printing': 'printing3d' };
-    function tagCssVar(id) {
-      return `--tag-${TAG_CSS_SUFFIX[id] || id}`;
-    }
-    function tagStyle(id) {
-      const v = tagCssVar(id);
-      return `color: var(${v}); background: var(${v}-bg);`;
-    }
+{% include "partials/tag_labels.js.j2" %}
 
     const ARTICLES = [
 {% for slug, post in posts.items() %}
@@ -426,28 +384,8 @@
     }
 
     applyLanguage();
-
-    const langBtn = document.getElementById('lang-btn');
-    const langDropdown = document.getElementById('lang-dropdown');
-
-    langBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = langDropdown.classList.toggle('open');
-      langBtn.setAttribute('aria-expanded', isOpen);
-    });
-    document.addEventListener('click', (e) => {
-      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
-        langDropdown.classList.remove('open');
-        langBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-{% include "partials/status_widget.js.j2" %}
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      setThemeCookie(next);
-    });
+{% include "partials/lang_dropdown.js.j2" %}
+{% include "partials/theme_toggle_button.js.j2" %}
 
     (function () {
       const discordBtn = document.getElementById('discord-btn');

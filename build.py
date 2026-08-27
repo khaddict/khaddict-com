@@ -60,73 +60,78 @@ def build_site_urls(domain, scheme):
         },
     }
 
-def build_www_meta(domain, scheme):
+def build_page_meta(domain, scheme, subdomain, en_description, fr_description):
+    host = f"{subdomain}.{domain}" if subdomain else domain
     return {
         "en": {
-            "description": "Personal space dedicated to homelab, self-hosted infrastructure and code.",
-            "og_url": f"{scheme}://{domain}/",
+            "description": en_description,
+            "og_url": f"{scheme}://{host}/",
             "og_locale": "en_US",
             "og_locale_alternate": "fr_FR",
-            "canonical_url": f"{scheme}://{domain}/",
+            "canonical_url": f"{scheme}://{host}/",
         },
         "fr": {
-            "description": "Espace personnel dédié au homelab, à l’infrastructure self-hosted et au code.",
-            "og_url": f"{scheme}://{domain}/fr/",
+            "description": fr_description,
+            "og_url": f"{scheme}://{host}/fr/",
             "og_locale": "fr_FR",
             "og_locale_alternate": "en_US",
-            "canonical_url": f"{scheme}://{domain}/fr/",
+            "canonical_url": f"{scheme}://{host}/fr/",
         },
     }
+
+
+def build_www_meta(domain, scheme):
+    return build_page_meta(
+        domain, scheme, "",
+        "Personal space dedicated to homelab, self-hosted infrastructure and code.",
+        "Espace personnel dédié au homelab, à l’infrastructure self-hosted et au code.",
+    )
 
 
 WWW_META = None
 
 # --tag-* tokens back per-tag colors; shared by blog.html.j2 and post.html.j2
+TAG_COLORS_LIGHT = {
+    "homelab": "#7C5CBF",
+    "printing3d": "#A85A26",
+    "tooling": "#2E6DAE",
+    "systems": "#1A7557",
+    "networking": "#B03E71",
+    "cloud": "#1C7F97",
+}
+TAG_COLORS_DARK = {
+    "homelab": "#B39DDB",
+    "printing3d": "#F5B78E",
+    "tooling": "#90CAF9",
+    "systems": "#A5D6C1",
+    "networking": "#F0A8C4",
+    "cloud": "#8ED2E0",
+}
+
+
+def _hex_to_rgb(hex_color):
+    h = hex_color.lstrip("#")
+    return ", ".join(str(int(h[i:i + 2], 16)) for i in (0, 2, 4))
+
+
+def _tag_declarations(colors, alpha, inline):
+    """One `--tag-<name>[-bg]` declaration pair per tag; `inline` puts both on one line."""
+    parts = []
+    for tag, hex_color in colors.items():
+        bg = f"rgba({_hex_to_rgb(hex_color)}, {alpha})"
+        if inline:
+            parts.append(f"--tag-{tag}: {hex_color}; --tag-{tag}-bg: {bg};")
+        else:
+            parts.append(f"--tag-{tag}: {hex_color};")
+            parts.append(f"--tag-{tag}-bg: {bg};")
+    return parts
+
+
 BLOG_EXTRA_TOKENS = {
-    "extra_tokens_base": "\n      ".join([
-        "--tag-homelab:        #7C5CBF;",
-        "--tag-homelab-bg:     rgba(124, 92, 191, .12);",
-        "--tag-printing3d:    #A85A26;",
-        "--tag-printing3d-bg: rgba(168, 90, 38, .12);",
-        "--tag-tooling:        #2E6DAE;",
-        "--tag-tooling-bg:     rgba(46, 109, 174, .12);",
-        "--tag-systems:        #1A7557;",
-        "--tag-systems-bg:     rgba(26, 117, 87, .12);",
-        "--tag-networking:         #B03E71;",
-        "--tag-networking-bg:      rgba(176, 62, 113, .12);",
-        "--tag-cloud:          #1C7F97;",
-        "--tag-cloud-bg:       rgba(28, 127, 151, .12);",
-    ]),
-    "extra_tokens_dark_media": "\n        ".join([
-        "--tag-homelab:        #B39DDB;",
-        "--tag-homelab-bg:     rgba(179, 157, 219, .15);",
-        "--tag-printing3d:    #F5B78E;",
-        "--tag-printing3d-bg: rgba(245, 183, 142, .15);",
-        "--tag-tooling:        #90CAF9;",
-        "--tag-tooling-bg:     rgba(144, 202, 249, .15);",
-        "--tag-systems:        #A5D6C1;",
-        "--tag-systems-bg:     rgba(165, 214, 193, .15);",
-        "--tag-networking:         #F0A8C4;",
-        "--tag-networking-bg:      rgba(240, 168, 196, .15);",
-        "--tag-cloud:          #8ED2E0;",
-        "--tag-cloud-bg:       rgba(142, 210, 224, .15);",
-    ]),
-    "extra_tokens_light_attr": "\n      ".join([
-        "--tag-homelab: #7C5CBF; --tag-homelab-bg: rgba(124, 92, 191, .12);",
-        "--tag-printing3d: #A85A26; --tag-printing3d-bg: rgba(168, 90, 38, .12);",
-        "--tag-tooling: #2E6DAE; --tag-tooling-bg: rgba(46, 109, 174, .12);",
-        "--tag-systems: #1A7557; --tag-systems-bg: rgba(26, 117, 87, .12);",
-        "--tag-networking: #B03E71; --tag-networking-bg: rgba(176, 62, 113, .12);",
-        "--tag-cloud: #1C7F97; --tag-cloud-bg: rgba(28, 127, 151, .12);",
-    ]),
-    "extra_tokens_dark_attr": "\n      ".join([
-        "--tag-homelab: #B39DDB; --tag-homelab-bg: rgba(179, 157, 219, .15);",
-        "--tag-printing3d: #F5B78E; --tag-printing3d-bg: rgba(245, 183, 142, .15);",
-        "--tag-tooling: #90CAF9; --tag-tooling-bg: rgba(144, 202, 249, .15);",
-        "--tag-systems: #A5D6C1; --tag-systems-bg: rgba(165, 214, 193, .15);",
-        "--tag-networking: #F0A8C4; --tag-networking-bg: rgba(240, 168, 196, .15);",
-        "--tag-cloud: #8ED2E0; --tag-cloud-bg: rgba(142, 210, 224, .15);",
-    ]),
+    "extra_tokens_base": "\n      ".join(_tag_declarations(TAG_COLORS_LIGHT, ".12", inline=False)),
+    "extra_tokens_dark_media": "\n        ".join(_tag_declarations(TAG_COLORS_DARK, ".15", inline=False)),
+    "extra_tokens_light_attr": "\n      ".join(_tag_declarations(TAG_COLORS_LIGHT, ".12", inline=True)),
+    "extra_tokens_dark_attr": "\n      ".join(_tag_declarations(TAG_COLORS_DARK, ".15", inline=True)),
 }
 
 NO_EXTRA_TOKENS = {
@@ -137,79 +142,35 @@ NO_EXTRA_TOKENS = {
 }
 
 def build_blog_meta(domain, scheme):
-    return {
-        "en": {
-            "description": "Blog on homelab, self-hosted infrastructure, tooling and more. Articles in progress.",
-            "og_url": f"{scheme}://blog.{domain}/",
-            "og_locale": "en_US",
-            "og_locale_alternate": "fr_FR",
-            "canonical_url": f"{scheme}://blog.{domain}/",
-        },
-        "fr": {
-            "description": "Blog sur le homelab, l’infrastructure self-hosted, les outils et plus. Articles en cours de rédaction.",
-            "og_url": f"{scheme}://blog.{domain}/fr/",
-            "og_locale": "fr_FR",
-            "og_locale_alternate": "en_US",
-            "canonical_url": f"{scheme}://blog.{domain}/fr/",
-        },
-    }
+    return build_page_meta(
+        domain, scheme, "blog",
+        "Blog on homelab, self-hosted infrastructure, tooling and more. Articles in progress.",
+        "Blog sur le homelab, l’infrastructure self-hosted, les outils et plus. Articles en cours de rédaction.",
+    )
 
 
 def build_projects_meta(domain, scheme):
-    return {
-        "en": {
-            "description": "Projects I build and run: voidnode, khaddict-com, homelab, easypki.",
-            "og_url": f"{scheme}://projects.{domain}/",
-            "og_locale": "en_US",
-            "og_locale_alternate": "fr_FR",
-            "canonical_url": f"{scheme}://projects.{domain}/",
-        },
-        "fr": {
-            "description": "Projets que je construis et fais tourner : voidnode, khaddict-com, homelab, easypki.",
-            "og_url": f"{scheme}://projects.{domain}/fr/",
-            "og_locale": "fr_FR",
-            "og_locale_alternate": "en_US",
-            "canonical_url": f"{scheme}://projects.{domain}/fr/",
-        },
-    }
+    return build_page_meta(
+        domain, scheme, "projects",
+        "Projects I build and run: voidnode, khaddict-com, homelab, easypki.",
+        "Projets que je construis et fais tourner : voidnode, khaddict-com, homelab, easypki.",
+    )
 
 
 def build_media_meta(domain, scheme):
-    return {
-        "en": {
-            "description": "Personal media gallery hosting icons, wallpapers, homelab videos and assets.",
-            "og_url": f"{scheme}://media.{domain}/",
-            "og_locale": "en_US",
-            "og_locale_alternate": "fr_FR",
-            "canonical_url": f"{scheme}://media.{domain}/",
-        },
-        "fr": {
-            "description": "Galerie personnelle hébergeant icônes, fonds d’écran, vidéos et assets du homelab.",
-            "og_url": f"{scheme}://media.{domain}/fr/",
-            "og_locale": "fr_FR",
-            "og_locale_alternate": "en_US",
-            "canonical_url": f"{scheme}://media.{domain}/fr/",
-        },
-    }
+    return build_page_meta(
+        domain, scheme, "media",
+        "Personal media gallery hosting icons, wallpapers, homelab videos and assets.",
+        "Galerie personnelle hébergeant icônes, fonds d’écran, vidéos et assets du homelab.",
+    )
 
 
 def build_api_meta(domain, scheme):
-    return {
-        "en": {
-            "description": "Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar.",
-            "og_url": f"{scheme}://api.{domain}/",
-            "og_locale": "en_US",
-            "og_locale_alternate": "fr_FR",
-            "canonical_url": f"{scheme}://api.{domain}/",
-        },
-        "fr": {
-            "description": "Passerelle publique qui pilote des devices IoT du homelab, à commencer par la BUSY Bar.",
-            "og_url": f"{scheme}://api.{domain}/fr/",
-            "og_locale": "fr_FR",
-            "og_locale_alternate": "en_US",
-            "canonical_url": f"{scheme}://api.{domain}/fr/",
-        },
-    }
+    return build_page_meta(
+        domain, scheme, "api",
+        "Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar.",
+        "Passerelle publique qui pilote des devices IoT du homelab, à commencer par la BUSY Bar.",
+    )
 
 
 BLOG_META = None
@@ -286,6 +247,17 @@ def build_feed_items(posts, locale, domain, scheme):
             "description": post["excerpt"][locale],
         })
     return items
+
+
+def nav_hrefs(urls):
+    return {
+        "nav_home_href": urls["home"],
+        "nav_blog_href": urls["blog"],
+        "nav_projects_href": urls["projects"],
+        "nav_media_href": urls["media"],
+        "nav_dashboard_href": urls["dashboard"],
+        "nav_api_href": urls["api"],
+    }
 
 
 def lang_switch_hrefs(site_key):
@@ -414,12 +386,7 @@ def main():
                 i18n=www_i18n_all[locale],
                 i18n_all=www_i18n_all,
                 brand_href=SITE_URLS[locale]["brand"],
-                nav_home_href=SITE_URLS[locale]["home"],
-                nav_blog_href=SITE_URLS[locale]["blog"],
-                nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_media_href=SITE_URLS[locale]["media"],
-                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                nav_api_href=SITE_URLS[locale]["api"],
+                **nav_hrefs(SITE_URLS[locale]),
                 api_base_url=PROD_API_BASE_URL,
                 brand_icon_src=BRAND_ICON_URL,
                 wall_scene_src=WALL_SCENE_URL,
@@ -450,12 +417,7 @@ def main():
             i18n=vps_i18n_all["en"],
             i18n_all=vps_i18n_all,
             brand_href=prod_site_urls["en"]["brand"],
-            nav_home_href=prod_site_urls["en"]["home"],
-            nav_blog_href=prod_site_urls["en"]["blog"],
-            nav_projects_href=prod_site_urls["en"]["projects"],
-            nav_media_href=prod_site_urls["en"]["media"],
-            nav_dashboard_href=prod_site_urls["en"]["dashboard"],
-            nav_api_href=prod_site_urls["en"]["api"],
+            **nav_hrefs(prod_site_urls["en"]),
             brand_icon_src=fallback_icon_data_uri(),
             meta_description=vps_i18n_all["en"]["error.message"],
             cookie_domain=".khaddict.com",
@@ -478,12 +440,7 @@ def main():
                 i18n_all=blog_i18n_all,
                 posts=posts,
                 brand_href=SITE_URLS[locale]["home"],
-                nav_home_href=SITE_URLS[locale]["home"],
-                nav_blog_href=SITE_URLS[locale]["blog"],
-                nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_media_href=SITE_URLS[locale]["media"],
-                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                nav_api_href=SITE_URLS[locale]["api"],
+                **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=BLOG_META[locale]["description"],
                 og_url=BLOG_META[locale]["og_url"],
@@ -512,12 +469,7 @@ def main():
                 i18n=projects_i18n_all[locale],
                 i18n_all=projects_i18n_all,
                 brand_href=SITE_URLS[locale]["home"],
-                nav_home_href=SITE_URLS[locale]["home"],
-                nav_blog_href=SITE_URLS[locale]["blog"],
-                nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_media_href=SITE_URLS[locale]["media"],
-                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                nav_api_href=SITE_URLS[locale]["api"],
+                **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=PROJECTS_META[locale]["description"],
                 og_url=PROJECTS_META[locale]["og_url"],
@@ -545,12 +497,7 @@ def main():
                 i18n=media_i18n_all[locale],
                 i18n_all=media_i18n_all,
                 brand_href=SITE_URLS[locale]["home"],
-                nav_home_href=SITE_URLS[locale]["home"],
-                nav_blog_href=SITE_URLS[locale]["blog"],
-                nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_media_href=SITE_URLS[locale]["media"],
-                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                nav_api_href=SITE_URLS[locale]["api"],
+                **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=MEDIA_META[locale]["description"],
                 og_url=MEDIA_META[locale]["og_url"],
@@ -578,12 +525,7 @@ def main():
                 i18n=api_i18n_all[locale],
                 i18n_all=api_i18n_all,
                 brand_href=SITE_URLS[locale]["home"],
-                nav_home_href=SITE_URLS[locale]["home"],
-                nav_blog_href=SITE_URLS[locale]["blog"],
-                nav_projects_href=SITE_URLS[locale]["projects"],
-                nav_media_href=SITE_URLS[locale]["media"],
-                nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                nav_api_href=SITE_URLS[locale]["api"],
+                **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
                 meta_description=API_META[locale]["description"],
                 og_url=API_META[locale]["og_url"],
@@ -613,12 +555,7 @@ def main():
             i18n=not_found_i18n_all["en"],
             i18n_all=not_found_i18n_all,
             brand_href="/",
-            nav_home_href=SITE_URLS["en"]["home"],
-            nav_blog_href=SITE_URLS["en"]["blog"],
-            nav_projects_href=SITE_URLS["en"]["projects"],
-            nav_media_href=SITE_URLS["en"]["media"],
-            nav_dashboard_href=SITE_URLS["en"]["dashboard"],
-            nav_api_href=SITE_URLS["en"]["api"],
+            **nav_hrefs(SITE_URLS["en"]),
             brand_icon_src=BRAND_ICON_URL,
             meta_description=NOT_FOUND_DESCRIPTION,
             lang_switch_fr_href="/fr/",
@@ -661,12 +598,7 @@ def main():
                     slug=slug,
                     post=post,
                     brand_href=SITE_URLS[locale]["home"],
-                    nav_home_href=SITE_URLS[locale]["home"],
-                    nav_blog_href=SITE_URLS[locale]["blog"],
-                    nav_projects_href=SITE_URLS[locale]["projects"],
-                    nav_media_href=SITE_URLS[locale]["media"],
-                    nav_dashboard_href=SITE_URLS[locale]["dashboard"],
-                    nav_api_href=SITE_URLS[locale]["api"],
+                    **nav_hrefs(SITE_URLS[locale]),
                     brand_icon_src=BRAND_ICON_URL,
                     meta_description=post["excerpt"][locale],
                     og_url=f"{args.scheme}://blog.{args.domain}/{'fr/' if locale == 'fr' else ''}posts/{slug}/",

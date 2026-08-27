@@ -26,20 +26,7 @@
   <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
   <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
 
-  <!-- Matomo -->
-  <script>
-    var _paq = window._paq = window._paq || [];
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function() {
-      var u="//matomo.khaddict.com/";
-      _paq.push(['setTrackerUrl', u+'matomo.php']);
-      _paq.push(['setSiteId', '1']);
-      var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-      g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-    })();
-  </script>
-  <!-- End Matomo -->
+{% include "partials/matomo.html.j2" %}
 
   <style>
 {% include "partials/head_tokens.css.j2" %}
@@ -424,51 +411,8 @@
       return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
     }
 
-    function applyLanguage() {
-      document.documentElement.lang = currentLang;
-      document.title = t('title.api');
-      const HTML_I18N_KEYS = new Set(['hero.title', 'wall.dropZone', 'projects.title', 'deploy.title']);
-      document.querySelectorAll('[data-i18n]').forEach((el) => {
-        const i18nKey = el.getAttribute('data-i18n');
-        const value = t(i18nKey);
-        if (HTML_I18N_KEYS.has(i18nKey)) {
-          el.innerHTML = value;
-        } else {
-          el.textContent = value;
-        }
-      });
-      document.querySelectorAll('[data-i18n-aria]').forEach((el) => {
-        el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
-      });
-      document.getElementById('lang-current').textContent = currentLang.toUpperCase();
-      document.querySelectorAll('.lang-option').forEach((el) => {
-        el.classList.toggle('active', el.getAttribute('data-lang') === currentLang);
-      });
-    }
-
-    applyLanguage();
-
-    const langBtn = document.getElementById('lang-btn');
-    const langDropdown = document.getElementById('lang-dropdown');
-
-    langBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = langDropdown.classList.toggle('open');
-      langBtn.setAttribute('aria-expanded', isOpen);
-    });
-    document.addEventListener('click', (e) => {
-      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
-        langDropdown.classList.remove('open');
-        langBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
-{% include "partials/status_widget.js.j2" %}
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      setThemeCookie(next);
-    });
+{% set title_key = 'title.api' %}
+{% include "partials/lang_theme_bootstrap.js.j2" %}
 
     (function () {
       const discordBtn = document.getElementById('discord-btn');
@@ -511,9 +455,7 @@
       ];
 
       // escape the live spec before templating into innerHTML, even though it's our own schema
-      function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-      }
+      // (escapeHtml itself comes from partials/status_widget.js.j2, included further down)
 
       function resolveSchema(spec, schema) {
         if (!schema) return null;
@@ -669,6 +611,7 @@
       }
 
       function fieldInputHtml(fieldId, name, prop, required, attr = 'field', path = '') {
+        const safeName = escapeHtml(name);
         if (name === 'color') {
           const selected = (prop && WALL_COLORS.find((c) => c.hex === prop.default)) || WALL_COLORS[0];
           const options = WALL_COLORS.map((c) => `
@@ -678,7 +621,7 @@
             </button>
           `).join('');
           return `
-            <div class="api-try-color" id="${fieldId}" data-${attr}="${name}" data-value="${selected.hex}">
+            <div class="api-try-color" id="${fieldId}" data-${attr}="${safeName}" data-value="${selected.hex}">
               <button type="button" class="api-try-color-btn" aria-haspopup="true" aria-expanded="false">
                 <span class="api-try-color-swatch" style="background:${selected.hex}"></span>
                 <span class="api-try-color-label">${selected.name}</span>
@@ -695,19 +638,19 @@
             <div class="api-try-file">
               <label class="api-try-file-btn" for="${fieldId}">${t('api.chooseFile')}</label>
               <span class="api-try-file-name" id="${fieldId}-name">${t('api.noFileChosen')}</span>
-              <input class="api-try-file-input" id="${fieldId}" data-${attr}="${name}" type="file" accept="${accept}" ${required ? 'required' : ''} />
+              <input class="api-try-file-input" id="${fieldId}" data-${attr}="${safeName}" type="file" accept="${accept}" ${required ? 'required' : ''} />
             </div>
           `;
         }
         if (prop && (prop.type === 'integer' || prop.type === 'number')) {
-          return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="number" ${required ? 'required' : ''} />`;
+          return `<input class="api-try-input" id="${fieldId}" data-${attr}="${safeName}" type="number" ${required ? 'required' : ''} />`;
         }
         const maxLength = prop && prop.maxLength ? `maxlength="${prop.maxLength}"` : '';
         // object/array fields have no widget, so hint at the expected JSON shape
         const placeholder = prop && (prop.type === 'object' || prop.type === 'array')
           ? ` placeholder="${escapeHtml(JSON.stringify(exampleFieldValue(name, prop)))}"`
           : '';
-        return `<input class="api-try-input" id="${fieldId}" data-${attr}="${name}" type="text" ${maxLength}${placeholder} ${required ? 'required' : ''} />`;
+        return `<input class="api-try-input" id="${fieldId}" data-${attr}="${safeName}" type="text" ${maxLength}${placeholder} ${required ? 'required' : ''} />`;
       }
 
       function renderTryForm(spec, path, method, operation, formId) {
@@ -727,20 +670,26 @@
 
         const required = new Set((bodySchema && bodySchema.required) || []);
         const bodyFields = bodySchema && bodySchema.properties
-          ? Object.entries(bodySchema.properties).map(([name, prop]) => `
-              <div>
-                <label class="api-try-label" for="${formId}-${name}">${name}</label>
-                ${fieldInputHtml(`${formId}-${name}`, name, prop, required.has(name), 'field', path)}
-              </div>
-            `).join('')
+          ? Object.entries(bodySchema.properties).map(([name, prop]) => {
+              const fieldId = `${formId}-${escapeHtml(name)}`;
+              return `
+                <div>
+                  <label class="api-try-label" for="${fieldId}">${escapeHtml(name)}</label>
+                  ${fieldInputHtml(fieldId, name, prop, required.has(name), 'field', path)}
+                </div>
+              `;
+            }).join('')
           : '';
 
-        const paramFields = params.map((p) => `
-          <div>
-            <label class="api-try-label" for="${formId}-${p.name}">${p.name} · ${p.in}</label>
-            ${fieldInputHtml(`${formId}-${p.name}`, p.name, p.schema, p.required, 'param')}
-          </div>
-        `).join('');
+        const paramFields = params.map((p) => {
+          const fieldId = `${formId}-${escapeHtml(p.name)}`;
+          return `
+            <div>
+              <label class="api-try-label" for="${fieldId}">${escapeHtml(p.name)} · ${escapeHtml(p.in)}</label>
+              ${fieldInputHtml(fieldId, p.name, p.schema, p.required, 'param')}
+            </div>
+          `;
+        }).join('');
 
         const authField = requiresBearerAuth(spec, operation) ? `
           <div>

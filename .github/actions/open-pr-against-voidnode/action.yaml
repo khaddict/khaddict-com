@@ -1,0 +1,51 @@
+name: Open PR against voidnode
+description: >
+  Stages the given already-modified files in a voidnode checkout, commits, force-pushes
+  a version-named branch, and opens a PR against main (or leaves an existing one alone).
+inputs:
+  files:
+    description: Space-separated paths, relative to the voidnode checkout, to stage
+    required: true
+  branch:
+    description: Branch to push and open the PR from
+    required: true
+  commit-message:
+    required: true
+  pr-title:
+    required: true
+  pr-body:
+    required: true
+  path:
+    description: Directory the voidnode checkout lives in
+    default: voidnode
+  github-token:
+    description: Token with push access to khaddict/voidnode (VOIDNODE_REPO_TOKEN)
+    required: true
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      working-directory: ${{ inputs.path }}
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        FILES: ${{ inputs.files }}
+        BRANCH: ${{ inputs.branch }}
+        COMMIT_MESSAGE: ${{ inputs.commit-message }}
+        PR_TITLE: ${{ inputs.pr-title }}
+        PR_BODY: ${{ inputs.pr-body }}
+      run: |
+        git config user.name "khaddict-com-ci"
+        git config user.email "ci@khaddict.com"
+        git add $FILES
+        if git diff --cached --quiet; then
+          echo "No change, skipping"
+          exit 0
+        fi
+        git checkout -b "$BRANCH"
+        git commit -m "$COMMIT_MESSAGE"
+        git push -f origin "$BRANCH"
+        if [ "$(gh pr list --head "$BRANCH" --json number --jq 'length')" = "0" ]; then
+          gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base main --head "$BRANCH"
+        else
+          echo "PR for $BRANCH already exists, skipping"
+        fi

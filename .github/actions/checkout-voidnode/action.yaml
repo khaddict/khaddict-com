@@ -1,0 +1,17 @@
+name: Checkout voidnode
+description: Checks out khaddict/voidnode with write access, for CI jobs that bump a version there.
+inputs:
+  token:
+    description: Token with push access to khaddict/voidnode (VOIDNODE_REPO_TOKEN)
+    required: true
+  path:
+    description: Directory to check voidnode out into
+    default: voidnode
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v7.0.1
+      with:
+        repository: khaddict/voidnode
+        token: ${{ inputs.token }}
+        path: ${{ inputs.path }}

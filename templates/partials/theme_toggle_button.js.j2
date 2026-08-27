@@ -1,0 +1,5 @@
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      setThemeCookie(next);
+    });

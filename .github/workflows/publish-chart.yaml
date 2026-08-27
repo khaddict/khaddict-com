@@ -58,12 +58,12 @@ jobs:
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v7.0.1
+
       - name: Checkout voidnode
-        uses: actions/checkout@v7.0.1
+        uses: ./.github/actions/checkout-voidnode
         with:
-          repository: khaddict/voidnode
           token: ${{ secrets.VOIDNODE_REPO_TOKEN }}
-          path: voidnode
 
       - name: Bump khaddict-com chart version in voidnode
         env:
@@ -81,28 +81,11 @@ jobs:
           "
 
       - name: Open PR against voidnode
-        working-directory: voidnode
-        env:
-          VERSION: ${{ needs.publish.outputs.version }}
-          GH_TOKEN: ${{ secrets.VOIDNODE_REPO_TOKEN }}
-        run: |
-          git config user.name "khaddict-com-ci"
-          git config user.email "ci@khaddict.com"
-          git add argocd/apps/khaddict/Chart.yaml
-          if git diff --cached --quiet; then
-            echo "No change, skipping"
-            exit 0
-          fi
-          BRANCH="bump-khaddict-com-chart-$VERSION"
-          git checkout -b "$BRANCH"
-          git commit -m "Update khaddict-com chart to $VERSION"
-          git push -f origin "$BRANCH"
-          if [ "$(gh pr list --head "$BRANCH" --json number --jq 'length')" = "0" ]; then
-            gh pr create \
-              --title "Update khaddict-com chart to $VERSION" \
-              --body "Automated bump from khaddict-com's publish-chart.yaml CI, triggered by ${{ github.sha }}." \
-              --base main \
-              --head "$BRANCH"
-          else
-            echo "PR for $BRANCH already exists, skipping"
-          fi
+        uses: ./.github/actions/open-pr-against-voidnode
+        with:
+          github-token: ${{ secrets.VOIDNODE_REPO_TOKEN }}
+          files: argocd/apps/khaddict/Chart.yaml
+          branch: bump-khaddict-com-chart-${{ needs.publish.outputs.version }}
+          commit-message: Update khaddict-com chart to ${{ needs.publish.outputs.version }}
+          pr-title: Update khaddict-com chart to ${{ needs.publish.outputs.version }}
+          pr-body: Automated bump from khaddict-com's publish-chart.yaml CI, triggered by ${{ github.sha }}.
