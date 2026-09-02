@@ -1,0 +1,16 @@
+    (function () {
+      const discordBtn = document.getElementById('discord-btn');
+      const discordToast = document.getElementById('discord-toast');
+      let toastTimer = null;
+
+      discordBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
+        discordBtn.classList.add('copied');
+        discordToast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          discordToast.classList.remove('show');
+          discordBtn.classList.remove('copied');
+        }, 900);
+      });
+    })();

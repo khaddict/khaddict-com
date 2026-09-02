@@ -141,20 +141,7 @@
 
     applyLanguage();
 
-    const langBtn = document.getElementById('lang-btn');
-    const langDropdown = document.getElementById('lang-dropdown');
-
-    langBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isOpen = langDropdown.classList.toggle('open');
-      langBtn.setAttribute('aria-expanded', isOpen);
-    });
-    document.addEventListener('click', (e) => {
-      if (!langDropdown.contains(e.target) && e.target !== langBtn) {
-        langDropdown.classList.remove('open');
-        langBtn.setAttribute('aria-expanded', 'false');
-      }
-    });
+{% include "partials/lang_dropdown.js.j2" %}
     document.querySelectorAll('.lang-option').forEach((el) => {
       el.addEventListener('click', () => {
         currentLang = el.getAttribute('data-lang');
@@ -164,30 +151,8 @@
       });
     });
 
-{% include "partials/status_widget.js.j2" %}
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      setThemeCookie(next);
-    });
-
-    (function () {
-      const discordBtn = document.getElementById('discord-btn');
-      const discordToast = document.getElementById('discord-toast');
-      let toastTimer = null;
-
-      discordBtn.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
-        discordBtn.classList.add('copied');
-        discordToast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          discordToast.classList.remove('show');
-          discordBtn.classList.remove('copied');
-        }, 900);
-      });
-    })();
+{% include "partials/theme_toggle_button.js.j2" %}
+{% include "partials/discord_copy.js.j2" %}
   </script>
 </body>
 </html>
