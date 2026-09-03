@@ -11,5 +11,5 @@ RUN mkdir -p /data/icons/thumbs /data/gallery/thumbs \
       -exec sh -c 'vipsthumbnail "$1" --size 800x600 --crop=centre -o "/data/gallery/thumbs/$(basename "$1")[Q=80]"' _ {} \;
       # Q=80 is a JPEG/WEBP save option; libvips ignores it for the .png sources in this folder
 
-FROM nginx:1.31.4
+FROM nginx:1.31.5
 COPY --from=builder /data/ /data/
