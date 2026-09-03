@@ -71,7 +71,6 @@ jobs:
           import re, os
           version = os.environ['VERSION']
 
-          # argocd/apps/khaddict/values.yaml: repository: / tag: \"x\" on separate lines
           path = 'voidnode/argocd/apps/khaddict/values.yaml'
           content = open(path).read()
           updated = re.sub(
@@ -84,7 +83,6 @@ jobs:
               raise SystemExit(f'media-khaddict tag pattern not found in {path}, refusing to commit a no-op change')
           open(path, 'w').write(updated)
 
-          # saltmaster local-dev compose: inline image: repo:tag
           path = 'voidnode/role/saltmaster/files/website-dev/docker-compose.yml'
           content = open(path).read()
           updated = re.sub(

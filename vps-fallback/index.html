@@ -123,7 +123,6 @@
       transition: background-color .2s ease, color .2s ease;
     }
 
-    /* top bar */
     .bandeau {
       position: sticky;
       top: 0;
@@ -500,7 +499,6 @@
       z-index: 1;
     }
 
-    /* 503 */
     .hero {
       flex: 1;
       display: flex;
@@ -768,17 +766,12 @@
         langBtn.setAttribute('aria-expanded', 'false');
       }
     });
-    document.querySelectorAll('.lang-option').forEach((el) => {
-      el.addEventListener('click', () => {
-        currentLang = el.getAttribute('data-lang');
-        setLangCookie(currentLang);
-        applyLanguage();
-        langDropdown.classList.remove('open');
-      });
-    });
-
     const STATUS = 'https://status.khaddict.com';
     const SLUG   = 'khaddict';
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
 
     const dot      = document.getElementById('s-dot');
     const dropdown = document.getElementById('s-dropdown');
@@ -811,8 +804,6 @@
         let anyRecentDown = false;
 
         // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
-        const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
@@ -886,13 +877,20 @@
     });
 
     loadStatus();
+    document.querySelectorAll('.lang-option').forEach((el) => {
+      el.addEventListener('click', () => {
+        currentLang = el.getAttribute('data-lang');
+        setLangCookie(currentLang);
+        applyLanguage();
+        langDropdown.classList.remove('open');
+      });
+    });
 
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
       setThemeCookie(next);
     });
-
     (function () {
       const discordBtn = document.getElementById('discord-btn');
       const discordToast = document.getElementById('discord-toast');
