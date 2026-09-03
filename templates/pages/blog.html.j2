@@ -32,7 +32,6 @@
   <style>
 {% include "partials/head_tokens.css.j2" %}
 {% include "partials/status_widget.css.j2" %}
-    /* blog */
     .blog {
       flex: 1;
       padding: 2.5rem 1.5rem 4rem;
@@ -238,9 +237,8 @@
       return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
     }
 
-    // ---- Blog: data ----
     // canonical tag ids (stable across languages, also used as CSS var suffixes)
-    const TAG_IDS = ['homelab', '3d-printing', 'tooling', 'systems', 'networking', 'cloud'];
+    const TAG_IDS = ['homelab', '3d-printing', 'tooling', 'systems', 'networking', 'cloud', 'dev'];
 {% include "partials/tag_labels.js.j2" %}
 
     const ARTICLES = [
@@ -265,12 +263,10 @@
 {% endfor %}
     ];
 
-    // ---- Blog: state ----
     const activeTags = new Set();
     let searchQuery = '';
     let sortDir = 'desc';
 
-    // ---- Blog: render ----
     function formatArticleDate(iso) {
       const d = new Date(iso + 'T00:00:00');
       return d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -341,7 +337,6 @@
       });
     }
 
-    // ---- Blog: events ----
     document.getElementById('blog-search').addEventListener('input', (e) => {
       searchQuery = e.target.value;
       renderTagFilters();
