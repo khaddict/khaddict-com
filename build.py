@@ -98,6 +98,7 @@ TAG_COLORS_LIGHT = {
     "systems": "#1A7557",
     "networking": "#B03E71",
     "cloud": "#1C7F97",
+    "dev": "#A6790F",
 }
 TAG_COLORS_DARK = {
     "homelab": "#B39DDB",
@@ -106,6 +107,7 @@ TAG_COLORS_DARK = {
     "systems": "#A5D6C1",
     "networking": "#F0A8C4",
     "cloud": "#8ED2E0",
+    "dev": "#F0C674",
 }
 
 
@@ -618,7 +620,6 @@ def main():
                 )
 
     if only in (None, "feed"):
-        # one feed per locale, same posts.yaml data as the blog listing
         for locale, out_rel in (("en", "files/blog/feed.xml"), ("fr", "files/blog/fr/feed.xml")):
             render(
                 env,
