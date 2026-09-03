@@ -31,7 +31,6 @@
   <style>
 {% include "partials/head_tokens.css.j2" %}
 {% include "partials/status_widget.css.j2" %}
-    /* api docs */
     .api-hero {
       flex: 1;
       display: flex;
@@ -49,14 +48,30 @@
 
     .api-group { margin-bottom: 2rem; }
 
+    .api-group-heading { margin: 0 0 .8rem; }
+
     .api-group-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .5rem;
+      width: 100%;
       font-size: .78rem;
       font-weight: 700;
       letter-spacing: .08em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: .8rem;
+      padding: 0;
+      border: none;
+      background: none;
+      appearance: none;
+      font-family: inherit;
+      cursor: pointer;
     }
+
+    .api-group-chevron { width: 12px; height: 12px; flex-shrink: 0; transition: transform .15s ease; }
+    .api-group.collapsed .api-group-chevron { transform: rotate(-90deg); }
+    .api-group.collapsed .api-endpoints { display: none; }
 
     .api-endpoints {
       display: flex;
@@ -65,11 +80,11 @@
     }
 
     .api-endpoint {
-      padding: 1.1rem 1.3rem;
       border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--surface);
       transition: border-color .15s ease;
+      overflow: hidden;
     }
 
     .api-endpoint:hover { border-color: var(--accent); }
@@ -79,7 +94,44 @@
       align-items: center;
       gap: .7rem;
       flex-wrap: wrap;
+      width: 100%;
+      padding: 1.1rem 1.3rem;
+      border: none;
+      background: none;
+      appearance: none;
+      color: inherit;
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
     }
+
+    .api-endpoint-head:focus-visible, .api-group-title:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .api-endpoint-summary {
+      flex: 1 1 200px;
+      min-width: 0;
+      font-size: .8rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .api-endpoint-chevron {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      color: var(--muted);
+      transition: transform .15s ease;
+    }
+
+    .api-endpoint.expanded .api-endpoint-chevron { transform: rotate(180deg); }
+
+    .api-endpoint-body { display: none; padding: 0 1.3rem 1.1rem; }
+    .api-endpoint.expanded .api-endpoint-body { display: block; }
 
     .api-method {
       font-family: 'JetBrains Mono', monospace;
@@ -102,13 +154,6 @@
       font-size: .85rem;
       font-weight: 600;
       word-break: break-all;
-    }
-
-    .api-summary {
-      font-size: .8rem;
-      color: var(--muted);
-      margin-top: .5rem;
-      line-height: 1.6;
     }
 
     .api-detail-title {
@@ -697,24 +742,27 @@
         const curlExample = renderCurlExample(spec, path, method, operation);
         return `
           <article class="api-endpoint">
-            <div class="api-endpoint-head">
+            <button type="button" class="api-endpoint-head" aria-expanded="false">
               <span class="api-method ${method}">${method.toUpperCase()}</span>
               <code class="api-path">${escapeHtml(path)}</code>
-            </div>
-            ${summary ? `<p class="api-summary">${escapeHtml(summary)}</p>` : ''}
-            ${renderParams(operation)}
-            ${renderRequestFields(spec, operation)}
-            ${renderResponses(operation)}
-            ${renderTryForm(spec, path, method, operation, `ep-${index}`)}
-            <div class="api-curl">
-              <div class="api-curl-head">
-                <span class="api-detail-title">curl</span>
-                <button type="button" class="api-curl-copy" data-action="copy-curl" aria-label="${t('discord.toast')}">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                  <span class="copy-toast">${t('discord.toast')}</span>
-                </button>
+              ${summary ? `<span class="api-endpoint-summary">${escapeHtml(summary)}</span>` : ''}
+              <svg class="api-endpoint-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
+            <div class="api-endpoint-body">
+              ${renderParams(operation)}
+              ${renderRequestFields(spec, operation)}
+              ${renderResponses(operation)}
+              ${renderTryForm(spec, path, method, operation, `ep-${index}`)}
+              <div class="api-curl">
+                <div class="api-curl-head">
+                  <span class="api-detail-title">curl</span>
+                  <button type="button" class="api-curl-copy" data-action="copy-curl" aria-label="${t('discord.toast')}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span class="copy-toast">${t('discord.toast')}</span>
+                  </button>
+                </div>
+                <pre class="api-curl-body">${escapeHtml(curlExample)}</pre>
               </div>
-              <pre class="api-curl-body">${escapeHtml(curlExample)}</pre>
             </div>
           </article>
         `;
@@ -747,7 +795,12 @@
 
           groupsEl.innerHTML = orderedTags.map((tag) => `
             <section class="api-group">
-              <h2 class="api-group-title">${escapeHtml(tag)}</h2>
+              <h2 class="api-group-heading">
+                <button type="button" class="api-group-title" aria-expanded="true">
+                  ${escapeHtml(tag)}
+                  <svg class="api-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+              </h2>
               <div class="api-endpoints">
                 ${groups.get(tag).map((e) => endpointHtml(spec, e.path, e.method, e.operation, e.index)).join('')}
               </div>
@@ -784,6 +837,22 @@
         const nameEl = document.getElementById(`${input.id}-name`);
         if (nameEl) nameEl.textContent = input.files[0] ? input.files[0].name : t('api.noFileChosen');
         refreshCurlExample(input.closest('.api-try'));
+      });
+
+      groupsEl.addEventListener('click', (e) => {
+        const groupTitle = e.target.closest('.api-group-title');
+        if (groupTitle) {
+          const group = groupTitle.closest('.api-group');
+          const collapsed = group.classList.toggle('collapsed');
+          groupTitle.setAttribute('aria-expanded', !collapsed);
+          return;
+        }
+        const head = e.target.closest('.api-endpoint-head');
+        if (head) {
+          const endpoint = head.closest('.api-endpoint');
+          const expanded = endpoint.classList.toggle('expanded');
+          head.setAttribute('aria-expanded', expanded);
+        }
       });
 
       groupsEl.addEventListener('click', (e) => {
