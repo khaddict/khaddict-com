@@ -1,5 +1,6 @@
 en:
   post.back: "← back to blog"
+  post.moreArticles: "More on the blog"
   share.title: "share this post"
   share.email.ariaLabel: "Share by email"
   share.twitter.ariaLabel: "Share on X"
@@ -10,6 +11,7 @@ en:
   share.copy.toast: "copied"
 fr:
   post.back: "← retour au blog"
+  post.moreArticles: "Autres articles"
   share.title: "partager cet article"
   share.email.ariaLabel: "Partager par email"
   share.twitter.ariaLabel: "Partager sur X"

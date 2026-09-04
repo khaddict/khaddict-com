@@ -21,7 +21,7 @@ fr:
   deploy.title: 'Projet en pause. Ne <strong>PAS</strong> appuyer sur le bouton rouge.'
   deploy.sub: "Environnement contrôlé. Toute action pourrait avoir des conséquences irréversibles."
   deploy.button: "Déployer en production"
-  deploy.deploying: "Déploiement…"
+  deploy.deploying: "Déploiement..."
   deploy.deployed: Déployé
   projects.voidnode: "Homelab mono-nœud : Proxmox comme hyperviseur, Kubernetes pour l’orchestration de conteneurs, OPNsense pour la segmentation réseau, SaltStack pour la gestion de configuration. Setup avec moins de redondance que mon ancien projet homelab."
   projects.khaddictcom: "HTML/CSS/JS statiques des sous-domaines khaddict.com (www, blog, media, projects), packagés en sous-chart Helm intégré à voidnode."
