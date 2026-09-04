@@ -13,7 +13,7 @@
   <meta property="og:url" content="{{ og_url }}" />
   <meta property="og:title" content="{{ i18n['title.post'] }}" />
   <meta property="og:description" content="{{ meta_description }}" />
-  <meta property="og:image" content="{{ brand_icon_src }}" />
+  <meta property="og:image" content="{{ og_image }}" />
   <meta property="og:locale" content="{{ og_locale }}" />
   <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
   <link rel="canonical" href="{{ canonical_url }}" />
@@ -21,9 +21,9 @@
   <link rel="alternate" hreflang="fr" href="{{ hreflang_fr_href }}" />
   <link rel="alternate" hreflang="x-default" href="{{ hreflang_x_default_href }}" />
   <link rel="alternate" type="application/rss+xml" title="khaddict blog" href="{{ rss_href }}" />
-  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{{ i18n['title.post'] }}" />
-  <meta name="twitter:image" content="{{ brand_icon_src }}" />
+  <meta name="twitter:image" content="{{ og_image }}" />
   <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
   <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
 
@@ -202,9 +202,55 @@
 
     .post-comments { margin-top: 2.5rem; }
 
+    .related-section {
+      margin-top: 2.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .related-heading {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .related-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    .related-card {
+      display: block;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .15s ease;
+    }
+    .related-card:hover { border-color: var(--accent); }
+    .related-cover {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+    .related-body { padding: .9rem 1rem; }
+    .related-tags { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .5rem; }
+    .related-title {
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      line-height: 1.4;
+    }
+    .related-card:hover .related-title { color: var(--accent); }
+
     @keyframes fade-up {
       from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (max-width: 640px) {
+      .related-grid { grid-template-columns: 1fr; }
     }
 {% include "partials/responsive.css.j2" %}
   </style>
@@ -247,6 +293,11 @@
         </button>
       </div>
 
+      <div class="related-section">
+        <div class="related-heading" data-i18n="post.moreArticles">{{ i18n['post.moreArticles'] }}</div>
+        <div class="related-grid" id="related-grid"></div>
+      </div>
+
       <div class="post-comments">
         <div id="remark42"></div>
       </div>
@@ -282,6 +333,17 @@
     };
     const API_URL = '{{ api_base_url }}';
 
+    const RELATED = [
+{% for rslug in related_slugs %}
+      {
+        slug: '{{ rslug }}',
+        cover: '{{ media_base }}/gallery/{{ posts[rslug].cover }}',
+        tags: [{% for tag in posts[rslug].tags %}'{{ tag }}'{% if not loop.last %}, {% endif %}{% endfor %}],
+        title: { en: {{ js_str(posts[rslug].title.en) }}, fr: {{ js_str(posts[rslug].title.fr) }} },
+      },
+{% endfor %}
+    ];
+
     function formatArticleDate(iso) {
       const d = new Date(iso + 'T00:00:00');
       return d.toLocaleDateString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -297,6 +359,20 @@
         span.textContent = tagLabel(id);
         wrap.appendChild(span);
       });
+    }
+
+    function renderRelated() {
+      const grid = document.getElementById('related-grid');
+      const base = currentLang === 'fr' ? '/fr/posts/' : '/posts/';
+      grid.innerHTML = RELATED.map((r) => `
+        <a class="related-card" href="${base}${r.slug}/">
+          <img class="related-cover" src="${r.cover}" alt="" loading="lazy" />
+          <div class="related-body">
+            <div class="related-tags">${r.tags.map((id) => `<span class="article-tag" style="${tagStyle(id)}">${tagLabel(id)}</span>`).join('')}</div>
+            <div class="related-title">${r.title[currentLang] || r.title.en}</div>
+          </div>
+        </a>
+      `).join('');
     }
 
     function applyLanguage() {
@@ -322,6 +398,7 @@
       const readingTime = POST.readingTime[currentLang] ?? POST.readingTime.en;
       document.getElementById('post-date').textContent = `${formatArticleDate(POST.date)} · ${t('post.readingTime').replace('{n}', readingTime)}`;
       renderPostTags();
+      renderRelated();
     }
 
     applyLanguage();
@@ -406,5 +483,6 @@
       (document.head || document.body).appendChild(script);
     })();
   </script>
+{% include "partials/command_palette.html.j2" %}
 </body>
 </html>

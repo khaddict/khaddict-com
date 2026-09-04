@@ -107,9 +107,6 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scrollbar-width: none; }
-    html::-webkit-scrollbar { display: none; }
-
     body {
       min-height: 100dvh;
       background:
@@ -356,6 +353,134 @@
     .lang-option:hover { background: rgba(139, 92, 246, .08); color: var(--accent); }
     .lang-flag { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: block; }
     .lang-option.active { color: var(--accent); font-weight: 600; }
+
+    .search-btn {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      height: 30px;
+      padding: 0 .7rem;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      flex-shrink: 0;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .search-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+    .search-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .search-kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .64rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .05rem .35rem;
+    }
+
+    .cmdk-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, .45);
+      display: flex;
+      justify-content: center;
+      padding: 12vh 1.5rem 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s ease;
+    }
+    .cmdk-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .cmdk-modal {
+      width: min(560px, 100%);
+      height: fit-content;
+      max-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px var(--shadow);
+      overflow: hidden;
+      transform: translateY(-8px);
+      transition: transform .15s ease;
+    }
+    .cmdk-overlay.open .cmdk-modal { transform: translateY(0); }
+
+    .cmdk-input-row {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .cmdk-input-row svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+    .cmdk-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .88rem;
+    }
+    .cmdk-input::placeholder { color: var(--muted); }
+
+    .cmdk-results { overflow-y: auto; padding: .5rem; }
+    .cmdk-group-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--muted);
+      padding: .5rem .6rem .3rem;
+    }
+    .cmdk-item {
+      display: flex;
+      flex-direction: column;
+      gap: .15rem;
+      width: 100%;
+      text-align: left;
+      padding: .55rem .6rem;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .cmdk-item.active { background: rgba(139, 92, 246, .1); }
+    .cmdk-item-title { font-size: .85rem; font-weight: 600; }
+    .cmdk-item-excerpt {
+      font-size: .72rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cmdk-empty {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 1.5rem 0;
+    }
+
+    .cmdk-hint-row {
+      display: flex;
+      justify-content: center;
+      gap: .5rem;
+      padding: .55rem;
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .66rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
     .dot {
       width: 6px; height: 6px;
       border-radius: 50%;
@@ -558,6 +683,8 @@
       .lang-nav { position: static; }
       .lang-dropdown { left: 50%; right: auto; transform: translateX(-50%) translateY(-6px); }
       .lang-dropdown.open { transform: translateX(-50%) translateY(0); }
+      .search-btn span { display: none; }
+      .search-btn { padding: 0 .55rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -585,13 +712,18 @@
         <a href="https://api.khaddict.com" data-i18n="nav.api">api</a>
       </nav>
       <div class="bandeau-right">
+        <button class="search-btn" id="cmdk-btn" type="button" aria-haspopup="dialog" aria-label="Search the site" data-i18n-aria="search.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span data-i18n="search.label">search</span>
+          <kbd class="search-kbd" id="cmdk-kbd">⌘K</kbd>
+        </button>
         <div class="status-nav">
           <button id="status-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="s-dropdown">
             <span class="dot" id="s-dot"></span><span data-i18n="status.label">status</span>
           </button>
           <div class="dropdown" id="s-dropdown">
             <div id="s-inner">
-              <div class="dropdown-line dropdown-msg" data-i18n="status.checking">checking systems…</div>
+              <div class="dropdown-line dropdown-msg" data-i18n="status.checking">checking systems...</div>
             </div>
           </div>
         </div>
@@ -664,7 +796,7 @@
         'nav.dashboard': "dashboard",
         'nav.api': "api",
         'status.label': "status",
-        'status.checking': "checking systems\u2026",
+        'status.checking': "checking systems...",
         'status.viewFull': "view full status \u2197",
         'status.unreachable': "could not reach status page",
         'status.allUp': "All systems operational",
@@ -679,6 +811,14 @@
         'rss.ariaLabel': "RSS feed",
         'post.readingTime': "{n} min read",
         'post.viewsCount': "{n} views",
+        'search.ariaLabel': "Search the site",
+        'search.label': "search",
+        'search.placeholder': "Search pages, articles...",
+        'search.empty': "No results",
+        'search.groupNav': "Pages",
+        'search.groupPosts': "Articles",
+        'search.groupApi': "API",
+        'search.hint': "navigate \u2191\u2193 \u00b7 open \u21b5 \u00b7 close esc",
         'title.unavailable': "Unavailable | khaddict",
         'error.message': "This page is currently unavailable.",
       },
@@ -690,7 +830,7 @@
         'nav.dashboard': "dashboard",
         'nav.api': "api",
         'status.label': "statut",
-        'status.checking': "v\u00e9rification en cours\u2026",
+        'status.checking': "v\u00e9rification en cours...",
         'status.viewFull': "voir le statut complet \u2197",
         'status.unreachable': "page de statut inaccessible",
         'status.allUp': "Tous les syst\u00e8mes sont op\u00e9rationnels",
@@ -705,6 +845,14 @@
         'rss.ariaLabel': "Flux RSS",
         'post.readingTime': "{n} min de lecture",
         'post.viewsCount': "{n} vues",
+        'search.ariaLabel': "Rechercher sur le site",
+        'search.label': "rechercher",
+        'search.placeholder': "Rechercher pages, articles...",
+        'search.empty': "Aucun r\u00e9sultat",
+        'search.groupNav': "Pages",
+        'search.groupPosts': "Articles",
+        'search.groupApi': "API",
+        'search.hint': "naviguer \u2191\u2193 \u00b7 ouvrir \u21b5 \u00b7 fermer \u00e9chap",
         'title.unavailable': "Indisponible | khaddict",
         'error.message': "Cette page est actuellement indisponible.",
       },
@@ -906,6 +1054,208 @@
           discordBtn.classList.remove('copied');
         }, 900);
       });
+    })();
+  </script>
+  <div class="cmdk-overlay" id="cmdk-overlay">
+    <div class="cmdk-modal" role="dialog" aria-modal="true" aria-label="Search the site">
+      <div class="cmdk-input-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="cmdk-input" id="cmdk-input" type="text" data-i18n-placeholder="search.placeholder" placeholder="Search pages, articles..." autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="cmdk-results" id="cmdk-results"></div>
+      <div class="cmdk-hint-row" data-i18n="search.hint">navigate ↑↓ · open ↵ · close esc</div>
+    </div>
+  </div>
+
+  <script>
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+      function apiEndpointSlug(method, path) {
+        const cleanPath = path.replace(/[{}]/g, '').replace(/^\/+|\/+$/g, '').replace(/\//g, '-');
+        return `endpoint-${method.toLowerCase()}-${cleanPath}`;
+      }
+    const CMDK_API_BASE_URL = 'https://api.khaddict.com';
+    const CMDK_API_HREF = 'https://api.khaddict.com';
+    const CMDK_NAV = [
+      { label: t('nav.home'), href: 'https://khaddict.com' },
+      { label: t('nav.blog'), href: 'https://blog.khaddict.com' },
+      { label: t('nav.projects'), href: 'https://projects.khaddict.com' },
+      { label: t('nav.media'), href: 'https://media.khaddict.com' },
+      { label: t('nav.dashboard'), href: 'https://dashboard.khaddict.com' },
+      { label: t('nav.api'), href: 'https://api.khaddict.com' },
+    ];
+    const CMDK_POSTS = [
+      {
+        title: "Turning my BUSY Bar into a public message wall",
+        titleFr: "Transformer ma BUSY Bar en mur de messages public",
+        excerpt: "Visitors can now send messages or images straight to an LED bar sitting on my desk, live from the site.",
+        excerptFr: "Les visiteurs peuvent maintenant envoyer des messages ou des images directement sur une barre LED pos\u00e9e sur mon bureau, en direct depuis le site.",
+        href: 'https://blog.khaddict.com/posts/busy-bar-message-wall/',
+      },
+      {
+        title: "Mounting a UniFi AP on top of my rack",
+        titleFr: "Monter un point d\u2019acc\u00e8s UniFi au-dessus de mon rack",
+        excerpt: "A custom top panel gives my Lab Rax rack its own UniFi access point, angled forward instead of pointing at the ceiling.",
+        excerptFr: "Un panneau du dessus sur mesure donne \u00e0 mon rack Lab Rax son propre point d\u2019acc\u00e8s UniFi, orient\u00e9 vers l\u2019avant plut\u00f4t que vers le plafond.",
+        href: 'https://blog.khaddict.com/posts/unifi-ap-lab-rax-mount/',
+      },
+      {
+        title: "A few more prints for the P2S",
+        titleFr: "Encore quelques impressions pour la P2S",
+        excerpt: "A Gridfinity storage box, an under-printer storage unit, and a riser to place the AMS 2 Pro above the P2S.",
+        excerptFr: "Une bo\u00eete de rangement Gridfinity, un rangement sous l\u2019imprimante et un rehausseur pour poser l\u2019AMS 2 Pro au-dessus de la P2S.",
+        href: 'https://blog.khaddict.com/posts/more-prints-for-the-p2s/',
+      },
+      {
+        title: "Printing a rack for my homelab",
+        titleFr: "Imprimer un rack pour mon homelab",
+        excerpt: "My homelab finally has a proper 3D-printed rack, with custom trays for its hardware.",
+        excerptFr: "Mon homelab a enfin un vrai rack imprim\u00e9 en 3D, avec des tiroirs personnalis\u00e9s pour son mat\u00e9riel.",
+        href: 'https://blog.khaddict.com/posts/the-lab-rax/',
+      },
+      {
+        title: "First prints on the Bambu Lab P2S",
+        titleFr: "Premi\u00e8res impressions avec la Bambu Lab P2S",
+        excerpt: "A Bambu Lab P2S, a Benchy to test it, and a handful of upgrades printed in PETG.",
+        excerptFr: "Une Bambu Lab P2S, un Benchy pour la tester et quelques am\u00e9liorations imprim\u00e9es en PETG.",
+        href: 'https://blog.khaddict.com/posts/first-prints-bambu-lab-p2s/',
+      },
+    ];
+
+    (function () {
+      const overlay = document.getElementById('cmdk-overlay');
+      const input = document.getElementById('cmdk-input');
+      const results = document.getElementById('cmdk-results');
+      const kbd = document.getElementById('cmdk-kbd');
+      let items = [];
+      let activeIndex = 0;
+      let apiEndpoints = [];
+      let apiEndpointsPromise = null;
+
+      function loadApiEndpoints() {
+        if (apiEndpointsPromise) return apiEndpointsPromise;
+        apiEndpointsPromise = (async () => {
+          try {
+            const res = await fetch(`${CMDK_API_BASE_URL}/openapi.json`);
+            const spec = await res.json();
+            const methodOrder = ['get', 'post', 'put', 'patch', 'delete'];
+            Object.entries(spec.paths || {}).forEach(([path, methods]) => {
+              methodOrder.forEach((method) => {
+                const operation = methods[method];
+                if (!operation) return;
+                apiEndpoints.push({
+                  method,
+                  path,
+                  summary: operation.summary || operation.description || '',
+                  href: `${CMDK_API_HREF}#${apiEndpointSlug(method, path)}`,
+                });
+              });
+            });
+            render(input.value);
+          } catch {
+            // likely a CORS-blocked subdomain or a transient network error; allow retrying next open
+            apiEndpointsPromise = null;
+          }
+        })();
+        return apiEndpointsPromise;
+      }
+
+      const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+      const isApple = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+      if (isTouchDevice) {
+        kbd.style.display = 'none';
+      } else {
+        kbd.textContent = isApple ? '⌘K' : 'Ctrl K';
+      }
+
+      function open() {
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        input.value = '';
+        render('');
+        setTimeout(() => input.focus(), 0);
+        loadApiEndpoints();
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      function render(query) {
+        const q = query.trim().toLowerCase();
+        const nav = CMDK_NAV.filter((n) => q === '' || n.label.toLowerCase().includes(q));
+        const posts = CMDK_POSTS.filter((p) => {
+          if (q === '') return false;
+          const title = currentLang === 'fr' ? p.titleFr : p.title;
+          const excerpt = currentLang === 'fr' ? p.excerptFr : p.excerpt;
+          return (title + ' ' + excerpt).toLowerCase().includes(q);
+        });
+        const api = apiEndpoints.filter((e) => {
+          if (q === '') return false;
+          return (e.method + ' ' + e.path + ' ' + e.summary).toLowerCase().includes(q);
+        });
+
+        items = [
+          ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href })),
+          ...posts.map((p) => ({ type: 'post', label: currentLang === 'fr' ? p.titleFr : p.title, excerpt: currentLang === 'fr' ? p.excerptFr : p.excerpt, href: p.href })),
+          ...api.map((e) => ({ type: 'api', label: `${e.method.toUpperCase()} ${e.path}`, excerpt: e.summary, href: e.href })),
+        ];
+        activeIndex = 0;
+
+        if (items.length === 0) {
+          results.innerHTML = `<div class="cmdk-empty">${t('search.empty')}</div>`;
+          return;
+        }
+
+        let html = '';
+        if (nav.length > 0) html += `<div class="cmdk-group-label">${t('search.groupNav')}</div>`;
+        items.forEach((item, i) => {
+          if (item.type === 'post' && i === nav.length) html += `<div class="cmdk-group-label">${t('search.groupPosts')}</div>`;
+          if (item.type === 'api' && i === nav.length + posts.length) html += `<div class="cmdk-group-label">${t('search.groupApi')}</div>`;
+          html += `
+            <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}">
+              <span class="cmdk-item-title">${escapeHtml(item.label)}</span>
+              ${item.excerpt ? `<span class="cmdk-item-excerpt">${escapeHtml(item.excerpt)}</span>` : ''}
+            </a>
+          `;
+        });
+        results.innerHTML = html;
+      }
+
+      function setActive(index) {
+        const nodes = results.querySelectorAll('.cmdk-item');
+        if (nodes.length === 0) return;
+        activeIndex = (index + nodes.length) % nodes.length;
+        nodes.forEach((n, i) => n.classList.toggle('active', i === activeIndex));
+        nodes[activeIndex].scrollIntoView({ block: 'nearest' });
+      }
+
+      document.getElementById('cmdk-btn').addEventListener('click', open);
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          const focused = document.activeElement;
+          const isTyping = focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA' || focused.isContentEditable);
+          if (isTyping && focused !== input) return;
+          e.preventDefault();
+          overlay.classList.contains('open') ? close() : open();
+          return;
+        }
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIndex + 1); return; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); setActive(activeIndex - 1); return; }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const active = items[activeIndex];
+          if (active) window.location.href = active.href;
+        }
+      });
+
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      input.addEventListener('input', () => render(input.value));
     })();
   </script>
 </body>

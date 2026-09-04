@@ -1,0 +1,4 @@
+      function apiEndpointSlug(method, path) {
+        const cleanPath = path.replace(/[{}]/g, '').replace(/^\/+|\/+$/g, '').replace(/\//g, '-');
+        return `endpoint-${method.toLowerCase()}-${cleanPath}`;
+      }

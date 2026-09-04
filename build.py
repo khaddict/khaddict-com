@@ -374,6 +374,20 @@ def main():
     for post in posts.values():
         post["reading_time"] = {locale: reading_time_minutes(post["body"][locale]) for locale in LOCALES}
 
+    # feeds the command palette's search index on every page, not just the blog
+    search_posts = [
+        {
+            "slug": slug,
+            "title": post["title"],
+            "excerpt": post["excerpt"],
+            "url": {
+                "en": f"{SITE_URLS['en']['blog']}/posts/{slug}/",
+                "fr": f"{SITE_URLS['fr']['blog']}posts/{slug}/",
+            },
+        }
+        for slug, post in sorted(posts.items(), key=lambda kv: kv[1]["date"], reverse=True)
+    ]
+
     if only in (None, "www"):
         www_yaml = load_i18n("www")
         www_i18n_all = merged_i18n(common, www_yaml)
@@ -387,6 +401,7 @@ def main():
                 lang_current=locale.upper(),
                 i18n=www_i18n_all[locale],
                 i18n_all=www_i18n_all,
+                search_posts=search_posts,
                 brand_href=SITE_URLS[locale]["brand"],
                 **nav_hrefs(SITE_URLS[locale]),
                 api_base_url=PROD_API_BASE_URL,
@@ -418,6 +433,8 @@ def main():
             lang_current="FR",
             i18n=vps_i18n_all["en"],
             i18n_all=vps_i18n_all,
+            search_posts=search_posts,
+            api_base_url=PROD_API_BASE_URL,
             brand_href=prod_site_urls["en"]["brand"],
             **nav_hrefs(prod_site_urls["en"]),
             brand_icon_src=fallback_icon_data_uri(),
@@ -441,6 +458,8 @@ def main():
                 i18n=blog_i18n_all[locale],
                 i18n_all=blog_i18n_all,
                 posts=posts,
+                search_posts=search_posts,
+                api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
@@ -470,6 +489,8 @@ def main():
                 lang_current=locale.upper(),
                 i18n=projects_i18n_all[locale],
                 i18n_all=projects_i18n_all,
+                search_posts=search_posts,
+                api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
@@ -498,6 +519,8 @@ def main():
                 lang_current=locale.upper(),
                 i18n=media_i18n_all[locale],
                 i18n_all=media_i18n_all,
+                search_posts=search_posts,
+                api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
@@ -526,6 +549,7 @@ def main():
                 lang_current=locale.upper(),
                 i18n=api_i18n_all[locale],
                 i18n_all=api_i18n_all,
+                search_posts=search_posts,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
@@ -556,6 +580,8 @@ def main():
             lang_current="EN",
             i18n=not_found_i18n_all["en"],
             i18n_all=not_found_i18n_all,
+            search_posts=search_posts,
+            api_base_url=PROD_API_BASE_URL,
             brand_href="/",
             **nav_hrefs(SITE_URLS["en"]),
             brand_icon_src=BRAND_ICON_URL,
@@ -571,6 +597,10 @@ def main():
         post_yaml = load_i18n("post")
         # per-post data (not i18n strings), feeding both blog.html.j2's listing and this loop
         for slug, post in posts.items():
+            related_candidates = [kv for kv in posts.items() if kv[0] != slug]
+            related_candidates.sort(key=lambda kv: kv[1]["date"], reverse=True)
+            related_slugs = [s for s, _ in related_candidates][:3]
+
             post_extra = {
                 # {MEDIA} is resolved here since post bodies are opaque strings, not re-parsed
                 # as templates; always the en media URL, since /gallery/ and /videos/ aren't locale-prefixed
@@ -599,10 +629,15 @@ def main():
                     i18n_all=post_i18n_all,
                     slug=slug,
                     post=post,
+                    posts=posts,
+                    search_posts=search_posts,
+                    related_slugs=related_slugs,
                     brand_href=SITE_URLS[locale]["home"],
                     **nav_hrefs(SITE_URLS[locale]),
                     brand_icon_src=BRAND_ICON_URL,
                     meta_description=post["excerpt"][locale],
+                    media_base=SITE_URLS["en"]["media"],
+                    og_image=f"{SITE_URLS['en']['media']}/gallery/{post['cover']}",
                     og_url=f"{args.scheme}://blog.{args.domain}/{'fr/' if locale == 'fr' else ''}posts/{slug}/",
                     og_locale="fr_FR" if locale == "fr" else "en_US",
                     og_locale_alternate="en_US" if locale == "fr" else "fr_FR",

@@ -737,11 +737,12 @@
         `;
       }
 
+{% include "partials/api_endpoint_id.js.j2" %}
       function endpointHtml(spec, path, method, operation, index) {
         const summary = operation.summary || operation.description || '';
         const curlExample = renderCurlExample(spec, path, method, operation);
         return `
-          <article class="api-endpoint">
+          <article class="api-endpoint" id="${apiEndpointSlug(method, path)}">
             <button type="button" class="api-endpoint-head" aria-expanded="false">
               <span class="api-method ${method}">${method.toUpperCase()}</span>
               <code class="api-path">${escapeHtml(path)}</code>
@@ -808,6 +809,14 @@
           `).join('');
 
           statusEl.style.display = 'none';
+
+          if (location.hash) {
+            const target = document.getElementById(location.hash.slice(1));
+            if (target) {
+              target.querySelector('.api-endpoint-head').click();
+              target.scrollIntoView({ block: 'start' });
+            }
+          }
         } catch {
           statusEl.textContent = t('api.error');
           statusEl.classList.add('error');
@@ -972,5 +981,6 @@
       loadSpec();
     })();
   </script>
+{% include "partials/command_palette.html.j2" %}
 </body>
 </html>

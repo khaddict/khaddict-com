@@ -13,6 +13,11 @@
         <a href="{{ nav_api_href }}" data-i18n="nav.api">{{ i18n['nav.api'] }}</a>
       </nav>
       <div class="bandeau-right">
+        <button class="search-btn" id="cmdk-btn" type="button" aria-haspopup="dialog" aria-label="{{ i18n['search.ariaLabel'] }}" data-i18n-aria="search.ariaLabel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <span data-i18n="search.label">{{ i18n['search.label'] }}</span>
+          <kbd class="search-kbd" id="cmdk-kbd">⌘K</kbd>
+        </button>
         <div class="status-nav">
           <button id="status-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="s-dropdown">
             <span class="dot" id="s-dot"></span><span data-i18n="status.label">{{ i18n['status.label'] }}</span>

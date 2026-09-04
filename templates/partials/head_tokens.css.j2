@@ -89,9 +89,6 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scrollbar-width: none; }
-    html::-webkit-scrollbar { display: none; }
-
     body {
       min-height: 100dvh;
       background:
@@ -341,3 +338,131 @@
     .lang-option:hover { background: rgba(139, 92, 246, .08); color: var(--accent); }
     .lang-flag { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: block; }
     .lang-option.active { color: var(--accent); font-weight: 600; }
+
+    .search-btn {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      height: 30px;
+      padding: 0 .7rem;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .72rem;
+      flex-shrink: 0;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .search-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+    .search-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+    .search-kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .64rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .05rem .35rem;
+    }
+
+    .cmdk-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, .45);
+      display: flex;
+      justify-content: center;
+      padding: 12vh 1.5rem 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .15s ease;
+    }
+    .cmdk-overlay.open { opacity: 1; pointer-events: auto; }
+
+    .cmdk-modal {
+      width: min(560px, 100%);
+      height: fit-content;
+      max-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 20px 60px var(--shadow);
+      overflow: hidden;
+      transform: translateY(-8px);
+      transition: transform .15s ease;
+    }
+    .cmdk-overlay.open .cmdk-modal { transform: translateY(0); }
+
+    .cmdk-input-row {
+      display: flex;
+      align-items: center;
+      gap: .7rem;
+      padding: .9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .cmdk-input-row svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+    .cmdk-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .88rem;
+    }
+    .cmdk-input::placeholder { color: var(--muted); }
+
+    .cmdk-results { overflow-y: auto; padding: .5rem; }
+    .cmdk-group-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .68rem;
+      color: var(--muted);
+      padding: .5rem .6rem .3rem;
+    }
+    .cmdk-item {
+      display: flex;
+      flex-direction: column;
+      gap: .15rem;
+      width: 100%;
+      text-align: left;
+      padding: .55rem .6rem;
+      border-radius: 8px;
+      border: none;
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .cmdk-item.active { background: rgba(139, 92, 246, .1); }
+    .cmdk-item-title { font-size: .85rem; font-weight: 600; }
+    .cmdk-item-excerpt {
+      font-size: .72rem;
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cmdk-empty {
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      color: var(--muted);
+      padding: 1.5rem 0;
+    }
+
+    .cmdk-hint-row {
+      display: flex;
+      justify-content: center;
+      gap: .5rem;
+      padding: .55rem;
+      border-top: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .66rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }

@@ -6,7 +6,7 @@ en:
   nav.dashboard: dashboard
   nav.api: api
   status.label: status
-  status.checking: "checking systems…"
+  status.checking: "checking systems..."
   status.viewFull: "view full status ↗"
   status.unreachable: "could not reach status page"
   status.allUp: "All systems operational"
@@ -21,6 +21,14 @@ en:
   rss.ariaLabel: "RSS feed"
   post.readingTime: "{n} min read"
   post.viewsCount: "{n} views"
+  search.ariaLabel: "Search the site"
+  search.label: "search"
+  search.placeholder: "Search pages, articles..."
+  search.empty: "No results"
+  search.groupNav: "Pages"
+  search.groupPosts: "Articles"
+  search.groupApi: "API"
+  search.hint: "navigate ↑↓ · open ↵ · close esc"
 fr:
   nav.home: accueil
   nav.blog: blog
@@ -29,7 +37,7 @@ fr:
   nav.dashboard: dashboard
   nav.api: api
   status.label: statut
-  status.checking: "vérification en cours…"
+  status.checking: "vérification en cours..."
   status.viewFull: "voir le statut complet ↗"
   status.unreachable: "page de statut inaccessible"
   status.allUp: "Tous les systèmes sont opérationnels"
@@ -44,3 +52,11 @@ fr:
   rss.ariaLabel: "Flux RSS"
   post.readingTime: "{n} min de lecture"
   post.viewsCount: "{n} vues"
+  search.ariaLabel: "Rechercher sur le site"
+  search.label: "rechercher"
+  search.placeholder: "Rechercher pages, articles..."
+  search.empty: "Aucun résultat"
+  search.groupNav: "Pages"
+  search.groupPosts: "Articles"
+  search.groupApi: "API"
+  search.hint: "naviguer ↑↓ · ouvrir ↵ · fermer échap"

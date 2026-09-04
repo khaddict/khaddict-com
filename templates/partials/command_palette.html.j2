@@ -1,0 +1,171 @@
+  <div class="cmdk-overlay" id="cmdk-overlay">
+    <div class="cmdk-modal" role="dialog" aria-modal="true" aria-label="{{ i18n['search.ariaLabel'] }}">
+      <div class="cmdk-input-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input class="cmdk-input" id="cmdk-input" type="text" data-i18n-placeholder="search.placeholder" placeholder="{{ i18n['search.placeholder'] }}" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="cmdk-results" id="cmdk-results"></div>
+      <div class="cmdk-hint-row" data-i18n="search.hint">{{ i18n['search.hint'] }}</div>
+    </div>
+  </div>
+
+  <script>
+{% include "partials/escape_html.js.j2" %}
+{% include "partials/api_endpoint_id.js.j2" %}
+    const CMDK_API_BASE_URL = '{{ api_base_url }}';
+    const CMDK_API_HREF = '{{ nav_api_href }}';
+    const CMDK_NAV = [
+      { label: t('nav.home'), href: '{{ nav_home_href }}' },
+      { label: t('nav.blog'), href: '{{ nav_blog_href }}' },
+      { label: t('nav.projects'), href: '{{ nav_projects_href }}' },
+      { label: t('nav.media'), href: '{{ nav_media_href }}' },
+      { label: t('nav.dashboard'), href: '{{ nav_dashboard_href }}' },
+      { label: t('nav.api'), href: '{{ nav_api_href }}' },
+    ];
+    const CMDK_POSTS = [
+{% for p in search_posts %}
+      {
+        title: {{ js_str(p.title.en) }},
+        titleFr: {{ js_str(p.title.fr) }},
+        excerpt: {{ js_str(p.excerpt.en) }},
+        excerptFr: {{ js_str(p.excerpt.fr) }},
+        href: '{{ p.url[lang] }}',
+      },
+{% endfor %}
+    ];
+
+    (function () {
+      const overlay = document.getElementById('cmdk-overlay');
+      const input = document.getElementById('cmdk-input');
+      const results = document.getElementById('cmdk-results');
+      const kbd = document.getElementById('cmdk-kbd');
+      let items = [];
+      let activeIndex = 0;
+      let apiEndpoints = [];
+      let apiEndpointsPromise = null;
+
+      function loadApiEndpoints() {
+        if (apiEndpointsPromise) return apiEndpointsPromise;
+        apiEndpointsPromise = (async () => {
+          try {
+            const res = await fetch(`${CMDK_API_BASE_URL}/openapi.json`);
+            const spec = await res.json();
+            const methodOrder = ['get', 'post', 'put', 'patch', 'delete'];
+            Object.entries(spec.paths || {}).forEach(([path, methods]) => {
+              methodOrder.forEach((method) => {
+                const operation = methods[method];
+                if (!operation) return;
+                apiEndpoints.push({
+                  method,
+                  path,
+                  summary: operation.summary || operation.description || '',
+                  href: `${CMDK_API_HREF}#${apiEndpointSlug(method, path)}`,
+                });
+              });
+            });
+            render(input.value);
+          } catch {
+            // likely a CORS-blocked subdomain or a transient network error; allow retrying next open
+            apiEndpointsPromise = null;
+          }
+        })();
+        return apiEndpointsPromise;
+      }
+
+      const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+      const isApple = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+      if (isTouchDevice) {
+        kbd.style.display = 'none';
+      } else {
+        kbd.textContent = isApple ? '⌘K' : 'Ctrl K';
+      }
+
+      function open() {
+        overlay.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        input.value = '';
+        render('');
+        setTimeout(() => input.focus(), 0);
+        loadApiEndpoints();
+      }
+
+      function close() {
+        overlay.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+
+      function render(query) {
+        const q = query.trim().toLowerCase();
+        const nav = CMDK_NAV.filter((n) => q === '' || n.label.toLowerCase().includes(q));
+        const posts = CMDK_POSTS.filter((p) => {
+          if (q === '') return false;
+          const title = currentLang === 'fr' ? p.titleFr : p.title;
+          const excerpt = currentLang === 'fr' ? p.excerptFr : p.excerpt;
+          return (title + ' ' + excerpt).toLowerCase().includes(q);
+        });
+        const api = apiEndpoints.filter((e) => {
+          if (q === '') return false;
+          return (e.method + ' ' + e.path + ' ' + e.summary).toLowerCase().includes(q);
+        });
+
+        items = [
+          ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href })),
+          ...posts.map((p) => ({ type: 'post', label: currentLang === 'fr' ? p.titleFr : p.title, excerpt: currentLang === 'fr' ? p.excerptFr : p.excerpt, href: p.href })),
+          ...api.map((e) => ({ type: 'api', label: `${e.method.toUpperCase()} ${e.path}`, excerpt: e.summary, href: e.href })),
+        ];
+        activeIndex = 0;
+
+        if (items.length === 0) {
+          results.innerHTML = `<div class="cmdk-empty">${t('search.empty')}</div>`;
+          return;
+        }
+
+        let html = '';
+        if (nav.length > 0) html += `<div class="cmdk-group-label">${t('search.groupNav')}</div>`;
+        items.forEach((item, i) => {
+          if (item.type === 'post' && i === nav.length) html += `<div class="cmdk-group-label">${t('search.groupPosts')}</div>`;
+          if (item.type === 'api' && i === nav.length + posts.length) html += `<div class="cmdk-group-label">${t('search.groupApi')}</div>`;
+          html += `
+            <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}">
+              <span class="cmdk-item-title">${escapeHtml(item.label)}</span>
+              ${item.excerpt ? `<span class="cmdk-item-excerpt">${escapeHtml(item.excerpt)}</span>` : ''}
+            </a>
+          `;
+        });
+        results.innerHTML = html;
+      }
+
+      function setActive(index) {
+        const nodes = results.querySelectorAll('.cmdk-item');
+        if (nodes.length === 0) return;
+        activeIndex = (index + nodes.length) % nodes.length;
+        nodes.forEach((n, i) => n.classList.toggle('active', i === activeIndex));
+        nodes[activeIndex].scrollIntoView({ block: 'nearest' });
+      }
+
+      document.getElementById('cmdk-btn').addEventListener('click', open);
+
+      document.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          const focused = document.activeElement;
+          const isTyping = focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA' || focused.isContentEditable);
+          if (isTyping && focused !== input) return;
+          e.preventDefault();
+          overlay.classList.contains('open') ? close() : open();
+          return;
+        }
+        if (!overlay.classList.contains('open')) return;
+        if (e.key === 'Escape') { close(); return; }
+        if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIndex + 1); return; }
+        if (e.key === 'ArrowUp') { e.preventDefault(); setActive(activeIndex - 1); return; }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const active = items[activeIndex];
+          if (active) window.location.href = active.href;
+        }
+      });
+
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      input.addEventListener('input', () => render(input.value));
+    })();
+  </script>
