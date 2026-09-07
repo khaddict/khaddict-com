@@ -126,8 +126,12 @@
       font-weight: 600;
       letter-spacing: .1em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: #8457e9;
     }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .wall-eyebrow { color: var(--accent); }
+    }
+    :root[data-theme="dark"] .wall-eyebrow { color: var(--accent); }
 
     .wall-messages-counter {
       font-size: .68rem;
@@ -628,7 +632,7 @@
         </div>
 
         <div class="wall-text-row" id="wall-text-field">
-          <input type="text" id="wall-message" maxlength="60">
+          <input type="text" id="wall-message" maxlength="60" placeholder="{{ i18n['wall.messagePlaceholder'] }}">
           <span class="wall-counter" id="wall-counter">0/60</span>
         </div>
 

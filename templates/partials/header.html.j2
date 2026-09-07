@@ -34,7 +34,8 @@
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
         <div class="lang-nav">
-          <button class="lang-btn" id="lang-btn" type="button" aria-label="{{ i18n['lang.ariaLabel'] }}" data-i18n-aria="lang.ariaLabel" aria-haspopup="true" aria-expanded="false" aria-controls="lang-dropdown">
+          <button class="lang-btn" id="lang-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="lang-dropdown">
+            <span class="sr-only" data-i18n="lang.ariaLabel">{{ i18n['lang.ariaLabel'] }}</span>
             <span id="lang-current">{{ lang_current }}</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>

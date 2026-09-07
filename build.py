@@ -386,7 +386,7 @@ def main():
     global SITE_URLS, BRAND_ICON_URL, WALL_SCENE_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, API_META, DIAGRAM_META, RSS_HREFS
     SITE_URLS = build_site_urls(args.domain, args.scheme)
     BRAND_ICON_URL = f"{args.scheme}://media.{args.domain}/icons/khazix-pc-flat.png"
-    WALL_SCENE_URL = f"{args.scheme}://media.{args.domain}/gallery/wall-scene.png"
+    WALL_SCENE_URL = f"{args.scheme}://media.{args.domain}/gallery/wall-scene.webp"
     WWW_META = build_www_meta(args.domain, args.scheme)
     BLOG_META = build_blog_meta(args.domain, args.scheme)
     PROJECTS_META = build_projects_meta(args.domain, args.scheme)

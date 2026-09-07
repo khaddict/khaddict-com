@@ -1,6 +1,6 @@
 # khaddict-com
 
-Static site content (HTML/CSS/JS) for the khaddict.com site family: `www`, `blog`, `media`, `projects`, plus the shared 404 page and a standalone VPS fallback page. Pages are authored as Jinja2 templates and rendered to static HTML by `build.py`; `templates/` is the only source of truth. The rendered output isn't committed, with one exception: `vps-fallback/index.html` (see "vps-fallback" below).
+Static site content (HTML/CSS/JS) for the khaddict.com site family: `www`, `blog`, `media`, `projects`, `api`, `diagram`, plus the shared 404 page and a standalone VPS fallback page. Pages are authored as Jinja2 templates and rendered to static HTML by `build.py`; `templates/` is the only source of truth. The rendered output isn't committed, with one exception: `vps-fallback/index.html` (see "vps-fallback" below).
 
 This repo holds no infrastructure. It's packaged as a Helm chart (`Chart.yaml` + `files/`) published to `oci://ghcr.io/khaddict/charts` and pulled in as a subchart dependency by [`voidnode`](https://github.com/khaddict/voidnode)'s `argocd/apps/khaddict` chart, which reads the rendered files via `(index .Subcharts "khaddict-com").Files.Get`.
 
@@ -12,12 +12,13 @@ build.py                 # renders templates/ -> files/** and vps-fallback/index
 requirements.txt         # jinja2, pyyaml
 templates/
   partials/              # shared chrome: theme cookie, header/nav, status widget, footer, responsive CSS
-  pages/                 # one template per page type (www, blog, projects, media, 404, vps_fallback, post, feed, api, sitemap)
+  pages/                 # one template per page type (www, blog, projects, media, 404, vps_fallback, post, feed, api, diagram, sitemap)
   data/
     i18n/                # translation strings per page type, en + fr
     posts.yaml           # one entry per blog post slug: date, tags, title/excerpt/body in en+fr
 files/
-  www/ blog/ media/ projects/   # generated index.html (+ fr/index.html) land here, all gitignored
+  www/ blog/ media/ projects/ diagram/   # generated index.html (+ fr/index.html) land here, all gitignored
+  api/                   # generated index.html (+ fr/index.html), committed (see "api page" below)
   blog/posts/<slug>/     # generated per-post pages, gitignored
   blog/feed.xml          # generated RSS feed (+ fr/feed.xml), gitignored
   shared/                # 404 page (generated, gitignored) plus hand-maintained default.conf, security-headers.conf, robots.txt
@@ -41,7 +42,7 @@ python3 -m venv .venv
 This renders every page to its real path (`files/www/index.html`, `vps-fallback/index.html`, etc.). All of it is gitignored and never committed, except `vps-fallback/index.html` (see "vps-fallback" below). Two useful flags:
 
 - `--out-dir <dir>`: render to a different directory instead of the real paths (e.g. `--out-dir _preview`, already gitignored), for previewing changes without touching what a local Helm test or a manual deploy would pick up.
-- `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `media`, `api`, `404`, `posts`, `feed`, `sitemap`.
+- `--only <page>`: render just one page instead of the whole site. Choices: `www`, `vps-fallback`, `blog`, `projects`, `media`, `api`, `diagram`, `404`, `posts`, `feed`, `sitemap`.
 
 ## Publishing
 

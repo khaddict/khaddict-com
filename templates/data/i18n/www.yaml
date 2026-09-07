@@ -3,6 +3,7 @@ en:
   hero.title: 'Where <span class="highlight">infrastructure</span> evolves.'
   wall.eyebrow: "Live from my desk"
   wall.title: "Send me a message"
+  wall.messagePlaceholder: "Type your message..."
   wall.live: "bar online"
   wall.offline: "bar offline"
   wall.checking: "checking..."
@@ -35,6 +36,7 @@ fr:
   hero.title: 'Là où l’<span class="highlight">infrastructure</span> évolue.'
   wall.eyebrow: "En direct depuis mon bureau"
   wall.title: "Envoie-moi un message"
+  wall.messagePlaceholder: "Écris ton message..."
   wall.live: "barre en ligne"
   wall.offline: "barre hors ligne"
   wall.checking: "vérification..."

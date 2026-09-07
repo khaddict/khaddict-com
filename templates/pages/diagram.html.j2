@@ -33,6 +33,7 @@
   .bandeau { z-index: 60; }
   :root {
     --flow-gap: 96px;
+    --surface-2: #f4f4f6;
     --vlan-core: #7C5CBF;
     --vlan-core-bg: rgba(124, 92, 191, .08);
     --vlan-admin: #A6790F;
@@ -53,6 +54,7 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
+      --surface-2: #2c2c38;
       --vlan-core: #B39DDB;
       --vlan-core-bg: rgba(179, 157, 219, .1);
       --vlan-admin: #F0C674;
@@ -73,6 +75,7 @@
   }
 
   :root[data-theme="dark"] {
+    --surface-2: #2c2c38;
     --vlan-core: #B39DDB;
     --vlan-core-bg: rgba(179, 157, 219, .1);
     --vlan-admin: #F0C674;
@@ -919,13 +922,13 @@
   };
 
   const VLANS = [
+    { id: 'cloud', name: 'CLOUD', cidr: 'Internet', icon: 'cloud' },
+    { id: 'ext', name: 'LAN', cidr: '192.168.0.0/24', icon: 'router', bus: true },
     { id: 'core', name: 'CORE', cidr: '10.10.0.0/24', gateway: '10.10.0.1', icon: 'shield' },
     { id: 'admin', name: 'ADMIN', cidr: '10.20.0.0/24', gateway: '10.20.0.1', icon: 'key' },
     { id: 'infra', name: 'INFRA', cidr: '10.30.0.0/24', gateway: '10.30.0.1', icon: 'activity' },
     { id: 'edge', name: 'EDGE', cidr: '10.40.0.0/24', gateway: '10.40.0.1', icon: 'globe' },
     { id: 'iot', name: 'IOT', cidr: '10.50.0.0/24', gateway: '10.50.0.1', icon: 'wifi' },
-    { id: 'ext', name: 'LAN', cidr: '192.168.0.0/24', icon: 'router', bus: true },
-    { id: 'cloud', name: 'CLOUD', cidr: 'Internet', icon: 'cloud' },
   ];
 
   const NODES = [
@@ -1175,6 +1178,18 @@
     scale = Math.max(s, 0.3);
     tx = Math.max((vpRect.width - naturalW * scale) / 2, 20);
     ty = Math.max((vpRect.height - naturalH * scale) / 2, 20);
+    applyTransform();
+  }
+
+  function fitToDefaultView() {
+    const vpRect = viewport.getBoundingClientRect();
+    const stackEl = document.getElementById('canvasStack');
+    const naturalW = stackEl.scrollWidth + 60;
+    const naturalH = stackEl.scrollHeight + 40;
+    const fitScale = Math.min((vpRect.width - 60) / naturalW, (vpRect.height - 60) / naturalH, 1);
+    scale = Math.min(Math.max(fitScale * 1.7, 0.3), 1);
+    tx = Math.max((vpRect.width - naturalW * scale) / 2, 20);
+    ty = 20;
     applyTransform();
   }
 
@@ -2215,7 +2230,7 @@
 
   document.fonts.ready.then(() => {
     drawEdges();
-    fitToView();
+    fitToDefaultView();
     drawEdges();
   });
   window.addEventListener('resize', () => drawEdges());
