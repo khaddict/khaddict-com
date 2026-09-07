@@ -71,7 +71,6 @@
             });
             render(input.value);
           } catch {
-            // likely a CORS-blocked subdomain or a transient network error; allow retrying next open
             apiEndpointsPromise = null;
           }
         })();

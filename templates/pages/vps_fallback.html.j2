@@ -108,7 +108,7 @@
     function setLangCookie(value) {
       try {
         document.cookie = 'khaddict-lang=' + encodeURIComponent(value) + '; domain=.khaddict.com; path=/; max-age=31536000; SameSite=Lax; Secure';
-      } catch (e) { /* cookies unavailable */ }
+      } catch (e) {}
     }
 
     let currentLang = getLangCookie() || 'en';
@@ -147,11 +147,12 @@
         currentLang = el.getAttribute('data-lang');
         setLangCookie(currentLang);
         applyLanguage();
-        langDropdown.classList.remove('open');
+        document.getElementById('lang-dropdown').classList.remove('open');
       });
     });
 
 {% include "partials/theme_toggle_button.js.j2" %}
+{% include "partials/copy_flash.js.j2" %}
 {% include "partials/discord_copy.js.j2" %}
   </script>
 {% include "partials/command_palette.html.j2" %}

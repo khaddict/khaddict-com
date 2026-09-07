@@ -1,4 +1,4 @@
-{# expects the including page to have already defined and called applyLanguage() #}
+    (function () {
     const langBtn = document.getElementById('lang-btn');
     const langDropdown = document.getElementById('lang-dropdown');
 
@@ -14,3 +14,4 @@
       }
     });
 {% include "partials/status_widget.js.j2" %}
+    })();

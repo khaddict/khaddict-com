@@ -119,8 +119,6 @@
       margin: 1rem 0;
     }
 
-    /* spans, not div/figure: this sits inside a single <p>, which only allows phrasing
-       content, so a div/figure here would get auto-closed out of the p by the parser */
     .post-body .render-pair {
       display: flex;
       gap: 1rem;
@@ -154,7 +152,6 @@
       margin-top: .5rem;
     }
 
-    /* inline glossary term: hover/focus bubble instead of linking out */
     .term {
       position: relative;
       border-bottom: 1px dotted var(--muted);
@@ -410,17 +407,13 @@
         if (!Number.isFinite(data.views)) return;
         const dateEl = document.getElementById('post-date');
         dateEl.textContent += ` · ${t('post.viewsCount').replace('{n}', data.views)}`;
-      } catch { /* view counter unavailable, non essential */ }
+      } catch {}
     }
     trackView();
 
-    // glossary tooltips are centered by default, which overflows the viewport near a screen
-    // edge on narrow layouts; nudge them back in via a CSS var instead of a fixed direction
     (function () {
       const tips = Array.from(document.querySelectorAll('.term-tip'));
       function repositionAll() {
-        // clientWidth, not innerWidth: a still-overflowing tip inflates innerWidth's layout
-        // viewport too, hiding the overflow this is meant to detect
         const viewportWidth = document.documentElement.clientWidth;
         tips.forEach((tip) => {
           tip.style.setProperty('--tip-shift', '0px');
@@ -434,7 +427,6 @@
       }
       repositionAll();
       window.addEventListener('resize', repositionAll);
-      // runs before the JetBrains Mono webfont swaps in, so a font-driven reflow can go stale
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(repositionAll);
     })();
 
@@ -446,29 +438,21 @@
       if (window.REMARK42) window.REMARK42.changeTheme(next);
     });
 
+{% include "partials/copy_flash.js.j2" %}
 {% include "partials/discord_copy.js.j2" %}
 
     (function () {
       const copyBtn = document.getElementById('share-copy-btn');
       const copyToast = document.getElementById('share-copy-toast');
-      let toastTimer = null;
 
       copyBtn.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText('{{ canonical_url }}'); } catch { /* clipboard unavailable */ }
-        copyBtn.classList.add('copied');
-        copyToast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          copyToast.classList.remove('show');
-          copyBtn.classList.remove('copied');
-        }, 900);
+        try { await navigator.clipboard.writeText('{{ canonical_url }}'); } catch {}
+        flashCopyState(copyBtn, copyToast);
       });
     })();
 
     (function () {
       window.remark_config = {
-        // host always targets the real backend (no local Remark42), but url follows
-        // canonical_url so a non-prod build gets its own comment thread, not the real post's
         host: 'https://blog.khaddict.com/remark42',
         site_id: 'khaddict-blog',
         url: '{{ canonical_url }}',

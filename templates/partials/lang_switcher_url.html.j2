@@ -1,4 +1,4 @@
-            <a class="lang-option" data-lang="fr" href="{{ lang_switch_fr_href }}">
+            <a class="lang-option{% if french_unavailable %} lang-option-unavailable{% endif %}" data-lang="fr" href="{{ lang_switch_fr_href }}"{% if french_unavailable %} title="{{ i18n['englishOnly.notice'] }}"{% endif %}>
               <svg class="lang-flag" viewBox="0 0 3 3" preserveAspectRatio="xMidYMid slice"><rect width="1" height="3" fill="#6E97CE"/><rect x="1" width="1" height="3" fill="#F7F6F2"/><rect x="2" width="1" height="3" fill="#DB7A70"/></svg>
               Français
             </a>

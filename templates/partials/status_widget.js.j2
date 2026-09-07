@@ -18,7 +18,6 @@
     setInterval(updateStatusFreshness, 5000);
 
     async function loadStatus() {
-      // fetch() has no default timeout, so bound it or a stall hangs forever.
       const timeout = AbortSignal.timeout(8000);
       try {
         const [pageRes, hbRes] = await Promise.all([
@@ -33,14 +32,12 @@
         let up = 0;
         let anyRecentDown = false;
 
-        // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          // Percentage is Uptime Kuma's own 24h stat; dot/bars use the 30-beat window.
           const recent = beats.slice(-30);
           const recentHasDown = recent.some(b => b.status === 0);
           if (recentHasDown) anyRecentDown = true;

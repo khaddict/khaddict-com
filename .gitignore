@@ -3,6 +3,7 @@ files/blog/**/index.html
 files/blog/**/feed.xml
 files/projects/**/index.html
 files/media/**/index.html
+files/diagram/**/index.html
 files/shared/404.html
 files/www/sitemap.xml
 _preview/

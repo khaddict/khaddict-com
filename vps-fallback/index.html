@@ -13,7 +13,7 @@
     function setThemeCookie(value) {
       try {
         document.cookie = 'khaddict-theme=' + encodeURIComponent(value) + '; domain=.khaddict.com; path=/; max-age=31536000; SameSite=Lax; Secure';
-      } catch (e) { /* cookies unavailable */ }
+      } catch (e) {}
     }
     (function () {
       var stored = getThemeCookie();
@@ -353,6 +353,8 @@
     .lang-option:hover { background: rgba(139, 92, 246, .08); color: var(--accent); }
     .lang-flag { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: block; }
     .lang-option.active { color: var(--accent); font-weight: 600; }
+    .lang-option-unavailable { text-decoration: line-through; opacity: .55; }
+    .lang-option-unavailable:hover { background: none; color: var(--muted); }
 
     .search-btn {
       display: flex;
@@ -844,6 +846,7 @@
         'search.groupMedia': "Media",
         'search.hint': "navigate \u2191\u2193 \u00b7 open \u21b5 \u00b7 close esc",
         'error.searchCta': "Search",
+        'englishOnly.notice': "This page is only available in English.",
         'title.unavailable': "Unavailable | khaddict",
         'error.message': "This page is currently unavailable.",
       },
@@ -881,6 +884,7 @@
         'search.groupMedia': "Media",
         'search.hint': "naviguer \u2191\u2193 \u00b7 ouvrir \u21b5 \u00b7 fermer \u00e9chap",
         'error.searchCta': "Rechercher",
+        'englishOnly.notice': "Cette page n'est disponible qu'en anglais.",
         'title.unavailable': "Indisponible | khaddict",
         'error.message': "Cette page est actuellement indisponible.",
       },
@@ -895,7 +899,7 @@
     function setLangCookie(value) {
       try {
         document.cookie = 'khaddict-lang=' + encodeURIComponent(value) + '; domain=.khaddict.com; path=/; max-age=31536000; SameSite=Lax; Secure';
-      } catch (e) { /* cookies unavailable */ }
+      } catch (e) {}
     }
 
     let currentLang = getLangCookie() || 'en';
@@ -928,6 +932,7 @@
 
     applyLanguage();
 
+    (function () {
     const langBtn = document.getElementById('lang-btn');
     const langDropdown = document.getElementById('lang-dropdown');
 
@@ -964,7 +969,6 @@
     setInterval(updateStatusFreshness, 5000);
 
     async function loadStatus() {
-      // fetch() has no default timeout, so bound it or a stall hangs forever.
       const timeout = AbortSignal.timeout(8000);
       try {
         const [pageRes, hbRes] = await Promise.all([
@@ -979,14 +983,12 @@
         let up = 0;
         let anyRecentDown = false;
 
-        // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          // Percentage is Uptime Kuma's own 24h stat; dot/bars use the 30-beat window.
           const recent = beats.slice(-30);
           const recentHasDown = recent.some(b => b.status === 0);
           if (recentHasDown) anyRecentDown = true;
@@ -1053,12 +1055,13 @@
     });
 
     loadStatus();
+    })();
     document.querySelectorAll('.lang-option').forEach((el) => {
       el.addEventListener('click', () => {
         currentLang = el.getAttribute('data-lang');
         setLangCookie(currentLang);
         applyLanguage();
-        langDropdown.classList.remove('open');
+        document.getElementById('lang-dropdown').classList.remove('open');
       });
     });
 
@@ -1067,20 +1070,22 @@
       document.documentElement.dataset.theme = next;
       setThemeCookie(next);
     });
+    function flashCopyState(btn, toast, ms) {
+      btn.classList.add('copied');
+      toast.classList.add('show');
+      clearTimeout(btn.__copyFlashTimer);
+      btn.__copyFlashTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        btn.classList.remove('copied');
+      }, ms || 900);
+    }
     (function () {
       const discordBtn = document.getElementById('discord-btn');
       const discordToast = document.getElementById('discord-toast');
-      let toastTimer = null;
 
       discordBtn.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
-        discordBtn.classList.add('copied');
-        discordToast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          discordToast.classList.remove('show');
-          discordBtn.classList.remove('copied');
-        }, 900);
+        try { await navigator.clipboard.writeText('khaddict'); } catch {}
+        flashCopyState(discordBtn, discordToast);
       });
     })();
   </script>
@@ -1152,6 +1157,7 @@
       },
     ];
     const CMDK_MEDIA = [
+      { name: "20260903_114059.jpg", href: 'https://media.khaddict.com/gallery/20260903_114059.jpg' },
       { name: "busy-bar-alert-firing.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-firing.png' },
       { name: "busy-bar-alert-resolved.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-resolved.png' },
       { name: "busy-bar-clock.png", href: 'https://media.khaddict.com/gallery/busy-bar-clock.png' },
@@ -1212,7 +1218,6 @@
             });
             render(input.value);
           } catch {
-            // likely a CORS-blocked subdomain or a transient network error; allow retrying next open
             apiEndpointsPromise = null;
           }
         })();

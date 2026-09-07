@@ -8,8 +8,6 @@
 {% include "partials/theme_toggle.js.j2" %}
   </script>
   <script>
-    // the gallery loads via async fetch(), so the browser's scroll-restore-on-reload races
-    // it and lands inconsistently; disable it and always start at the top instead
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   </script>
   <title>{{ i18n['title.media'] }}</title>
@@ -269,7 +267,6 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity .2s ease;
-      /* extra bottom padding keeps a tall portrait image from growing into .lightbox-toolbar */
       padding: 2rem 2rem 5rem;
     }
     .lightbox.open { opacity: 1; pointer-events: auto; }
@@ -438,6 +435,7 @@
 {% set title_key = 'title.media' %}
 {% include "partials/lang_theme_bootstrap.js.j2" %}
 
+{% include "partials/copy_flash.js.j2" %}
 {% include "partials/discord_copy.js.j2" %}
   </script>
 
@@ -455,9 +453,6 @@
     function isVideoFile(name) {
       return /\.(mp4|webm|mov)$/i.test(name);
     }
-
-    // filenames come from nginx's directory listing, not this codebase, escape before templating into innerHTML
-    // (escapeHtml itself comes from partials/status_widget.js.j2, included further down)
 
     async function loadDir(label, path, fit) {
       const res   = await fetch(path);
@@ -546,7 +541,6 @@
         await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
         return;
       }
-      // non-PNG sources (jpg, webp...) aren't universally clipboard-writable, so re-encode as PNG first
       const bitmap = await createImageBitmap(blob);
       const canvas = document.createElement('canvas');
       canvas.width  = bitmap.width;
@@ -556,38 +550,24 @@
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob })]);
     }
 
-    let lightboxCopyTimer = null;
     lightboxCopyBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       if (lightboxCopyBtn.classList.contains('copying')) return;
       const f = lightboxFiles[lightboxIndex];
       lightboxCopyBtn.classList.add('copying');
       try {
-        try { await copyImageToClipboard(lightboxPath + f.name); } catch { /* clipboard unavailable */ }
+        try { await copyImageToClipboard(lightboxPath + f.name); } catch {}
       } finally {
         lightboxCopyBtn.classList.remove('copying');
       }
-      lightboxCopyBtn.classList.add('copied');
-      lightboxCopyToast.classList.add('show');
-      clearTimeout(lightboxCopyTimer);
-      lightboxCopyTimer = setTimeout(() => {
-        lightboxCopyToast.classList.remove('show');
-        lightboxCopyBtn.classList.remove('copied');
-      }, 900);
+      flashCopyState(lightboxCopyBtn, lightboxCopyToast);
     });
 
-    let lightboxCopyLinkTimer = null;
     lightboxCopyLinkBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const f = lightboxFiles[lightboxIndex];
-      try { await navigator.clipboard.writeText(location.origin + lightboxPath + f.name); } catch { /* clipboard unavailable */ }
-      lightboxCopyLinkBtn.classList.add('copied');
-      lightboxCopyLinkToast.classList.add('show');
-      clearTimeout(lightboxCopyLinkTimer);
-      lightboxCopyLinkTimer = setTimeout(() => {
-        lightboxCopyLinkToast.classList.remove('show');
-        lightboxCopyLinkBtn.classList.remove('copied');
-      }, 900);
+      try { await navigator.clipboard.writeText(location.origin + lightboxPath + f.name); } catch {}
+      flashCopyState(lightboxCopyLinkBtn, lightboxCopyLinkToast);
     });
 
     function renderDock({ path, fit, files }) {

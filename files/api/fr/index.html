@@ -13,7 +13,7 @@
     function setThemeCookie(value) {
       try {
         document.cookie = 'khaddict-theme=' + encodeURIComponent(value) + '; domain=.khaddict.com; path=/; max-age=31536000; SameSite=Lax; Secure';
-      } catch (e) { /* cookies unavailable */ }
+      } catch (e) {}
     }
     (function () {
       var stored = getThemeCookie();
@@ -23,11 +23,11 @@
     })();
   </script>
   <title>API | khaddict</title>
-  <meta name="description" content="Passerelle publique qui pilote des devices IoT du homelab, à commencer par la BUSY Bar." />
+  <meta name="description" content="Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://api.khaddict.com/fr/" />
   <meta property="og:title" content="API | khaddict" />
-  <meta property="og:description" content="Passerelle publique qui pilote des devices IoT du homelab, à commencer par la BUSY Bar." />
+  <meta property="og:description" content="Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar." />
   <meta property="og:image" content="https://media.khaddict.com/icons/khazix-pc-flat.png" />
   <meta property="og:locale" content="fr_FR" />
   <meta property="og:locale:alternate" content="en_US" />
@@ -381,6 +381,8 @@
     .lang-option:hover { background: rgba(139, 92, 246, .08); color: var(--accent); }
     .lang-flag { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; display: block; }
     .lang-option.active { color: var(--accent); font-weight: 600; }
+    .lang-option-unavailable { text-decoration: line-through; opacity: .55; }
+    .lang-option-unavailable:hover { background: none; color: var(--muted); }
 
     .search-btn {
       display: flex;
@@ -1091,6 +1093,7 @@
         <a href="https://media.khaddict.com/fr/" data-i18n="nav.media">médias</a>
         <a href="https://dashboard.khaddict.com" data-i18n="nav.dashboard">dashboard</a>
         <a href="https://api.khaddict.com/fr/" data-i18n="nav.api">api</a>
+        <a href="https://diagram.khaddict.com/fr/" data-i18n="nav.diagram">diagram</a>
       </nav>
       <div class="bandeau-right">
         <button class="search-btn" id="cmdk-btn" type="button" aria-haspopup="dialog" aria-label="Rechercher sur le site" data-i18n-aria="search.ariaLabel">
@@ -1118,7 +1121,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
           </button>
           <div class="lang-dropdown" id="lang-dropdown">
-            <a class="lang-option" data-lang="fr" href="https://api.khaddict.com/fr/">
+            <a class="lang-option lang-option-unavailable" data-lang="fr" href="https://api.khaddict.com/fr/" title="Cette page n&#39;est disponible qu&#39;en anglais.">
               <svg class="lang-flag" viewBox="0 0 3 3" preserveAspectRatio="xMidYMid slice"><rect width="1" height="3" fill="#6E97CE"/><rect x="1" width="1" height="3" fill="#F7F6F2"/><rect x="2" width="1" height="3" fill="#DB7A70"/></svg>
               Français
             </a>
@@ -1142,7 +1145,7 @@
 
   <main class="api-hero">
     <div class="api-inner">
-      <div id="api-status" class="api-status" data-i18n="api.loading">Chargement des endpoints...</div>
+      <div id="api-status" class="api-status" data-i18n="api.loading">Loading endpoints...</div>
       <div id="api-groups"></div>
     </div>
   </main>
@@ -1176,6 +1179,7 @@
         'nav.media': "media",
         'nav.dashboard': "dashboard",
         'nav.api': "api",
+        'nav.diagram': "diagram",
         'status.label': "status",
         'status.checking': "checking systems...",
         'status.viewFull': "view full status \u2197",
@@ -1202,6 +1206,7 @@
         'search.groupMedia': "Media",
         'search.hint': "navigate \u2191\u2193 \u00b7 open \u21b5 \u00b7 close esc",
         'error.searchCta': "Search",
+        'englishOnly.notice': "This page is only available in English.",
         'title.api': "API | khaddict",
         'api.loading': "Loading endpoints...",
         'api.error': "Couldn't load the API spec. Try again later",
@@ -1223,6 +1228,7 @@
         'nav.media': "m\u00e9dias",
         'nav.dashboard': "dashboard",
         'nav.api': "api",
+        'nav.diagram': "diagram",
         'status.label': "statut",
         'status.checking': "v\u00e9rification en cours...",
         'status.viewFull': "voir le statut complet \u2197",
@@ -1249,19 +1255,20 @@
         'search.groupMedia': "Media",
         'search.hint': "naviguer \u2191\u2193 \u00b7 ouvrir \u21b5 \u00b7 fermer \u00e9chap",
         'error.searchCta': "Rechercher",
+        'englishOnly.notice': "Cette page n'est disponible qu'en anglais.",
         'title.api': "API | khaddict",
-        'api.loading': "Chargement des endpoints...",
-        'api.error': "Impossible de charger la spec de l'API. R\u00e9essaie plus tard",
-        'api.required': "requis",
-        'api.body': "Corps",
-        'api.params': "Param\u00e8tres",
-        'api.responses': "R\u00e9ponses",
-        'api.execute': "Ex\u00e9cuter",
-        'api.sending': "Envoi...",
-        'api.networkError': "Erreur r\u00e9seau",
-        'api.chooseFile': "Choisir un fichier",
-        'api.noFileChosen': "Aucun fichier choisi",
-        'api.authToken': "Jeton Bearer",
+        'api.loading': "Loading endpoints...",
+        'api.error': "Couldn't load the API spec. Try again later",
+        'api.required': "required",
+        'api.body': "Body",
+        'api.params': "Parameters",
+        'api.responses': "Responses",
+        'api.execute': "Execute",
+        'api.sending': "Sending...",
+        'api.networkError': "Network error",
+        'api.chooseFile': "Choose file",
+        'api.noFileChosen': "No file chosen",
+        'api.authToken': "Bearer token",
       },
     };
 
@@ -1294,6 +1301,7 @@
     }
 
     applyLanguage();
+    (function () {
     const langBtn = document.getElementById('lang-btn');
     const langDropdown = document.getElementById('lang-dropdown');
 
@@ -1330,7 +1338,6 @@
     setInterval(updateStatusFreshness, 5000);
 
     async function loadStatus() {
-      // fetch() has no default timeout, so bound it or a stall hangs forever.
       const timeout = AbortSignal.timeout(8000);
       try {
         const [pageRes, hbRes] = await Promise.all([
@@ -1345,14 +1352,12 @@
         let up = 0;
         let anyRecentDown = false;
 
-        // monitor names come from the status.khaddict.com API, not this codebase, escape before templating
         const rows = monitors.map(m => {
           const beats = hb.heartbeatList[m.id] || [];
           const last  = beats[beats.length - 1];
           const isUp  = last?.status === 1;
           if (isUp) up++;
 
-          // Percentage is Uptime Kuma's own 24h stat; dot/bars use the 30-beat window.
           const recent = beats.slice(-30);
           const recentHasDown = recent.some(b => b.status === 0);
           if (recentHasDown) anyRecentDown = true;
@@ -1419,30 +1424,32 @@
     });
 
     loadStatus();
+    })();
     document.getElementById('theme-toggle').addEventListener('click', () => {
       const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
       setThemeCookie(next);
     });
 
+    function flashCopyState(btn, toast, ms) {
+      btn.classList.add('copied');
+      toast.classList.add('show');
+      clearTimeout(btn.__copyFlashTimer);
+      btn.__copyFlashTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        btn.classList.remove('copied');
+      }, ms || 900);
+    }
     (function () {
       const discordBtn = document.getElementById('discord-btn');
       const discordToast = document.getElementById('discord-toast');
-      let toastTimer = null;
 
       discordBtn.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText('khaddict'); } catch { /* clipboard unavailable */ }
-        discordBtn.classList.add('copied');
-        discordToast.classList.add('show');
-        clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => {
-          discordToast.classList.remove('show');
-          discordBtn.classList.remove('copied');
-        }, 900);
+        try { await navigator.clipboard.writeText('khaddict'); } catch {}
+        flashCopyState(discordBtn, discordToast);
       });
     })();
 
-    // fetches the live OpenAPI spec and renders it with the site's own components instead of Swagger's stock widget
     (function () {
       const API_BASE_URL = 'https://api.khaddict.com';
       const statusEl = document.getElementById('api-status');
@@ -1450,10 +1457,8 @@
       const METHOD_ORDER = ['post', 'get', 'put', 'patch', 'delete'];
       const GROUP_ORDER = ['BUSY Bar', 'System'];
 
-      // keyed by the same index as each .api-try's id ("ep-<index>"), for curl refresh lookups
       const endpointMeta = new Map();
 
-      // mirrors the swatches offered by the wall widget on the homepage
       const WALL_COLORS = [
         { name: 'White', hex: '#FFFFFF' },
         { name: 'Red', hex: '#FF0000' },
@@ -1464,9 +1469,6 @@
         { name: 'Blue', hex: '#0066FF' },
         { name: 'Magenta', hex: '#FF00FF' },
       ];
-
-      // escape the live spec before templating into innerHTML, even though it's our own schema
-      // (escapeHtml itself comes from partials/status_widget.js.j2, included further down)
 
       function resolveSchema(spec, schema) {
         if (!schema) return null;
@@ -1551,7 +1553,6 @@
         return (el && el.value) || undefined;
       }
 
-      // undefined (not a placeholder) lets the caller tell an untouched field from an empty one
       function curlLiveValue(container, name) {
         if (!container) return undefined;
         const el = container.querySelector(`[data-field="${name}"], [data-param="${name}"]`);
@@ -1561,7 +1562,6 @@
         return el.value !== '' ? el.value : undefined;
       }
 
-      // container is omitted on the very first render (before the DOM exists), falling back to placeholders
       function renderCurlExample(spec, path, method, operation, container) {
         const params = operation.parameters || [];
         const body = operation.requestBody;
@@ -1609,7 +1609,6 @@
           Object.entries(bodySchema.properties).forEach(([name, prop]) => {
             if (prop.format === 'binary' || prop.contentMediaType) {
               const filename = curlLiveValue(container, name);
-              // show the real filename once picked; schema can't tell audio from image, so guess from path
               const placeholderName = path.includes('audio') ? 'recording.wav' : 'file.png';
               lines.push(`  -F '${name}=@${filename || '/path/to/' + placeholderName}'`);
             } else {
@@ -1643,7 +1642,6 @@
           `;
         }
         if (prop && (prop.format === 'binary' || prop.contentMediaType)) {
-          // schema can't distinguish audio from image, so infer accept type from the path
           const accept = path.includes('audio') ? 'audio/*' : 'image/png,image/jpeg,image/webp';
           return `
             <div class="api-try-file">
@@ -1657,7 +1655,6 @@
           return `<input class="api-try-input" id="${fieldId}" data-${attr}="${safeName}" type="number" ${required ? 'required' : ''} />`;
         }
         const maxLength = prop && prop.maxLength ? `maxlength="${prop.maxLength}"` : '';
-        // object/array fields have no widget, so hint at the expected JSON shape
         const placeholder = prop && (prop.type === 'object' || prop.type === 'array')
           ? ` placeholder="${escapeHtml(JSON.stringify(exampleFieldValue(name, prop)))}"`
           : '';
@@ -1876,19 +1873,12 @@
         });
       });
 
-      let curlCopyTimer = null;
       groupsEl.addEventListener('click', async (e) => {
         const copyBtn = e.target.closest('[data-action="copy-curl"]');
         if (!copyBtn) return;
         const body = copyBtn.closest('.api-curl').querySelector('.api-curl-body');
-        try { await navigator.clipboard.writeText(body.textContent); } catch { /* clipboard unavailable */ }
-        copyBtn.classList.add('copied');
-        copyBtn.querySelector('.copy-toast').classList.add('show');
-        clearTimeout(curlCopyTimer);
-        curlCopyTimer = setTimeout(() => {
-          copyBtn.querySelector('.copy-toast').classList.remove('show');
-          copyBtn.classList.remove('copied');
-        }, 900);
+        try { await navigator.clipboard.writeText(body.textContent); } catch {}
+        flashCopyState(copyBtn, copyBtn.querySelector('.copy-toast'));
       });
 
       groupsEl.addEventListener('click', async (e) => {
@@ -1900,7 +1890,6 @@
         const bodyKind = container.dataset.bodyKind;
         const inputs = container.querySelectorAll('[data-field]');
 
-        // only path params are substituted here, since no endpoint uses query params yet
         let path = container.dataset.path;
         container.querySelectorAll('[data-param]').forEach((el) => {
           path = path.replace(`{${el.dataset.param}}`, encodeURIComponent(fieldValue(el)));
@@ -1917,9 +1906,8 @@
           inputs.forEach((el) => {
             const prop = bodySchema && bodySchema.properties && bodySchema.properties[el.dataset.field];
             let value = el.type === 'number' ? Number(el.value) : fieldValue(el);
-            // object/array fields are typed as JSON text, not sent as a literal string
             if (prop && (prop.type === 'object' || prop.type === 'array') && typeof value === 'string') {
-              try { value = JSON.parse(value); } catch { /* leave as-is, the API will 422 with a clear error */ }
+              try { value = JSON.parse(value); } catch {}
             }
             payload[el.dataset.field] = value;
           });
@@ -1950,7 +1938,7 @@
           const res = await fetch(`${API_BASE_URL}${path}`, opts);
           const raw = await res.text();
           let bodyText = raw;
-          try { bodyText = JSON.stringify(JSON.parse(raw), null, 2); } catch { /* not JSON, show as-is */ }
+          try { bodyText = JSON.stringify(JSON.parse(raw), null, 2); } catch {}
           responseEl.textContent = `${res.status} ${res.statusText}` + (bodyText ? `\n\n${bodyText}` : '');
           responseEl.classList.add(res.ok ? 'ok' : 'err');
         } catch (err) {
@@ -1993,6 +1981,7 @@
       { label: t('nav.media'), href: 'https://media.khaddict.com/fr/' },
       { label: t('nav.dashboard'), href: 'https://dashboard.khaddict.com' },
       { label: t('nav.api'), href: 'https://api.khaddict.com/fr/' },
+      { label: t('nav.diagram'), href: 'https://diagram.khaddict.com/fr/' },
     ];
     const CMDK_POSTS = [
       {
@@ -2032,6 +2021,7 @@
       },
     ];
     const CMDK_MEDIA = [
+      { name: "20260903_114059.jpg", href: 'https://media.khaddict.com/gallery/20260903_114059.jpg' },
       { name: "busy-bar-alert-firing.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-firing.png' },
       { name: "busy-bar-alert-resolved.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-resolved.png' },
       { name: "busy-bar-clock.png", href: 'https://media.khaddict.com/gallery/busy-bar-clock.png' },
@@ -2092,7 +2082,6 @@
             });
             render(input.value);
           } catch {
-            // likely a CORS-blocked subdomain or a transient network error; allow retrying next open
             apiEndpointsPromise = null;
           }
         })();

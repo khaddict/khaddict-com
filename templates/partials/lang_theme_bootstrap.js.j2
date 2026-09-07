@@ -1,7 +1,3 @@
-{# expects `title_key` set before include; `extra_html_i18n_keys` (a list) is optional.
-   For a page whose applyLanguage() or theme-toggle handler needs its own extra logic
-   (blog, post, vps_fallback), define those yourself and include partials/lang_dropdown.js.j2
-   and/or partials/theme_toggle_button.js.j2 directly instead. #}
     function applyLanguage() {
       document.documentElement.lang = currentLang;
       document.title = t('{{ title_key }}');

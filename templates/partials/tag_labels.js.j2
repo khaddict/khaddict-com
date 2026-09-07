@@ -21,7 +21,6 @@
     function tagLabel(id) {
       return (TAG_LABELS[currentLang] && TAG_LABELS[currentLang][id]) || TAG_LABELS.en[id] || id;
     }
-    // CSS custom property names can't start with a digit, so "3d-printing" needs a safe suffix
     const TAG_CSS_SUFFIX = { '3d-printing': 'printing3d' };
     function tagCssVar(id) {
       return `--tag-${TAG_CSS_SUFFIX[id] || id}`;

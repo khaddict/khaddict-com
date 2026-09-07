@@ -138,7 +138,6 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* deploy gag, relocated from the now-retired blog.khaddict.com; shares .project-card's anatomy so it reads as one of the cards */
     .deploy-panel {
       grid-column: 1 / -1;
       position: relative;
@@ -149,8 +148,6 @@
 
     .deploy-panel:hover { border-color: transparent; }
 
-    /* deploy-inner's margin reveals a seamless gradient frame; its border-radius is the
-       outer radius (12px) minus the frame width, so the ring stays an even thickness on corners too */
     .deploy-inner {
       background: var(--surface);
       border-radius: 8px;
@@ -370,8 +367,8 @@
 {% set title_key = 'title.projects' %}
 {% include "partials/lang_theme_bootstrap.js.j2" %}
 
+{% include "partials/copy_flash.js.j2" %}
 {% include "partials/discord_copy.js.j2" %}
-    // deploy gag, relocated verbatim from blog.khaddict.com; scoped so its identifiers don't collide
     (function () {
       const deployBtn = document.getElementById('deploy-btn');
       const deployLog = document.getElementById('deploy-log');
@@ -381,14 +378,20 @@
       let cancelHandler = null;
       let stopParrot = null;
 
+      function withAutoscroll(mutate) {
+        const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
+        mutate();
+        if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
+      }
+
       function line(text, cls, delay) {
         setTimeout(() => {
-          const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-          const d = document.createElement('div');
-          if (cls) d.className = cls;
-          d.textContent = text;
-          deployLog.appendChild(d);
-          if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
+          withAutoscroll(() => {
+            const d = document.createElement('div');
+            if (cls) d.className = cls;
+            d.textContent = text;
+            deployLog.appendChild(d);
+          });
         }, delay);
       }
 
@@ -492,11 +495,11 @@
         steps.forEach(([t, c, d]) => line(t, c, d));
 
         setTimeout(() => {
-          const nearBottom0 = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-          const cmdLine = document.createElement('div');
-          cmdLine.innerHTML = '<span class="la">$ curl parrot.live</span><span class="lm">  # ^C or tap to stop</span>';
-          deployLog.appendChild(cmdLine);
-          if (nearBottom0) deployLog.scrollTop = deployLog.scrollHeight;
+          withAutoscroll(() => {
+            const cmdLine = document.createElement('div');
+            cmdLine.innerHTML = '<span class="la">$ curl parrot.live</span><span class="lm">  # ^C or tap to stop</span>';
+            deployLog.appendChild(cmdLine);
+          });
 
           setTimeout(() => {
             const wrap = document.createElement('div');
@@ -714,18 +717,18 @@
 
             let fi = 0;
             parrotInterval = setInterval(() => {
-              const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-              const lines = poses[fi % poses.length];
-              const color = RAINBOW[Math.floor(Math.random() * RAINBOW.length)];
-              fi++;
-              wrap.innerHTML = '';
-              wrap.style.color = color;
-              lines.forEach(txt => {
-                const d = document.createElement('div');
-                d.textContent = txt;
-                wrap.appendChild(d);
+              withAutoscroll(() => {
+                const lines = poses[fi % poses.length];
+                const color = RAINBOW[Math.floor(Math.random() * RAINBOW.length)];
+                fi++;
+                wrap.innerHTML = '';
+                wrap.style.color = color;
+                lines.forEach(txt => {
+                  const d = document.createElement('div');
+                  d.textContent = txt;
+                  wrap.appendChild(d);
+                });
               });
-              if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
             }, 75);
 
             stopParrot = () => {
@@ -735,25 +738,24 @@
               window.open(RICK, '_blank', 'noopener');
               awaitReturnAndCelebrate();
 
-              const nearBottom = deployLog.scrollHeight - deployLog.scrollTop - deployLog.clientHeight < 40;
-              wrap.innerHTML = '';
-              wrap.style.color = '';
+              withAutoscroll(() => {
+                wrap.innerHTML = '';
+                wrap.style.color = '';
 
-              const ctrlC = document.createElement('div');
-              ctrlC.className = 'lm';
-              ctrlC.textContent = '^C';
-              deployLog.appendChild(ctrlC);
+                const ctrlC = document.createElement('div');
+                ctrlC.className = 'lm';
+                ctrlC.textContent = '^C';
+                deployLog.appendChild(ctrlC);
 
-              const cmd = document.createElement('div');
-              cmd.innerHTML = '<span class="la">$ cat ~/.gotcha</span>';
-              deployLog.appendChild(cmd);
+                const cmd = document.createElement('div');
+                cmd.innerHTML = '<span class="la">$ cat ~/.gotcha</span>';
+                deployLog.appendChild(cmd);
 
-              const gotcha = document.createElement('div');
-              gotcha.className = 'lg';
-              gotcha.textContent = 'well played... by me. 🕺';
-              deployLog.appendChild(gotcha);
-
-              if (nearBottom) deployLog.scrollTop = deployLog.scrollHeight;
+                const gotcha = document.createElement('div');
+                gotcha.className = 'lg';
+                gotcha.textContent = 'well played... by me. 🕺';
+                deployLog.appendChild(gotcha);
+              });
             };
             cancelHandler = (e) => {
               const isCtrlC = (e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C');

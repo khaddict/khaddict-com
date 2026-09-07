@@ -237,7 +237,6 @@
       return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
     }
 
-    // canonical tag ids (stable across languages, also used as CSS var suffixes)
     const TAG_IDS = ['homelab', '3d-printing', 'tooling', 'systems', 'networking', 'cloud', 'dev'];
 {% include "partials/tag_labels.js.j2" %}
 
@@ -382,6 +381,7 @@
 {% include "partials/lang_dropdown.js.j2" %}
 {% include "partials/theme_toggle_button.js.j2" %}
 
+{% include "partials/copy_flash.js.j2" %}
 {% include "partials/discord_copy.js.j2" %}
   </script>
 {% include "partials/command_palette.html.j2" %}

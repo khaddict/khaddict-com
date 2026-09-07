@@ -23,12 +23,9 @@ TEMPLATES = ROOT / "templates"
 I18N_DIR = TEMPLATES / "data" / "i18n"
 ASSETS_DIR = TEMPLATES / "data" / "assets"
 
-# inlined as base64: vps-fallback is shown precisely when media.<domain> is unreachable
 BRAND_ICON_URL = None
 WALL_SCENE_URL = None
 
-# the BUSY Bar API is a single real backend, not something a --domain preview
-# can stand up its own copy of, so JS calls always target the real one
 PROD_API_BASE_URL = "https://api.khaddict.com"
 
 
@@ -38,7 +35,6 @@ def fallback_icon_data_uri():
 
 LOCALES = ("en", "fr")
 
-# vps-fallback never uses this: it always targets the real site regardless of --domain
 def build_site_urls(domain, scheme):
     return {
         "en": {
@@ -93,7 +89,6 @@ def build_www_meta(domain, scheme):
 
 WWW_META = None
 
-# --tag-* tokens back per-tag colors; shared by blog.html.j2 and post.html.j2
 TAG_COLORS_LIGHT = {
     "homelab": "#7C5CBF",
     "printing3d": "#A85A26",
@@ -174,7 +169,15 @@ def build_api_meta(domain, scheme):
     return build_page_meta(
         domain, scheme, "api",
         "Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar.",
-        "Passerelle publique qui pilote des devices IoT du homelab, à commencer par la BUSY Bar.",
+        "Public gateway API that drives IoT devices around the homelab, starting with the BUSY Bar.",
+    )
+
+
+def build_diagram_meta(domain, scheme):
+    return build_page_meta(
+        domain, scheme, "diagram",
+        "Interactive network map of the khaddict homelab: VLANs, devices, and how they connect.",
+        "Interactive network map of the khaddict homelab: VLANs, devices, and how they connect.",
     )
 
 
@@ -182,6 +185,7 @@ BLOG_META = None
 PROJECTS_META = None
 MEDIA_META = None
 API_META = None
+DIAGRAM_META = None
 
 NOT_FOUND_DESCRIPTION = "This page doesn't exist."
 
@@ -193,13 +197,13 @@ def build_rss_hrefs(domain, scheme):
     }
 
 
-# submitted to search engines, so like vps-fallback it always targets the real site, never --domain
 def build_sitemap_entries(posts):
     base = "https://khaddict.com"
     blog = "https://blog.khaddict.com"
     projects = "https://projects.khaddict.com"
     media = "https://media.khaddict.com"
     diagram = "https://diagram.khaddict.com"
+    api = "https://api.khaddict.com"
 
     entries = []
 
@@ -214,11 +218,11 @@ def build_sitemap_entries(posts):
     add(f"{projects}/", f"{projects}/fr/")
     add(f"{media}/", f"{media}/fr/")
     add(f"{diagram}/", f"{diagram}/fr/")
+    add(f"{api}/", f"{api}/fr/")
 
     return entries
 
 
-# average adult silent-reading speed, good enough for a rough estimate
 READING_WPM = 225
 HTML_TAG_RE = re.compile(r"<[^>]+>")
 
@@ -244,8 +248,6 @@ def gallery_filenames_by_recency():
             cwd=ROOT, capture_output=True, text=True, check=True,
         ).stdout
         added_order = [pathlib.Path(line).name for line in log.splitlines() if line.strip()]
-        # first occurrence in `git log` (newest commits first) is the add date we want;
-        # a file git has no history for yet (staged but uncommitted) is the newest of all
         uncommitted = [f for f in filenames if f not in added_order]
         seen = set()
         committed = [f for f in added_order if f in filenames and not (f in seen or seen.add(f))]
@@ -298,6 +300,28 @@ def lang_switch_hrefs(site_key):
     }
 
 
+def build_search_posts(site_urls, posts):
+    return [
+        {
+            "slug": slug,
+            "title": post["title"],
+            "excerpt": post["excerpt"],
+            "url": {
+                "en": f"{site_urls['en']['blog']}/posts/{slug}/",
+                "fr": f"{site_urls['fr']['blog']}posts/{slug}/",
+            },
+        }
+        for slug, post in sorted(posts.items(), key=lambda kv: kv[1]["date"], reverse=True)
+    ]
+
+
+def build_search_media(site_urls):
+    return [
+        {"name": filename, "url": f"{site_urls['en']['media']}/gallery/{filename}"}
+        for filename in gallery_filenames_by_recency()
+    ]
+
+
 def load_i18n(name):
     with open(I18N_DIR / f"{name}.yaml", encoding="utf-8") as f:
         return yaml.safe_load(f)
@@ -319,7 +343,7 @@ def render(env, template_name, out_path, **context):
     print(f"wrote {out_path}")
 
 
-PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "api", "404", "posts", "feed", "sitemap"]
+PAGE_CHOICES = ["www", "vps-fallback", "blog", "projects", "media", "api", "diagram", "404", "posts", "feed", "sitemap"]
 
 
 def main():
@@ -354,13 +378,12 @@ def main():
         help="Scheme for --domain's links, e.g. --scheme http for a TLS-less local stack.",
     )
     args = parser.parse_args()
-    # --domain lands raw in inline <script> literals; autoescape doesn't help there
     if not re.fullmatch(r"[A-Za-z0-9.-]+(:[0-9]+)?", args.domain):
         parser.error(f"--domain {args.domain!r} contains characters that aren't valid in a hostname")
     out_root = args.out_dir.resolve()
     only = args.only
 
-    global SITE_URLS, BRAND_ICON_URL, WALL_SCENE_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, API_META, RSS_HREFS
+    global SITE_URLS, BRAND_ICON_URL, WALL_SCENE_URL, WWW_META, BLOG_META, PROJECTS_META, MEDIA_META, API_META, DIAGRAM_META, RSS_HREFS
     SITE_URLS = build_site_urls(args.domain, args.scheme)
     BRAND_ICON_URL = f"{args.scheme}://media.{args.domain}/icons/khazix-pc-flat.png"
     WALL_SCENE_URL = f"{args.scheme}://media.{args.domain}/gallery/wall-scene.png"
@@ -369,14 +392,13 @@ def main():
     PROJECTS_META = build_projects_meta(args.domain, args.scheme)
     MEDIA_META = build_media_meta(args.domain, args.scheme)
     API_META = build_api_meta(args.domain, args.scheme)
+    DIAGRAM_META = build_diagram_meta(args.domain, args.scheme)
     RSS_HREFS = build_rss_hrefs(args.domain, args.scheme)
 
-    # see build_site_urls: vps-fallback always targets the real site
     prod_site_urls = build_site_urls("khaddict.com", "https")
 
-    # leading-dot domain shares the theme cookie across all subdomains
     cookie_domain = f".{args.domain}"
-    cookie_secure_attr = "; Secure" if args.scheme == "https" else ""  # browser needs HTTPS to accept Secure
+    cookie_secure_attr = "; Secure" if args.scheme == "https" else ""
 
     env = Environment(
         loader=FileSystemLoader(str(TEMPLATES)),
@@ -386,7 +408,6 @@ def main():
         keep_trailing_newline=True,
     )
     def safe_tojson(value):
-        # escapes </script> so embedding this in a <script> block can't end it early
         return (
             json.dumps(value)
             .replace("<", "\\u003c")
@@ -402,27 +423,8 @@ def main():
     for post in posts.values():
         post["reading_time"] = {locale: reading_time_minutes(post["body"][locale]) for locale in LOCALES}
 
-    # feeds the command palette's search index on every page, not just the blog
-    search_posts = [
-        {
-            "slug": slug,
-            "title": post["title"],
-            "excerpt": post["excerpt"],
-            "url": {
-                "en": f"{SITE_URLS['en']['blog']}/posts/{slug}/",
-                "fr": f"{SITE_URLS['fr']['blog']}posts/{slug}/",
-            },
-        }
-        for slug, post in sorted(posts.items(), key=lambda kv: kv[1]["date"], reverse=True)
-    ]
-
-    search_media = [
-        {
-            "name": filename,
-            "url": f"{SITE_URLS['en']['media']}/gallery/{filename}",
-        }
-        for filename in gallery_filenames_by_recency()
-    ]
+    search_posts = build_search_posts(SITE_URLS, posts)
+    search_media = build_search_media(SITE_URLS)
 
     if only in (None, "www"):
         www_yaml = load_i18n("www")
@@ -459,8 +461,6 @@ def main():
     if only in (None, "vps-fallback"):
         vps_yaml = load_i18n("vps_fallback")
         vps_i18n_all = merged_i18n(common, vps_yaml)
-        # one lang-agnostic build (static markup is English), but i18n_all keeps both
-        # locales for the cookie-based switcher; lang_current="FR" matches the pre-refactor file
         render(
             env,
             "pages/vps_fallback.html.j2",
@@ -470,8 +470,8 @@ def main():
             lang_current="FR",
             i18n=vps_i18n_all["en"],
             i18n_all=vps_i18n_all,
-            search_posts=search_posts,
-                search_media=search_media,
+            search_posts=build_search_posts(prod_site_urls, posts),
+            search_media=build_search_media(prod_site_urls),
             api_base_url=PROD_API_BASE_URL,
             brand_href=prod_site_urls["en"]["brand"],
             **nav_hrefs(prod_site_urls["en"]),
@@ -603,16 +603,47 @@ def main():
                 cookie_domain=cookie_domain,
                 cookie_secure_attr=cookie_secure_attr,
                 api_base_url=PROD_API_BASE_URL,
+                french_unavailable=True,
                 **NO_EXTRA_TOKENS,
                 **lang_switch_hrefs("api"),
                 **hreflang_hrefs("api"),
             )
 
+    if only in (None, "diagram"):
+        diagram_yaml = load_i18n("diagram")
+        diagram_i18n_all = merged_i18n(common, diagram_yaml)
+        for locale, out_rel in (("en", "files/diagram/index.html"), ("fr", "files/diagram/fr/index.html")):
+            render(
+                env,
+                "pages/diagram.html.j2",
+                out_root / out_rel,
+                lang=locale,
+                lang_mode="url",
+                lang_current=locale.upper(),
+                i18n=diagram_i18n_all[locale],
+                i18n_all=diagram_i18n_all,
+                search_posts=search_posts,
+                search_media=search_media,
+                brand_href=SITE_URLS[locale]["home"],
+                **nav_hrefs(SITE_URLS[locale]),
+                brand_icon_src=BRAND_ICON_URL,
+                meta_description=DIAGRAM_META[locale]["description"],
+                og_url=DIAGRAM_META[locale]["og_url"],
+                og_locale=DIAGRAM_META[locale]["og_locale"],
+                og_locale_alternate=DIAGRAM_META[locale]["og_locale_alternate"],
+                canonical_url=DIAGRAM_META[locale]["canonical_url"],
+                cookie_domain=cookie_domain,
+                cookie_secure_attr=cookie_secure_attr,
+                api_base_url=PROD_API_BASE_URL,
+                french_unavailable=True,
+                **NO_EXTRA_TOKENS,
+                **lang_switch_hrefs("diagram"),
+                **hreflang_hrefs("diagram"),
+            )
+
     if only in (None, "404"):
         not_found_yaml = load_i18n("404")
         not_found_i18n_all = merged_i18n(common, not_found_yaml)
-        # shared across all subdomains (see Helm configmap/deployment), so only one "en" render
-        # exists; its lang-switcher points at the site root's /fr/, since a 404 has no fr content
         render(
             env,
             "pages/404.html.j2",
@@ -638,15 +669,12 @@ def main():
 
     if only in (None, "posts"):
         post_yaml = load_i18n("post")
-        # per-post data (not i18n strings), feeding both blog.html.j2's listing and this loop
         for slug, post in posts.items():
             related_candidates = [kv for kv in posts.items() if kv[0] != slug]
             related_candidates.sort(key=lambda kv: kv[1]["date"], reverse=True)
             related_slugs = [s for s, _ in related_candidates][:3]
 
             post_extra = {
-                # {MEDIA} is resolved here since post bodies are opaque strings, not re-parsed
-                # as templates; always the en media URL, since /gallery/ and /videos/ aren't locale-prefixed
                 locale: {
                     "title.post": f"{post['title'][locale]} | khaddict blog",
                     "post.title": post["title"][locale],

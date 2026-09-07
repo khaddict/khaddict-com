@@ -164,8 +164,6 @@
       margin: -.4rem 0 0;
     }
 
-    /* every position/size below is pixel-calibrated against wall-scene.png's current 1672x941
-       content; swapping that image for a different one means recalibrating all of them by hand */
     .wall-scene {
       position: relative;
       width: 100%;
@@ -536,8 +534,6 @@
     .wall-toast.show { display: inline-block; opacity: 1; transform: translateY(0); }
     .wall-toast.error { color: var(--down); }
 
-    /* contained to the card, not fixed like the projects deploy-gag confetti: sending a
-       message is repeatable, so a full-screen burst every time would get old fast */
     .wall-confetti-container {
       position: absolute;
       inset: 0;
@@ -687,6 +683,7 @@
 {% set title_key = 'title.home' %}
 {% include "partials/lang_theme_bootstrap.js.j2" %}
 
+{% include "partials/copy_flash.js.j2" %}
 {% include "partials/discord_copy.js.j2" %}
 
     (function () {
@@ -713,7 +710,7 @@
         counter.classList.toggle('warn', len > 50);
       }
 
-      textarea.addEventListener('input', () => { updateCounter(); });
+      textarea.addEventListener('input', () => { updateCounter(); updateSendAvailability(); });
       textarea.addEventListener('keydown', (e) => {
         if (e.key !== 'Enter') return;
         e.preventDefault();
@@ -776,6 +773,7 @@
           imageField.style.display = mode === 'image' ? '' : 'none';
           audioField.style.display = mode === 'audio' ? '' : 'none';
           colorPicker.style.display = mode === 'text' ? '' : 'none';
+          updateSendAvailability();
           if (isComposing()) {
             stopMirror();
             drawImageBuffer(imageToBuffer(loadedImage));
@@ -821,10 +819,12 @@
           loadedImage = img;
           stopMirror();
           drawImageBuffer(imageToBuffer(img));
+          updateSendAvailability();
         };
         img.onerror = () => {
           imageFile = null;
           loadedImage = null;
+          updateSendAvailability();
           toast.classList.add('error');
           toast.textContent = t('wall.error');
           toast.classList.add('show');
@@ -835,7 +835,12 @@
       }
 
       dropZone.addEventListener('click', () => fileInput.click());
-      dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+      dropZone.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
       fileInput.addEventListener('change', () => loadImageFile(fileInput.files[0]));
 
       ['dragenter', 'dragover'].forEach((evt) => {
@@ -878,7 +883,6 @@
         audioRecordLabel.textContent = t('wall.audio.record');
       }
 
-      // resolves once the recorder's 'stop' event has fired and audioBlob is populated
       function stopAudioRecordingAndWait() {
         if (!mediaRecorder || mediaRecorder.state === 'inactive') return Promise.resolve();
         const done = new Promise((resolve) => mediaRecorder.addEventListener('stop', resolve, { once: true }));
@@ -908,10 +912,12 @@
           audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
           audioPreview.src = URL.createObjectURL(audioBlob);
           audioPreview.hidden = false;
+          updateSendAvailability();
         });
         mediaRecorder.start();
 
         audioBlob = null;
+        updateSendAvailability();
         audioPreview.hidden = true;
         audioSecondsElapsed = 0;
         audioTimeEl.hidden = false;
@@ -937,20 +943,17 @@
 
       const API_URL = '{{ api_base_url }}';
 
-      // mirrors the real screen when idle; composing an image takes over locally instead
       let mirrorInterval = null;
       let hasMirrorFrame = false;
       const mirrorImg = new Image();
       mirrorImg.crossOrigin = 'anonymous';
 
-      // only image mode has a real local preview; text/audio always mirror
       function isComposing() {
         return mode === 'image' && !!loadedImage;
       }
 
       function pollMirror() {
         mirrorImg.onload = () => {
-          // a frame requested just before stopMirror() can still resolve after it
           if (!mirrorInterval) return;
           hasMirrorFrame = true;
           drawImageBuffer(imageToBuffer(mirrorImg));
@@ -980,11 +983,16 @@
         wallMessagesCounter.hidden = false;
       }
 
-      // starts false so Send stays disabled until refreshBarStatus's first real check lands
       let barOnline = false;
 
+      function hasContent() {
+        if (mode === 'text') return textarea.value.trim().length > 0;
+        if (mode === 'image') return !!loadedImage;
+        return !!audioBlob;
+      }
+
       function updateSendAvailability() {
-        sendBtn.disabled = cooling || !barOnline;
+        sendBtn.disabled = cooling || !barOnline || !hasContent();
       }
 
       function setBarOnline(online) {
@@ -1004,7 +1012,6 @@
           const data = await res.json();
           setBarOnline(!!data.online);
           setMessagesToday(data.messages_today);
-          // the rate limit is per IP, so a send from outside this tab leaves it unaware; catch up here
           if (!cooling && Number.isFinite(data.rate_limit_remaining) && data.rate_limit_remaining > 0) {
             persistCooldown(data.rate_limit_remaining);
             startCooldown(data.rate_limit_remaining);
@@ -1032,7 +1039,7 @@
       const COOLDOWN_KEY = 'wallCooldownUntil';
 
       function persistCooldown(waitSecs) {
-        try { localStorage.setItem(COOLDOWN_KEY, String(Date.now() + waitSecs * 1000)); } catch { /* storage unavailable */ }
+        try { localStorage.setItem(COOLDOWN_KEY, String(Date.now() + waitSecs * 1000)); } catch {}
       }
 
       function startCooldown(initialSecs) {
@@ -1048,7 +1055,7 @@
             updateSendAvailability();
             sendBtn.textContent = sendLabel;
             toast.classList.remove('show');
-            try { localStorage.removeItem(COOLDOWN_KEY); } catch { /* storage unavailable */ }
+            try { localStorage.removeItem(COOLDOWN_KEY); } catch {}
           } else {
             sendBtn.textContent = `${secs}s`;
           }
@@ -1086,10 +1093,9 @@
         setTimeout(() => container.remove(), 1400);
       }
 
-      // persist the cooldown so a refresh mid-wait doesn't show a clickable Send again
       (function restoreCooldown() {
         let until = 0;
-        try { until = parseInt(localStorage.getItem(COOLDOWN_KEY), 10) || 0; } catch { /* storage unavailable */ }
+        try { until = parseInt(localStorage.getItem(COOLDOWN_KEY), 10) || 0; } catch {}
         const remaining = Math.ceil((until - Date.now()) / 1000);
         if (remaining > 0) startCooldown(remaining);
       })();
@@ -1130,6 +1136,7 @@
               spawnWallConfetti(sendBtn, selectedColor);
               textarea.value = '';
               updateCounter();
+              updateSendAvailability();
             },
           );
         } else if (mode === 'image') {
@@ -1144,6 +1151,7 @@
               loadedImage = null;
               imageFile = null;
               fileInput.value = '';
+              updateSendAvailability();
               startMirror();
             },
           );
@@ -1158,6 +1166,7 @@
             },
             () => {
               audioBlob = null;
+              updateSendAvailability();
               audioPreview.hidden = true;
               audioPreview.removeAttribute('src');
               audioTimeEl.hidden = true;
@@ -1167,8 +1176,6 @@
         }
       });
 
-      // the CSS-stretched canvas can land on fractional device pixels at some zoom/window
-      // sizes, rendering uneven LED cells; resize the actual buffer to a clean multiple instead
       function resizeCanvasForDisplay() {
         const rect = canvas.getBoundingClientRect();
         if (!rect.width || !rect.height) return;

@@ -1,0 +1,9 @@
+    function flashCopyState(btn, toast, ms) {
+      btn.classList.add('copied');
+      toast.classList.add('show');
+      clearTimeout(btn.__copyFlashTimer);
+      btn.__copyFlashTimer = setTimeout(() => {
+        toast.classList.remove('show');
+        btn.classList.remove('copied');
+      }, ms || 900);
+    }

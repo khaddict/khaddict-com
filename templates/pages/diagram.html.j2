@@ -1,37 +1,38 @@
+{% from "partials/js_str.j2" import js_str %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ lang }}">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>voidnode · network map</title>
-<style>
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url('https://media.khaddict.com/fonts/JetBrainsMono-Regular.woff2') format('woff2');
-    font-weight: 400; font-style: normal; font-display: swap;
-  }
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url('https://media.khaddict.com/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
-    font-weight: 600; font-style: normal; font-display: swap;
-  }
-  @font-face {
-    font-family: 'JetBrains Mono';
-    src: url('https://media.khaddict.com/fonts/JetBrainsMono-Bold.woff2') format('woff2');
-    font-weight: 700; font-style: normal; font-display: swap;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+{% include "partials/theme_toggle.js.j2" %}
+  </script>
+  <title>{{ i18n['title.diagram'] }}</title>
+  <meta name="description" content="{{ meta_description }}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{ og_url }}" />
+  <meta property="og:title" content="{{ i18n['title.diagram'] }}" />
+  <meta property="og:description" content="{{ meta_description }}" />
+  <meta property="og:image" content="{{ brand_icon_src }}" />
+  <meta property="og:locale" content="{{ og_locale }}" />
+  <meta property="og:locale:alternate" content="{{ og_locale_alternate }}" />
+  <link rel="canonical" href="{{ canonical_url }}" />
+  <link rel="alternate" hreflang="en" href="{{ hreflang_en_href }}" />
+  <link rel="alternate" hreflang="fr" href="{{ hreflang_fr_href }}" />
+  <link rel="alternate" hreflang="x-default" href="{{ hreflang_x_default_href }}" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ i18n['title.diagram'] }}" />
+  <meta name="twitter:image" content="{{ brand_icon_src }}" />
+  <link rel="icon" href="{{ brand_icon_src }}" type="image/png" />
+  <link rel="apple-touch-icon" href="{{ brand_icon_src }}" />
 
+{% include "partials/matomo.html.j2" %}
+  <style>
+{% include "partials/head_tokens.css.j2" %}
+{% include "partials/status_widget.css.j2" %}
+  .bandeau { z-index: 60; }
   :root {
     --flow-gap: 96px;
-    --bg: #ffffff;
-    --text: #18181b;
-    --muted: #71717a;
-    --border: rgba(24, 24, 27, .09);
-    --surface: #ffffff;
-    --surface-2: #f7f6fb;
-    --shadow: rgba(24, 24, 27, .12);
-    --accent: #8b5cf6;
-
     --vlan-core: #7C5CBF;
     --vlan-core-bg: rgba(124, 92, 191, .08);
     --vlan-admin: #A6790F;
@@ -52,15 +53,6 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #1a1a22;
-      --text: #f1f5f9;
-      --muted: #94949f;
-      --border: rgba(255, 255, 255, .1);
-      --surface: #22222c;
-      --surface-2: #26262f;
-      --shadow: rgba(0, 0, 0, .5);
-      --accent: #a78bfa;
-
       --vlan-core: #B39DDB;
       --vlan-core-bg: rgba(179, 157, 219, .1);
       --vlan-admin: #F0C674;
@@ -81,15 +73,6 @@
   }
 
   :root[data-theme="dark"] {
-    --bg: #1a1a22;
-    --text: #f1f5f9;
-    --muted: #94949f;
-    --border: rgba(255, 255, 255, .1);
-    --surface: #22222c;
-    --surface-2: #26262f;
-    --shadow: rgba(0, 0, 0, .5);
-    --accent: #a78bfa;
-
     --vlan-core: #B39DDB;
     --vlan-core-bg: rgba(179, 157, 219, .1);
     --vlan-admin: #F0C674;
@@ -108,18 +91,7 @@
     --vlan-cloud-bg: rgba(147, 197, 253, .1);
   }
 
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'JetBrains Mono', ui-monospace, monospace;
-    height: 100vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
+  body { height: 100vh; overflow: hidden; }
 
   .topbar {
     position: relative;
@@ -204,7 +176,13 @@
     white-space: nowrap;
     background: var(--bg);
   }
-
+  #cmdk-kbd {
+    position: static;
+    top: auto; right: auto;
+    transform: none;
+    font-size: .64rem;
+    background: none;
+  }
   .search-results {
     position: absolute;
     top: calc(100% + .5rem);
@@ -264,28 +242,6 @@
     justify-content: center;
   }
   .zoom-controls button:hover { border-color: var(--accent); color: var(--accent); }
-
-  .theme-toggle {
-    width: 26px; height: 26px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface-2);
-    color: var(--text);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
-  .theme-toggle svg { width: 14px; height: 14px; }
-  .theme-toggle .icon-sun { display: none; }
-  .theme-toggle .icon-moon { display: block; }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
-    :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
-  }
-  :root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
-  :root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
 
   .help-wrap { position: relative; }
   #help-btn { font-weight: 700; }
@@ -753,19 +709,44 @@
   }
   .conn-label { color: var(--muted); font-size: .64rem; }
 
+  .conn-group { border-bottom: 1px solid var(--border); }
+  .conn-group:last-child { border-bottom: none; }
+  .conn-group-header {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    width: 100%;
+    padding: .4rem 0;
+    border: none;
+    background: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .72rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+  }
+  .conn-group-chevron { width: 12px; height: 12px; flex-shrink: 0; color: var(--muted); transition: transform .15s ease; }
+  .conn-group-header.collapsed .conn-group-chevron { transform: rotate(-90deg); }
+  .conn-group-list { display: flex; flex-direction: column; }
+  .conn-group-list.collapsed { display: none; }
+  .conn-group-list .conn-row { padding-left: 1.2rem; border-bottom: none; }
+  .conn-group-list .conn-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-</style>
 
+{% include "partials/responsive.css.j2" %}
+  </style>
 </head>
 <body>
+{% include "partials/header.html.j2" %}
 <div class="topbar">
-  <h1>voidnode</h1>
   <span class="sub" id="topSub"></span>
   <div class="search-wrap">
     <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
     <input class="search-input" id="search-input" type="text" placeholder="device, IP..." autocomplete="off" />
-    <kbd class="search-kbd" id="search-kbd">Ctrl K</kbd>
+    <kbd class="search-kbd" id="search-kbd">/</kbd>
     <div class="search-results" id="search-results"></div>
   </div>
   <div class="legend" id="legend"></div>
@@ -774,10 +755,6 @@
     <button id="zoom-reset" aria-label="Reset zoom">⤢</button>
     <button id="zoom-in" aria-label="Zoom in">+</button>
   </div>
-  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
-    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
-    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-  </button>
   <div class="help-wrap">
     <button class="theme-toggle" id="help-btn" type="button" aria-label="Help" aria-haspopup="true" aria-expanded="false">?</button>
     <div class="help-dropdown" id="help-dropdown">
@@ -787,7 +764,7 @@
         <li><span class="help-key"><kbd id="help-kbd-multiselect">Ctrl+Click</kbd></span><span>Multi-select</span></li>
         <li><span class="help-key"><kbd>Click VLAN label</kbd></span><span>Focus VLAN</span></li>
         <li><span class="help-key"><kbd>Esc</kbd> <kbd>Click empty space</kbd></span><span>Close panel</span></li>
-        <li><span class="help-key"><kbd id="help-kbd-search">Ctrl+K</kbd></span><span>Search devices</span></li>
+        <li><span class="help-key"><kbd>/</kbd></span><span>Search devices</span></li>
         <li><span class="help-key"><kbd>Drag</kbd></span><span>Pan map</span></li>
         <li><span class="help-key"><kbd>Scroll / Pinch</kbd></span><span>Zoom</span></li>
       </ul>
@@ -847,34 +824,42 @@
   </div>
 </div>
 
+
 <script>
+    const I18N = {
+{% for locale in ['en', 'fr'] %}
+      {{ locale }}: {
+{% for key, value in i18n_all[locale].items() %}
+        '{{ key }}': {{ js_str(value) }},
+{% endfor %}
+      },
+{% endfor %}
+    };
 
-  (function () {
-    try {
-      const stored = localStorage.getItem('voidnode-map-theme');
-      if (stored) document.documentElement.dataset.theme = stored;
-    } catch (e) {}
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const isDark = document.documentElement.dataset.theme
-        ? document.documentElement.dataset.theme === 'dark'
-        : window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const next = isDark ? 'light' : 'dark';
-      document.documentElement.dataset.theme = next;
-      try { localStorage.setItem('voidnode-map-theme', next); } catch (e) {}
-    });
-  })();
+    let currentLang = '{{ lang }}';
 
-  (function () {
-    const kbd = document.getElementById('search-kbd');
-    const helpKbdSearch = document.getElementById('help-kbd-search');
-    const helpKbdMultiselect = document.getElementById('help-kbd-multiselect');
-    if (window.matchMedia('(pointer: coarse)').matches) kbd.style.display = 'none';
-    if (/Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)) {
-      kbd.textContent = '⌘K';
-      helpKbdSearch.textContent = '⌘K';
-      helpKbdMultiselect.textContent = '⌘+Click';
+    function t(key) {
+      return (I18N[currentLang] && I18N[currentLang][key]) || I18N.en[key] || key;
     }
+
+{% set title_key = 'title.diagram' %}
+{% include "partials/lang_theme_bootstrap.js.j2" %}
+
+  (function () {
+    const searchKbd = document.getElementById('search-kbd');
+    const helpKbdMultiselect = document.getElementById('help-kbd-multiselect');
+    if (window.matchMedia('(pointer: coarse)').matches) searchKbd.style.display = 'none';
+    if (/Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)) helpKbdMultiselect.textContent = '⌘+Click';
   })();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const cmdkOverlay = document.getElementById('cmdk-overlay');
+    const cmdkInput = document.getElementById('cmdk-input');
+    new MutationObserver(() => {
+      if (!cmdkOverlay.classList.contains('open') && document.activeElement === cmdkInput) cmdkInput.blur();
+    }).observe(cmdkOverlay, { attributes: true, attributeFilter: ['class'] });
+  });
+
 
   (function () {
     const btn = document.getElementById('help-btn');
@@ -889,6 +874,23 @@
         dropdown.classList.remove('open');
         btn.setAttribute('aria-expanded', 'false');
       }
+    });
+  })();
+
+  (function () {
+    const POPOVERS = [
+      { btn: 'status-btn', dropdown: 's-dropdown' },
+      { btn: 'lang-btn', dropdown: 'lang-dropdown' },
+      { btn: 'help-btn', dropdown: 'help-dropdown' },
+    ];
+    POPOVERS.forEach(({ btn: ownBtn, dropdown: ownDropdown }) => {
+      document.getElementById(ownBtn).addEventListener('click', () => {
+        POPOVERS.forEach(({ btn, dropdown }) => {
+          if (dropdown === ownDropdown) return;
+          document.getElementById(dropdown).classList.remove('open');
+          document.getElementById(btn).setAttribute('aria-expanded', 'false');
+        });
+      });
     });
   })();
 
@@ -1897,8 +1899,8 @@
       const outgoing = EDGES.filter(e => e.from === node.id);
       const incoming = EDGES.filter(e => e.to === node.id);
       const allConns = [
-        ...outgoing.map(e => ({ dir: '→', other: NODE_BY_ID[e.to].name, otherVlan: NODE_BY_ID[e.to].vlan, port: e.port, label: e.label, key: edgeKey(e) })),
-        ...incoming.map(e => ({ dir: isMesh(e) ? '→' : '←', other: NODE_BY_ID[e.from].name, otherVlan: NODE_BY_ID[e.from].vlan, port: e.port, label: e.label, key: edgeKey(e) })),
+        ...buildRelations(outgoing).map(({ e, kind }) => ({ dir: '→', other: NODE_BY_ID[e.to].name, otherVlan: NODE_BY_ID[e.to].vlan, port: e.port, label: e.label, key: edgeKey(e), kind })),
+        ...buildRelations(incoming).map(({ e, kind }) => ({ dir: isMesh(e) ? '→' : '←', other: NODE_BY_ID[e.from].name, otherVlan: NODE_BY_ID[e.from].vlan, port: e.port, label: e.label, key: edgeKey(e), kind })),
       ];
       activeConnKeys = new Set(allConns.map(c => c.key));
       renderConns(allConns);
@@ -1930,14 +1932,17 @@
       `).join('');
 
       const seen = new Set();
-      const allConns = [];
-      EDGES.forEach(e => {
-        if (!selectedIds.has(e.from) && !selectedIds.has(e.to)) return;
+      const relevantEdges = EDGES.filter(e => {
+        if (!selectedIds.has(e.from) && !selectedIds.has(e.to)) return false;
         const key = edgeKey(e);
-        if (seen.has(key)) return;
+        if (seen.has(key)) return false;
         seen.add(key);
-        allConns.push({ dir: `${NODE_BY_ID[e.from].name} →`, other: NODE_BY_ID[e.to].name, otherVlan: NODE_BY_ID[e.to].vlan, port: e.port, label: e.label, key });
+        return true;
       });
+      const allConns = buildRelations(relevantEdges).map(({ e, kind }) => ({
+        dir: `${NODE_BY_ID[e.from].name} →`, other: NODE_BY_ID[e.to].name, otherVlan: NODE_BY_ID[e.to].vlan,
+        port: e.port, label: e.label, key: edgeKey(e), kind,
+      }));
       activeConnKeys = new Set(allConns.map(c => c.key));
       renderConns(allConns);
       history.replaceState(null, '', location.pathname + location.search);
@@ -1961,7 +1966,8 @@
     const connsEl = document.getElementById('panelConns');
     if (allConns.length) {
       connHeader.style.display = 'flex';
-      connsEl.innerHTML = allConns.map(c => `
+
+      const connRowHtml = (c) => `
         <label class="conn-row">
           <input type="checkbox" class="conn-check" data-key="${c.key}" checked />
           <span class="conn-row-text">
@@ -1972,7 +1978,38 @@
             ${c.label ? `<span class="conn-label">${c.label}</span>` : ''}
           </span>
         </label>
-      `).join('');
+      `;
+
+      const groups = new Map();
+      const flat = [];
+      allConns.forEach((c) => {
+        if (c.kind !== 'identity') { flat.push(c); return; }
+        if (!groups.has('identity')) groups.set('identity', { label: c.label, items: [] });
+        groups.get('identity').items.push(c);
+      });
+
+      const groupHtml = ([groupKey, group]) => `
+        <div class="conn-group">
+          <button type="button" class="conn-group-header" data-group="${groupKey}">
+            <svg class="conn-group-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+            <span>${group.label} (${group.items.length})</span>
+          </button>
+          <div class="conn-group-list" data-group-list="${groupKey}">
+            ${group.items.map(connRowHtml).join('')}
+          </div>
+        </div>
+      `;
+
+      connsEl.innerHTML = [...groups.entries()].map(groupHtml).join('') + flat.map(connRowHtml).join('');
+
+      connsEl.querySelectorAll('.conn-group-header').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const list = connsEl.querySelector(`[data-group-list="${btn.dataset.group}"]`);
+          const collapsed = list.classList.toggle('collapsed');
+          btn.classList.toggle('collapsed', collapsed);
+        });
+      });
+
       connToggleAll.textContent = 'Hide all';
       connsEl.querySelectorAll('.conn-check').forEach(cb => {
         cb.addEventListener('change', () => {
@@ -2149,7 +2186,10 @@
   });
 
   document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+    if (e.key === '/') {
+      const active = document.activeElement;
+      const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable);
+      if (isTyping) return;
       e.preventDefault();
       searchInput.focus();
       searchInput.select();
@@ -2181,5 +2221,7 @@
   window.addEventListener('resize', () => drawEdges());
 
   </script>
+
+{% include "partials/command_palette.html.j2" %}
 </body>
 </html>
