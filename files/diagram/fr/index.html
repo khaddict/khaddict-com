@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>voidnode · network map</title>
+<style>
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('https://media.khaddict.com/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('https://media.khaddict.com/fonts/JetBrainsMono-SemiBold.woff2') format('woff2');
+    font-weight: 600; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('https://media.khaddict.com/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+    font-weight: 700; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    --flow-gap: 96px;
+    --bg: #ffffff;
+    --text: #18181b;
+    --muted: #71717a;
+    --border: rgba(24, 24, 27, .09);
+    --surface: #ffffff;
+    --surface-2: #f7f6fb;
+    --shadow: rgba(24, 24, 27, .12);
+    --accent: #8b5cf6;
+
+    --vlan-core: #7C5CBF;
+    --vlan-core-bg: rgba(124, 92, 191, .08);
+    --vlan-admin: #A6790F;
+    --vlan-admin-bg: rgba(166, 121, 15, .08);
+    --vlan-infra: #1C7F97;
+    --vlan-infra-bg: rgba(28, 127, 151, .08);
+    --vlan-edge: #C93E82;
+    --vlan-edge-bg: rgba(201, 62, 130, .08);
+    --vlan-iot: #1A7557;
+    --vlan-iot-bg: rgba(26, 117, 87, .08);
+    --vlan-ext: #C43B3B;
+    --vlan-ext-bg: rgba(196, 59, 59, .08);
+    --vlan-k8s: #1E4E85;
+    --vlan-k8s-bg: rgba(30, 78, 133, .08);
+    --vlan-cloud: #2563EB;
+    --vlan-cloud-bg: rgba(37, 99, 235, .08);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1a1a22;
+      --text: #f1f5f9;
+      --muted: #94949f;
+      --border: rgba(255, 255, 255, .1);
+      --surface: #22222c;
+      --surface-2: #26262f;
+      --shadow: rgba(0, 0, 0, .5);
+      --accent: #a78bfa;
+
+      --vlan-core: #B39DDB;
+      --vlan-core-bg: rgba(179, 157, 219, .1);
+      --vlan-admin: #F0C674;
+      --vlan-admin-bg: rgba(240, 198, 116, .1);
+      --vlan-infra: #8ED2E0;
+      --vlan-infra-bg: rgba(142, 210, 224, .1);
+      --vlan-edge: #F5A8D6;
+      --vlan-edge-bg: rgba(245, 168, 214, .1);
+      --vlan-iot: #A5D6C1;
+      --vlan-iot-bg: rgba(165, 214, 193, .1);
+      --vlan-ext: #F59B9B;
+      --vlan-ext-bg: rgba(245, 155, 155, .1);
+      --vlan-k8s: #5B93C4;
+      --vlan-k8s-bg: rgba(91, 147, 196, .1);
+      --vlan-cloud: #93C5FD;
+      --vlan-cloud-bg: rgba(147, 197, 253, .1);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #1a1a22;
+    --text: #f1f5f9;
+    --muted: #94949f;
+    --border: rgba(255, 255, 255, .1);
+    --surface: #22222c;
+    --surface-2: #26262f;
+    --shadow: rgba(0, 0, 0, .5);
+    --accent: #a78bfa;
+
+    --vlan-core: #B39DDB;
+    --vlan-core-bg: rgba(179, 157, 219, .1);
+    --vlan-admin: #F0C674;
+    --vlan-admin-bg: rgba(240, 198, 116, .1);
+    --vlan-infra: #8ED2E0;
+    --vlan-infra-bg: rgba(142, 210, 224, .1);
+    --vlan-edge: #F5A8D6;
+    --vlan-edge-bg: rgba(245, 168, 214, .1);
+    --vlan-iot: #A5D6C1;
+    --vlan-iot-bg: rgba(165, 214, 193, .1);
+    --vlan-ext: #F59B9B;
+    --vlan-ext-bg: rgba(245, 155, 155, .1);
+    --vlan-k8s: #5B93C4;
+    --vlan-k8s-bg: rgba(91, 147, 196, .1);
+    --vlan-cloud: #93C5FD;
+    --vlan-cloud-bg: rgba(147, 197, 253, .1);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .topbar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: .75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    z-index: 50;
+  }
+  .topbar h1 {
+    font-size: .95rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -.01em;
+  }
+  .topbar .sub {
+    font-size: .7rem;
+    color: var(--muted);
+  }
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .68rem;
+    color: var(--muted);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: .2rem .5rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color .12s ease, color .12s ease;
+  }
+  .legend-item:hover { color: var(--text); }
+  .legend-item.active { border-color: var(--legend-color); color: var(--legend-color); }
+
+  .search-wrap { position: relative; display: flex; align-items: center; }
+  .search-icon {
+    position: absolute;
+    left: .65rem;
+    width: 13px; height: 13px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .search-input {
+    width: 230px;
+    height: 30px;
+    padding: 0 2.9rem 0 1.9rem;
+    border-radius: 15px;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: .72rem;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .search-input:hover { border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+  .search-input:focus { outline: none; border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+  .search-input::placeholder { color: var(--muted); }
+  .search-kbd {
+    position: absolute;
+    top: 50%; right: .5rem;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .62rem;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .05rem .35rem;
+    pointer-events: none;
+    white-space: nowrap;
+    background: var(--bg);
+  }
+
+  .search-results {
+    position: absolute;
+    top: calc(100% + .5rem);
+    left: 0;
+    width: 260px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px var(--shadow);
+    padding: .4rem;
+    display: none;
+    z-index: 60;
+  }
+  .search-results.open { display: block; }
+  .search-result-item {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    width: 100%;
+    padding: .45rem .55rem;
+    border-radius: 7px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    color: inherit;
+  }
+  .search-result-item:hover, .search-result-item.highlighted { background: var(--surface-2); }
+  .search-result-item .node-icon { width: 22px; height: 22px; flex-shrink: 0; }
+  .search-result-item .node-icon svg { width: 12px; height: 12px; }
+  .search-result-name { font-size: .76rem; font-weight: 600; }
+  .search-result-ip { font-size: .64rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .search-empty { font-size: .72rem; color: var(--muted); padding: .6rem; text-align: center; }
+  .legend-dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .zoom-controls {
+    display: flex;
+    gap: .35rem;
+  }
+  .zoom-controls button {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .zoom-controls button:hover { border-color: var(--accent); color: var(--accent); }
+
+  .theme-toggle {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .theme-toggle svg { width: 14px; height: 14px; }
+  .theme-toggle .icon-sun { display: none; }
+  .theme-toggle .icon-moon { display: block; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .theme-toggle .icon-sun { display: block; }
+    :root:not([data-theme="light"]) .theme-toggle .icon-moon { display: none; }
+  }
+  :root[data-theme="dark"] .theme-toggle .icon-sun { display: block; }
+  :root[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+
+  .help-wrap { position: relative; }
+  #help-btn { font-weight: 700; }
+  .help-dropdown {
+    position: absolute;
+    top: calc(100% + .6rem);
+    right: 0;
+    width: 580px;
+    max-width: calc(100vw - 2rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px var(--shadow);
+    padding: .9rem 1rem;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+    z-index: 200;
+  }
+  .help-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  .help-title {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--muted);
+    margin: 0 0 .6rem;
+  }
+  .help-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .5rem; }
+  .help-list li {
+    font-size: .74rem;
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    align-items: center;
+    gap: .7rem;
+    white-space: nowrap;
+  }
+  .help-key { display: flex; gap: .25rem; color: var(--muted); }
+  .help-list kbd {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .66rem;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .1rem .4rem;
+    white-space: nowrap;
+  }
+
+  .viewport {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 22px 22px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  .viewport.grabbing { cursor: grabbing; }
+  .viewport.grabbing .node-card { pointer-events: none; }
+
+  .canvas {
+    position: absolute;
+    top: 0; left: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  svg.edges {
+    position: absolute;
+    top: 0; left: 0;
+    overflow: visible;
+    pointer-events: none;
+    z-index: 2;
+  }
+  svg.edges .edge-line {
+    animation: edge-flow 1.1s linear infinite;
+  }
+  @keyframes edge-flow {
+    to { stroke-dashoffset: -14; }
+  }
+  svg.edges .edge-pulse {
+    animation: edge-pulse-fade 2.4s ease-in-out infinite;
+  }
+  @keyframes edge-pulse-fade {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    svg.edges .edge-line { animation: none; }
+    svg.edges .edge-pulse { animation: none; opacity: .9; }
+  }
+
+  .edge-label {
+    font-size: 9px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+  }
+  .edge-label-bg {
+    fill: var(--surface);
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  .edge-label-text { fill: var(--muted); }
+
+  .host-frame {
+    position: relative;
+    border: 1.5px dashed var(--border);
+    border-radius: 16px;
+    padding: 2.75rem 2rem 2rem;
+    background: var(--surface);
+  }
+  .host-title {
+    position: absolute;
+    top: -1px; left: 1.5rem;
+    transform: translateY(-50%);
+    background: var(--bg);
+    padding: .2rem .7rem;
+    font-size: .72rem;
+    font-weight: 700;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    white-space: nowrap;
+  }
+  .host-title svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+  .topology {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  .canvas-stack { display: flex; flex-direction: column; align-items: center; }
+  .hub-row { margin-bottom: var(--flow-gap); display: flex; justify-content: center; }
+  .core-zone .node-list, .ext-zone .node-list, .cloud-zone .node-list { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 1.5rem; }
+  .ext-row { margin-bottom: var(--flow-gap); display: flex; justify-content: center; }
+  .cloud-row { margin-bottom: var(--flow-gap); display: flex; justify-content: center; }
+  .flow-badge {
+    position: absolute;
+    top: -6px; right: -6px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 3px;
+    border-radius: 8px;
+    background: var(--zone-color);
+    color: var(--surface);
+    font-size: .58rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg);
+  }
+
+  .branch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--flow-gap);
+    align-items: start;
+    width: 100%;
+  }
+
+  .vlan-zone {
+    border-radius: 12px;
+    border: 1.5px solid var(--zone-color);
+    background: var(--zone-bg);
+    padding: 1rem;
+    box-shadow: 0 10px 28px -14px var(--zone-color);
+  }
+  .vlan-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: .8rem;
+    padding-bottom: .6rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .vlan-name {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--zone-color);
+    letter-spacing: .02em;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .vlan-icon { width: 14px; height: 14px; display: inline-flex; }
+  .vlan-icon svg { width: 100%; height: 100%; }
+  .vlan-cidr {
+    font-size: .64rem;
+    color: var(--muted);
+  }
+
+  .node-list { display: flex; flex-direction: column; gap: .6rem; }
+
+  .k8s-subgroup {
+    border: 1px dashed var(--zone-color);
+    border-radius: 10px;
+    padding: .6rem;
+    margin-top: .2rem;
+  }
+  .k8s-subgroup .sub-label {
+    font-size: .62rem;
+    color: var(--zone-color);
+    font-weight: 700;
+    margin-bottom: .5rem;
+    display: block;
+  }
+  .k8s-subgroup .node-list { gap: .5rem; }
+
+  .node-card {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .5rem .6rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    transition: border-color .12s ease, transform .12s ease, box-shadow .12s ease;
+    text-align: left;
+    width: 220px;
+    flex-shrink: 0;
+    font-family: inherit;
+    color: inherit;
+    box-shadow: 0 8px 20px -14px var(--zone-color);
+  }
+  .core-zone .node-card, .ext-zone .node-card, .cloud-zone .node-card { flex: 0 0 220px; }
+  .node-card:hover {
+    border-color: var(--zone-color);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px var(--zone-color);
+  }
+  .node-card.focused {
+    border-color: var(--zone-color);
+    box-shadow: 0 0 0 3px var(--zone-bg), 0 10px 24px -8px var(--zone-color);
+    transform: scale(1.06);
+    z-index: 3;
+    position: relative;
+  }
+  .node-card.related {
+    border-color: var(--zone-color);
+  }
+  .node-card.dimmed {
+    opacity: .3;
+  }
+  .node-card, .vlan-zone {
+    transition: opacity .18s ease, transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .node-card {
+    opacity: 1;
+    animation: node-in .5s cubic-bezier(.2,.7,.3,1) backwards;
+    animation-delay: calc(var(--stagger, 0) * 40ms);
+  }
+  @keyframes node-in {
+    from { opacity: 0; transform: translateY(6px) scale(.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .vlan-zone {
+    opacity: 0;
+    animation: zone-in .45s ease forwards;
+    animation-delay: calc(var(--zone-order, 0) * 90ms);
+  }
+  @keyframes zone-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .host-frame {
+    animation: frame-in .4s ease both;
+  }
+  @keyframes frame-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .node-card, .vlan-zone, .host-frame { animation: none !important; opacity: 1 !important; }
+  }
+  .node-icon {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    background: var(--zone-bg);
+    color: var(--zone-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .node-icon svg { width: 14px; height: 14px; }
+  .node-meta { min-width: 0; flex: 1; }
+  .node-name {
+    font-size: .74rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .node-ip {
+    font-size: .62rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .panel {
+    position: absolute;
+    top: 0; right: 0;
+    bottom: 0;
+    width: min(360px, 100%);
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    box-shadow: -20px 0 40px var(--shadow);
+    transform: translateX(100%);
+    transition: transform .2s ease;
+    z-index: 11;
+    display: flex;
+    flex-direction: column;
+  }
+  .panel.open { transform: translateX(0); }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .panel-icon {
+    width: 38px; height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .panel-icon svg { width: 19px; height: 19px; }
+  .panel-head h2 { margin: 0; font-size: 1rem; }
+  .panel-head .vlan-tag {
+    font-size: .64rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+  }
+  .panel-close {
+    margin-left: auto;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .panel-close:hover { color: var(--text); border-color: var(--text); }
+
+  .panel-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+  .panel-desc {
+    font-size: .82rem;
+    line-height: 1.6;
+    margin: 0 0 1.25rem;
+  }
+  .desc-link {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .desc-link:hover { opacity: .8; }
+
+  .panel-section-title {
+    font-size: .66rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--muted);
+    margin: 0 0 .6rem;
+  }
+  .conn-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .5rem;
+  }
+  .conn-header .panel-section-title { margin-bottom: .6rem; }
+  .conn-toggle-all {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: .66rem;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: .6rem;
+  }
+  .conn-toggle-all:hover { text-decoration: underline; }
+
+  .kv-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .5rem 1rem;
+    font-size: .76rem;
+    margin-bottom: 1.5rem;
+  }
+  .kv-grid dt { color: var(--muted); }
+  .kv-grid dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+  .port-row {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .5rem .6rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: .5rem;
+    font-size: .72rem;
+  }
+  .port-num {
+    font-weight: 700;
+    background: var(--surface-2);
+    border-radius: 5px;
+    padding: .15rem .45rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .port-label {
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .conn-row {
+    display: flex;
+    align-items: flex-start;
+    gap: .5rem;
+    font-size: .72rem;
+    padding: .4rem 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: opacity .12s ease;
+  }
+  .conn-row:last-child { border-bottom: none; }
+  .conn-row.off { opacity: .4; }
+  .conn-check { accent-color: var(--accent); cursor: pointer; flex-shrink: 0; margin-top: .15rem; }
+  .conn-row-text { display: flex; flex-direction: column; gap: .15rem; min-width: 0; flex: 1; }
+  .conn-row-main { display: flex; align-items: center; gap: .5rem; }
+  .conn-arrow { color: var(--muted); }
+  .conn-port {
+    margin-left: auto;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .conn-label { color: var(--muted); font-size: .64rem; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+</style>
+
+</head>
+<body>
+<div class="topbar">
+  <h1>voidnode</h1>
+  <span class="sub" id="topSub"></span>
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    <input class="search-input" id="search-input" type="text" placeholder="device, IP..." autocomplete="off" />
+    <kbd class="search-kbd" id="search-kbd">Ctrl K</kbd>
+    <div class="search-results" id="search-results"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="zoom-controls">
+    <button id="zoom-out" aria-label="Zoom out">−</button>
+    <button id="zoom-reset" aria-label="Reset zoom">⤢</button>
+    <button id="zoom-in" aria-label="Zoom in">+</button>
+  </div>
+  <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle theme">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+  <div class="help-wrap">
+    <button class="theme-toggle" id="help-btn" type="button" aria-label="Help" aria-haspopup="true" aria-expanded="false">?</button>
+    <div class="help-dropdown" id="help-dropdown">
+      <div class="help-title">Interactions</div>
+      <ul class="help-list">
+        <li><span class="help-key"><kbd>Click</kbd></span><span>Inspect device</span></li>
+        <li><span class="help-key"><kbd id="help-kbd-multiselect">Ctrl+Click</kbd></span><span>Multi-select</span></li>
+        <li><span class="help-key"><kbd>Click VLAN label</kbd></span><span>Focus VLAN</span></li>
+        <li><span class="help-key"><kbd>Esc</kbd> <kbd>Click empty space</kbd></span><span>Close panel</span></li>
+        <li><span class="help-key"><kbd id="help-kbd-search">Ctrl+K</kbd></span><span>Search devices</span></li>
+        <li><span class="help-key"><kbd>Drag</kbd></span><span>Pan map</span></li>
+        <li><span class="help-key"><kbd>Scroll / Pinch</kbd></span><span>Zoom</span></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="viewport" id="viewport">
+  <div class="canvas" id="canvas">
+    <svg class="edges" id="edges"></svg>
+    <div class="canvas-stack" id="canvasStack">
+      <div class="cloud-row" id="cloudRow"></div>
+      <div class="ext-row" id="extRow"></div>
+      <div class="host-frame" id="hostFrame">
+        <div class="host-title" id="hostTitle"></div>
+        <div class="topology">
+          <div class="hub-row" id="hubRow"></div>
+          <div class="branch-grid" id="branchGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel">
+    <div class="panel-head">
+      <div class="panel-icon" id="panelIcon"></div>
+      <div>
+        <h2 id="panelName"></h2>
+        <span class="vlan-tag" id="panelVlan"></span>
+      </div>
+      <button class="panel-close" id="panelClose" aria-label="Close">✕</button>
+    </div>
+    <div class="panel-body">
+      <p class="panel-desc" id="panelDesc"></p>
+
+      <div id="kvSection">
+        <p class="panel-section-title">Hardware</p>
+        <dl class="kv-grid" id="panelKv"></dl>
+      </div>
+
+      <div id="portsSection">
+        <p class="panel-section-title">Services</p>
+        <div id="panelPorts"></div>
+      </div>
+
+      <div id="devicesSection" style="display:none;">
+        <p class="panel-section-title">Selected devices</p>
+        <div id="panelDevices" style="margin-bottom:1.5rem;"></div>
+      </div>
+
+      <div class="conn-header" id="connHeader" style="display:none;">
+        <p class="panel-section-title" id="connTitle">Connections</p>
+        <button type="button" class="conn-toggle-all" id="connToggleAll">Hide all</button>
+      </div>
+      <div id="panelConns"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  (function () {
+    try {
+      const stored = localStorage.getItem('voidnode-map-theme');
+      if (stored) document.documentElement.dataset.theme = stored;
+    } catch (e) {}
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const isDark = document.documentElement.dataset.theme
+        ? document.documentElement.dataset.theme === 'dark'
+        : window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const next = isDark ? 'light' : 'dark';
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem('voidnode-map-theme', next); } catch (e) {}
+    });
+  })();
+
+  (function () {
+    const kbd = document.getElementById('search-kbd');
+    const helpKbdSearch = document.getElementById('help-kbd-search');
+    const helpKbdMultiselect = document.getElementById('help-kbd-multiselect');
+    if (window.matchMedia('(pointer: coarse)').matches) kbd.style.display = 'none';
+    if (/Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)) {
+      kbd.textContent = '⌘K';
+      helpKbdSearch.textContent = '⌘K';
+      helpKbdMultiselect.textContent = '⌘+Click';
+    }
+  })();
+
+  (function () {
+    const btn = document.getElementById('help-btn');
+    const dropdown = document.getElementById('help-dropdown');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = dropdown.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    });
+    document.addEventListener('click', (e) => {
+      if (!dropdown.contains(e.target) && e.target !== btn) {
+        dropdown.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  })();
+
+  const ICONS = {
+    shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6z"/></svg>',
+    terminal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>',
+    zap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+    key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m10.5 12.5 8-8M16 5l3 3M13 8l2 2"/></svg>',
+    badge: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/></svg>',
+    archive: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 13h4"/></svg>',
+    box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8M12 13v8"/></svg>',
+    database: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>',
+    activity: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+    barchart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="20" x2="6" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>',
+    filetext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>',
+    shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>',
+    layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+    cpu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="15" x2="23" y2="15"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="15" x2="4" y2="15"/></svg>',
+    globe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z"/></svg>',
+    plug: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9.5 14.5 2 12 4.5l1.5 1.5-7 7L5 11.5 2.5 14l7.5 7.5 2.5-2.5-1.5-1.5 7-7 1.5 1.5z"/></svg>',
+    brain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 0 7 4.5v.5A2.5 2.5 0 0 0 5 7.5 2.5 2.5 0 0 0 4 12a2.5 2.5 0 0 0 1 4.5A2.5 2.5 0 0 0 7 19a2.5 2.5 0 0 0 2.5 2.5"/><path d="M14.5 2A2.5 2.5 0 0 1 17 4.5v.5a2.5 2.5 0 0 1 2 2.5 2.5 2.5 0 0 1 1 4.5 2.5 2.5 0 0 1-1 4.5 2.5 2.5 0 0 1-2 2.5 2.5 2.5 0 0 1-2.5 2.5"/><path d="M9.5 2v19M9.5 8.5H7M9.5 13H5M9.5 17.5H7"/></svg>',
+    message: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+    router: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="6" rx="1"/><circle cx="7" cy="17" r=".5" fill="currentColor"/><path d="M8 14v-3a4 4 0 0 1 8 0v3M12 4v3"/></svg>',
+    wifi: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5a11 11 0 0 1 14 0"/><path d="M8.5 16a6 6 0 0 1 7 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>',
+    cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>',
+  };
+
+  const VLANS = [
+    { id: 'core', name: 'CORE', cidr: '10.10.0.0/24', gateway: '10.10.0.1', icon: 'shield' },
+    { id: 'admin', name: 'ADMIN', cidr: '10.20.0.0/24', gateway: '10.20.0.1', icon: 'key' },
+    { id: 'infra', name: 'INFRA', cidr: '10.30.0.0/24', gateway: '10.30.0.1', icon: 'activity' },
+    { id: 'edge', name: 'EDGE', cidr: '10.40.0.0/24', gateway: '10.40.0.1', icon: 'globe' },
+    { id: 'iot', name: 'IOT', cidr: '10.50.0.0/24', gateway: '10.50.0.1', icon: 'wifi' },
+    { id: 'ext', name: 'LAN', cidr: '192.168.0.0/24', icon: 'router', bus: true },
+    { id: 'cloud', name: 'CLOUD', cidr: 'Internet', icon: 'cloud' },
+  ];
+
+  const NODES = [
+    { id: 'opnsense', name: 'opnsense (gateway)', vlan: 'core', ip: '10.10.0.1', icon: 'shield', desc: 'OPNsense interface: CORE. Gateway for this VLAN.', tags: ['core', 'opnsense'], hardware: { ram: '4096 MB', cpu: '1×4', disk: '32 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 53, label: 'DNS' }, { port: 67, label: 'DHCP' }, { port: 80, label: 'HTTP' }, { port: 123, label: 'NTP' }, { port: 443, label: 'HTTPS' }, { port: 51820, label: 'WireGuard' }] },
+    { id: 'voidnode', name: 'voidnode', vlan: 'core', ip: '10.10.0.2', icon: 'cpu', desc: 'Proxmox VE hypervisor. Hosts all VMs and LXC containers. Single bare-metal node.', tags: ['core', 'pve'], hardware: { ram: '123904 MB', cpu: '1×12 (24T)', disk: '4000 GB NVMe' }, ports: [{ port: 22, label: 'SSH' }, { port: 8006, label: 'Proxmox Web UI' }, { port: 9100, label: 'Node Exporter' }] },
+
+    { id: 'opnsense-admin', name: 'opnsense (gateway)', vlan: 'admin', ip: '10.20.0.1', icon: 'shield', desc: 'OPNsense interface: ADMIN. Gateway for this VLAN.', tags: ['admin', 'opnsense'], hardware: {}, ports: [{ port: 53, label: 'DNS' }, { port: 67, label: 'DHCP' }, { port: 123, label: 'NTP' }] },
+    { id: 'saltmaster', name: 'saltmaster', vlan: 'admin', ip: '10.20.0.3', icon: 'terminal', desc: 'SaltStack control plane and state orchestration', tags: ['admin', 'trixie'], hardware: { ram: '4096 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 4505, label: 'Salt ReqServer' }, { port: 4506, label: 'Salt Publish' }, { port: 8000, label: 'HTTP' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'stackstorm', name: 'stackstorm', vlan: 'admin', ip: '10.20.0.4', icon: 'zap', desc: 'Event-driven automation and workflow engine', tags: ['admin', 'jammy'], hardware: { ram: '4096 MB', cpu: '1×3', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'vault', name: 'vault', vlan: 'admin', ip: '10.20.0.5', icon: 'key', desc: 'Central secrets management', tags: ['admin', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 8200, label: 'HashiCorp Vault' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'easypki', name: 'easypki', vlan: 'admin', ip: '10.20.0.6', icon: 'badge', desc: 'Internal PKI authority and certificate lifecycle', tags: ['admin', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'pbs', name: 'pbs', vlan: 'admin', ip: '10.20.0.7', icon: 'archive', desc: 'Proxmox Backup Server for VM backups', tags: ['admin', 'pbs'], hardware: { ram: '4096 MB', cpu: '1×4', disk: '32 + 500 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'registry', name: 'registry', vlan: 'admin', ip: '10.20.0.2', icon: 'box', desc: 'Container image registry and artifact cache', tags: ['admin', 'trixie'], hardware: { ram: '4096 MB', cpu: '1×3', disk: '50 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 9100, label: 'Node Exporter' }] },
+
+    { id: 'opnsense-infra', name: 'opnsense (gateway)', vlan: 'infra', ip: '10.30.0.1', icon: 'shield', desc: 'OPNsense interface: INFRA. Gateway for this VLAN.', tags: ['infra', 'opnsense'], hardware: {}, ports: [{ port: 53, label: 'DNS' }, { port: 67, label: 'DHCP' }, { port: 123, label: 'NTP' }] },
+    { id: 'netbox', name: 'netbox', vlan: 'infra', ip: '10.30.0.2', icon: 'database', desc: 'Source of truth for IPAM, DCIM, and inventory', tags: ['infra', 'trixie'], hardware: { ram: '4096 MB', cpu: '1×3', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 5432, label: 'PostgreSQL' }, { port: 6379, label: 'Redis' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'prometheus', name: 'prometheus', vlan: 'infra', ip: '10.30.0.3', icon: 'activity', desc: 'Metrics collection, alerting and rules', tags: ['infra', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '40 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 9090, label: 'Prometheus' }, { port: 9093, label: 'Alertmanager' }, { port: 9100, label: 'Node Exporter' }, { port: 9115, label: 'Blackbox Exporter' }] },
+    { id: 'grafana', name: 'grafana', vlan: 'infra', ip: '10.30.0.4', icon: 'barchart', desc: 'Visualization dashboards for metrics and logs', tags: ['infra', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 3000, label: 'Grafana' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'loki', name: 'loki', vlan: 'infra', ip: '10.30.0.5', icon: 'filetext', desc: 'Centralized log aggregation and query backend', tags: ['infra', 'trixie'], hardware: { ram: '4096 MB', cpu: '1×4', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 3100, label: 'Loki' }, { port: 9100, label: 'Node Exporter' }] },
+
+    { id: 'opnsense-edge', name: 'opnsense (gateway)', vlan: 'edge', ip: '10.40.0.1', icon: 'shield', desc: 'OPNsense interface: EDGE. Gateway for this VLAN.', tags: ['edge', 'opnsense'], hardware: {}, ports: [{ port: 53, label: 'DNS' }, { port: 67, label: 'DHCP' }, { port: 123, label: 'NTP' }] },
+    { id: 'revproxy', name: 'revproxy', vlan: 'edge', ip: '10.40.0.2', icon: 'shuffle', desc: 'Edge reverse proxy and external ingress gateway', tags: ['edge', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'kcontrol', name: 'kcontrol', vlan: 'edge', group: 'k8s', ip: '10.40.0.5', icon: 'layers', desc: 'Talos Kubernetes control-plane node', tags: ['edge', 'talos'], hardware: { ram: '8192 MB', cpu: '1×4', disk: '60 GB' }, ports: [{ port: 6443, label: 'Kubernetes API' }, { port: 9100, label: 'Node Exporter' }, { port: 50000, label: 'Talos apid' }, { port: 50001, label: 'Talos trustd' }] },
+    { id: 'kworker01', name: 'kworker01', vlan: 'edge', group: 'k8s', ip: '10.40.0.6', icon: 'cpu', desc: 'Talos Kubernetes worker node 1', tags: ['edge', 'talos'], hardware: { ram: '8192 MB', cpu: '1×4', disk: '60 GB' }, ports: [{ port: 9100, label: 'Node Exporter' }, { port: 50000, label: 'Talos apid' }] },
+    { id: 'kworker02', name: 'kworker02', vlan: 'edge', group: 'k8s', ip: '10.40.0.7', icon: 'cpu', desc: 'Talos Kubernetes worker node 2', tags: ['edge', 'talos'], hardware: { ram: '8192 MB', cpu: '1×4', disk: '60 GB' }, ports: [{ port: 9100, label: 'Node Exporter' }, { port: 50000, label: 'Talos apid' }] },
+    { id: 'kcli', name: 'kcli', vlan: 'edge', group: 'k8s', ip: '10.40.0.8', icon: 'terminal', desc: 'Kubernetes administration workstation', tags: ['edge', 'trixie'], hardware: { ram: '4096 MB', cpu: '1×2', disk: '40 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'pihole', name: 'pihole', vlan: 'edge', ip: '10.40.0.13', icon: 'globe', desc: 'Network-wide DNS ad-blocking and DNS server', tags: ['edge', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 53, label: 'DNS' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'api', name: 'api', vlan: 'edge', ip: '10.40.0.14', icon: 'plug', desc: 'Public API gateway for IoT devices; drives the BUSY Bar display', tags: ['edge', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP (internal)' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'matomo', name: 'matomo', vlan: 'edge', ip: '10.40.0.3', icon: 'barchart', desc: 'Web analytics for khaddict.com', tags: ['edge', 'lxc'], hardware: { ram: '2048 MB', cpu: '2', disk: '16 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP' }, { port: 3306, label: 'MariaDB' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'ollama', name: 'ollama', vlan: 'edge', ip: '10.40.0.4', icon: 'brain', desc: 'Local LLM inference server', tags: ['edge', 'lxc'], hardware: { ram: '51200 MB', cpu: '16', disk: '100 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 9100, label: 'Node Exporter' }, { port: 11434, label: 'Ollama' }] },
+    { id: 'openwebui', name: 'openwebui', vlan: 'edge', ip: '10.40.0.9', icon: 'message', desc: 'Browser-based chat frontend for Ollama', tags: ['edge', 'lxc'], hardware: { ram: '8192 MB', cpu: '4', disk: '50 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 8080, label: 'HTTP Alt' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'unifi', name: 'unifi', vlan: 'edge', ip: '10.40.0.11', icon: 'router', desc: 'UniFi network controller. Also has an out-of-band interface (192.168.0.252) on the physical LAN, to adopt/manage the switch and AP on their factory addressing.', tags: ['edge', 'lxc'], hardware: { ram: '4096 MB', cpu: '2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 6789, label: 'Speed test' }, { port: 8080, label: 'Device inform' }, { port: 8880, label: 'Guest portal' }, { port: 9100, label: 'Node Exporter' }] },
+
+    { id: 'opnsense-iot', name: 'opnsense (gateway)', vlan: 'iot', ip: '10.50.0.1', icon: 'shield', desc: 'OPNsense interface: IOT. Gateway for this VLAN.', tags: ['iot', 'opnsense'], hardware: {}, ports: [{ port: 53, label: 'DNS' }, { port: 67, label: 'DHCP' }, { port: 123, label: 'NTP' }] },
+    { id: 'busybar', name: 'busybar', vlan: 'iot', ip: '10.50.0.100', icon: 'message', desc: '72×16 LED display, driven by the api VM.', tags: ['iot', 'device'], hardware: {}, ports: [{ port: 80, label: 'HTTP' }] },
+
+    { id: 'freebox', name: 'freebox', vlan: 'ext', ip: '192.168.0.254', icon: 'router', desc: "Freebox Revolution. ISP box, actual internet uplink. OPNsense's WAN interface plugs into it.", tags: ['ext', 'isp'], hardware: {}, ports: [{ port: 53, label: 'DNS' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 445, label: 'SMB' }, { port: 554, label: 'RTSP' }, { port: 5000, label: 'Freebox OS' }, { port: 5678, label: 'UPnP IGD' }, { port: 9091, label: 'Transmission' }] },
+    { id: 'opnsense-wan', name: 'opnsense (wan)', vlan: 'ext', ip: '192.168.0.253', icon: 'shield', desc: "OPNsense interface: WAN. Connects to the Freebox's LAN for the internet uplink.", tags: ['ext', 'opnsense'], hardware: {}, ports: [{ port: 53, label: 'DNS' }, { port: 123, label: 'NTP' }] },
+    { id: 'jetkvm', name: 'jetkvm', vlan: 'ext', ip: '192.168.0.251', icon: 'plug', desc: 'JetKVM: remote KVM for the GEEKOM A9 Max, out-of-band console access to voidnode.', tags: ['ext', 'hardware'], hardware: {}, ports: [{ port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }] },
+    { id: 'rpi', name: 'raspberry-pi', vlan: 'ext', ip: '192.168.0.29', icon: 'cpu', desc: 'Raspberry Pi 5 running LibreELEC/Kodi.', tags: ['ext', 'kodi'], hardware: {}, ports: [{ port: 22, label: 'SSH' }] },
+    { id: 'vps', name: 'khaddict-vps', vlan: 'cloud', ip: '83.228.210.75', icon: 'globe', desc: 'Infomaniak VPS: SNI-based TCP passthrough to revproxy over WireGuard, plus a local Uptime Kuma for status.khaddict.com so it survives a full homelab outage.', tags: ['cloud', 'vps'], hardware: {}, ports: [{ port: 22222, label: 'SSH' }, { port: 80, label: 'HTTP → HTTPS redirect' }, { port: 443, label: 'HTTPS (SNI routing)' }, { port: 3001, label: 'Uptime Kuma' }, { port: 4443, label: 'nginx → Uptime Kuma' }] },
+  ];
+
+  const EDGES = [
+    { from: 'opnsense', to: 'opnsense-wan', port: '', label: 'Same firewall' },
+    { from: 'opnsense', to: 'opnsense-admin', port: '', label: 'Same firewall' },
+    { from: 'opnsense', to: 'opnsense-infra', port: '', label: 'Same firewall' },
+    { from: 'opnsense', to: 'opnsense-edge', port: '', label: 'Same firewall' },
+    { from: 'opnsense', to: 'opnsense-iot', port: '', label: 'Same firewall' },
+    { from: 'opnsense-wan', to: 'opnsense-admin', port: '', label: 'Same firewall' },
+    { from: 'opnsense-wan', to: 'opnsense-infra', port: '', label: 'Same firewall' },
+    { from: 'opnsense-wan', to: 'opnsense-edge', port: '', label: 'Same firewall' },
+    { from: 'opnsense-wan', to: 'opnsense-iot', port: '', label: 'Same firewall' },
+    { from: 'opnsense-admin', to: 'opnsense-infra', port: '', label: 'Same firewall' },
+    { from: 'opnsense-admin', to: 'opnsense-edge', port: '', label: 'Same firewall' },
+    { from: 'opnsense-admin', to: 'opnsense-iot', port: '', label: 'Same firewall' },
+    { from: 'opnsense-infra', to: 'opnsense-edge', port: '', label: 'Same firewall' },
+    { from: 'opnsense-infra', to: 'opnsense-iot', port: '', label: 'Same firewall' },
+    { from: 'opnsense-edge', to: 'opnsense-iot', port: '', label: 'Same firewall' },
+    { from: 'opnsense', to: 'revproxy', port: 443, label: 'HTTPS ingress' },
+    { from: 'revproxy', to: 'api', port: 80, label: 'HTTP' },
+    { from: 'revproxy', to: 'matomo', port: 80, label: 'HTTP' },
+    { from: 'saltmaster', to: 'vault', port: 8200, label: 'Secrets' },
+    { from: 'saltmaster', to: 'netbox', port: 443, label: 'Inventory sync' },
+    { from: 'saltmaster', to: 'opnsense', port: 443, label: 'Config' },
+    { from: 'stackstorm', to: 'easypki', port: '', label: 'PKI issuance' },
+    { from: 'prometheus', to: 'saltmaster', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'stackstorm', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'vault', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'easypki', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'pbs', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'registry', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'netbox', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'grafana', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'loki', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'revproxy', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'kcli', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'voidnode', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'kcontrol', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'kworker01', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'kworker02', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'pihole', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'api', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'matomo', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'ollama', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'openwebui', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'unifi', port: 9100, label: 'Node exporter' },
+    { from: 'grafana', to: 'prometheus', port: 9090, label: 'Metrics query' },
+    { from: 'grafana', to: 'loki', port: 3100, label: 'Log query' },
+    { from: 'kcli', to: 'kcontrol', port: 6443, label: 'kubectl' },
+    { from: 'kcontrol', to: 'kworker01', port: 6443, label: 'control' },
+    { from: 'kcontrol', to: 'kworker02', port: 6443, label: 'control' },
+    { from: 'pihole', to: 'opnsense', port: 53, label: 'DNS forward' },
+    { from: 'registry', to: 'kcontrol', port: 443, label: 'Image pull' },
+    { from: 'openwebui', to: 'ollama', port: 11434, label: 'Inference' },
+    { from: 'stackstorm', to: 'voidnode', port: 22, label: 'SSH, PVE lifecycle' },
+    { from: 'api', to: 'busybar', port: 80, label: 'BUSY Bar control' },
+    { from: 'prometheus', to: 'api', port: 80, label: 'Alertmanager webhook (/wall/alert)' },
+    { from: 'stackstorm', to: 'api', port: 80, label: 'Alert + report webhook' },
+    { from: 'revproxy', to: 'kworker01', port: 443, label: 'HTTPS (Envoy Gateway ingress)' },
+    { from: 'kcontrol', to: 'vault', port: 8200, label: 'ArgoCD Vault Plugin' },
+    { from: 'freebox', to: 'opnsense-wan', port: '', label: 'Local network' },
+    { from: 'freebox', to: 'jetkvm', port: '', label: 'Local network' },
+    { from: 'freebox', to: 'rpi', port: '', label: 'Local network' },
+    { from: 'jetkvm', to: 'voidnode', port: 443, label: 'Out-of-band console' },
+    { from: 'vps', to: 'revproxy', port: 443, label: 'WireGuard tunnel (SNI passthrough)' },
+  ];
+
+  const VLAN_BY_ID = Object.fromEntries(VLANS.map(v => [v.id, v]));
+  const NODE_BY_ID = Object.fromEntries(NODES.map(n => [n.id, n]));
+  const edgeKey = (e) => `${e.from}>${e.to}:${e.port}:${e.label}`;
+  const isMesh = (e) => (NODE_BY_ID[e.from].tags || []).includes('opnsense') &&
+    (NODE_BY_ID[e.to].tags || []).includes('opnsense');
+
+  const LINKABLE_IDS = NODES.map(n => n.id).filter(id => !id.startsWith('opnsense'))
+    .sort((a, b) => b.length - a.length);
+  const DESC_LINK_RE = new RegExp(`\\b(${LINKABLE_IDS.join('|')})\\b`, 'gi');
+  const linkifyDesc = (text, ownId) => text.replace(DESC_LINK_RE, (m) => {
+    const id = m.toLowerCase();
+    return id === ownId ? m : `<button type="button" class="desc-link" data-id="${id}">${m}</button>`;
+  });
+
+  const realVlanCount = VLANS.filter(v => v.id !== 'ext' && v.id !== 'cloud').length;
+  document.getElementById('topSub').textContent =
+    `1 physical host · ${realVlanCount} VLANs · ${NODES.length} nodes`;
+
+  const legendEl = document.getElementById('legend');
+  legendEl.innerHTML = VLANS.map(v => `
+    <button class="legend-item" type="button" data-vlan="${v.id}" style="--legend-color:var(--vlan-${v.id})">
+      <span class="legend-dot" style="background:var(--vlan-${v.id})"></span>${v.name}
+    </button>
+  `).join('');
+
+  document.getElementById('hostTitle').innerHTML = `${ICONS.cpu} voidnode <span style="opacity:.6">· physical Proxmox host</span>`;
+
+  let cardIndex = 0;
+  const flowCountOf = (id) => {
+    const relations = buildRelations(EDGES.filter(e => e.from === id || e.to === id));
+    let count = relations.some((r) => r.kind === 'identity') ? 1 : 0;
+    count += new Set(relations.filter((r) => r.kind === 'bus').map((r) => NODE_BY_ID[r.e.from].vlan)).size;
+    count += relations.filter((r) => r.kind === 'flow').length;
+    return count;
+  };
+  const cardHtml = (n, colorKey) => {
+    const flows = flowCountOf(n.id);
+    return `
+    <button class="node-card" data-id="${n.id}" style="--zone-color:var(--vlan-${colorKey});--zone-bg:var(--vlan-${colorKey}-bg);--stagger:${cardIndex++}">
+      <span class="node-icon">${ICONS[n.icon] || ICONS.box}</span>
+      <span class="node-meta">
+        <span class="node-name">${n.name}</span><br/>
+        <span class="node-ip">${n.ip}</span>
+      </span>
+      ${flows ? `<span class="flow-badge" title="${flows} ${flows === 1 ? 'flow' : 'flows'}">${flows}</span>` : ''}
+    </button>
+  `;
+  };
+
+  const hub = NODES.find(n => n.id === 'opnsense');
+  const hubVlan = VLAN_BY_ID[hub.vlan];
+  const coreNodes = NODES.filter(n => n.vlan === hub.vlan);
+  const coreCards = coreNodes.map(n => {
+    const flows = flowCountOf(n.id);
+    return `
+    <button class="node-card" data-id="${n.id}" style="--zone-color:var(--vlan-${n.vlan});--zone-bg:var(--vlan-${n.vlan}-bg);--stagger:0">
+      <span class="node-icon">${ICONS[n.icon] || ICONS.box}</span>
+      <span class="node-meta">
+        <span class="node-name">${n.name}</span><br/>
+        <span class="node-ip">${n.ip}</span>
+      </span>
+      ${flows ? `<span class="flow-badge" title="${flows} ${flows === 1 ? 'flow' : 'flows'}">${flows}</span>` : ''}
+    </button>
+  `;
+  }).join('');
+  document.getElementById('hubRow').innerHTML = `
+    <div class="vlan-zone core-zone" id="zone-core" style="--zone-color:var(--vlan-${hub.vlan});--zone-bg:var(--vlan-${hub.vlan}-bg)">
+      <div class="vlan-head">
+        <span class="vlan-name"><span class="vlan-icon">${ICONS[hubVlan.icon]}</span>${hubVlan.name}</span>
+        <span class="vlan-cidr">${hubVlan.cidr}</span>
+      </div>
+      <div class="node-list">${coreCards}</div>
+    </div>
+  `;
+
+  const extVlan = VLANS.find(v => v.id === 'ext');
+  const extNodes = NODES.filter(n => n.vlan === 'ext');
+  document.getElementById('extRow').innerHTML = `
+    <div class="vlan-zone ext-zone" id="zone-ext" style="--zone-color:var(--vlan-ext);--zone-bg:var(--vlan-ext-bg)">
+      <div class="vlan-head">
+        <span class="vlan-name"><span class="vlan-icon">${ICONS[extVlan.icon]}</span>${extVlan.name}</span>
+        <span class="vlan-cidr">${extVlan.cidr}</span>
+      </div>
+      <div class="node-list">${extNodes.map(n => cardHtml(n, 'ext')).join('')}</div>
+    </div>
+  `;
+
+  const cloudVlan = VLANS.find(v => v.id === 'cloud');
+  const cloudNodes = NODES.filter(n => n.vlan === 'cloud');
+  document.getElementById('cloudRow').innerHTML = `
+    <div class="vlan-zone cloud-zone" id="zone-cloud" style="--zone-color:var(--vlan-cloud);--zone-bg:var(--vlan-cloud-bg)">
+      <div class="vlan-head">
+        <span class="vlan-name"><span class="vlan-icon">${ICONS[cloudVlan.icon]}</span>${cloudVlan.name}</span>
+        <span class="vlan-cidr">${cloudVlan.cidr}</span>
+      </div>
+      <div class="node-list">${cloudNodes.map(n => cardHtml(n, 'cloud')).join('')}</div>
+    </div>
+  `;
+
+  const branches = VLANS.filter(v => v.id !== hub.vlan && v.id !== 'ext' && v.id !== 'cloud');
+  const grid = document.getElementById('branchGrid');
+  grid.style.gridTemplateColumns = `repeat(${branches.length}, minmax(260px, 1fr))`;
+  grid.innerHTML = branches.map((vlan, zoneIdx) => {
+    const nodes = NODES.filter(n => n.vlan === vlan.id && !n.group);
+    const k8sNodes = NODES.filter(n => n.vlan === vlan.id && n.group === 'k8s');
+    return `
+      <div class="vlan-zone" id="zone-${vlan.id}" style="--zone-color:var(--vlan-${vlan.id});--zone-bg:var(--vlan-${vlan.id}-bg);--zone-order:${zoneIdx}">
+        <div class="vlan-head">
+          <span class="vlan-name"><span class="vlan-icon">${ICONS[vlan.icon]}</span>${vlan.name}</span>
+          <span class="vlan-cidr">${vlan.cidr}</span>
+        </div>
+        <div class="node-list">
+          ${nodes.map(n => cardHtml(n, vlan.id)).join('')}
+          ${k8sNodes.length ? `
+            <div class="k8s-subgroup" style="--zone-color:var(--vlan-k8s)">
+              <span class="sub-label">KUBERNETES CLUSTER</span>
+              <div class="node-list">${k8sNodes.map(n => cardHtml(n, 'k8s')).join('')}</div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const viewport = document.getElementById('viewport');
+  const canvas = document.getElementById('canvas');
+  let scale = 1, tx = 40, ty = 20, isPanning = false, startX = 0, startY = 0;
+
+  function applyTransform() {
+    canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+  }
+
+  function fitToView() {
+    const vpRect = viewport.getBoundingClientRect();
+    const stackEl = document.getElementById('canvasStack');
+    const naturalW = stackEl.scrollWidth + 60;
+    const naturalH = stackEl.scrollHeight + 40;
+    const s = Math.min((vpRect.width - 60) / naturalW, (vpRect.height - 60) / naturalH, 1);
+    scale = Math.max(s, 0.3);
+    tx = Math.max((vpRect.width - naturalW * scale) / 2, 20);
+    ty = Math.max((vpRect.height - naturalH * scale) / 2, 20);
+    applyTransform();
+  }
+
+  let panMoved = false, panStartClientX = 0, panStartClientY = 0;
+
+  viewport.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.node-card') || e.target.closest('.panel')) return;
+    isPanning = true;
+    panMoved = false;
+    panStartClientX = e.clientX;
+    panStartClientY = e.clientY;
+    viewport.classList.add('grabbing');
+    startX = e.clientX - tx;
+    startY = e.clientY - ty;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isPanning) return;
+    if (Math.hypot(e.clientX - panStartClientX, e.clientY - panStartClientY) > 4) panMoved = true;
+    tx = e.clientX - startX;
+    ty = e.clientY - startY;
+    applyTransform();
+  });
+  window.addEventListener('mouseup', () => {
+    if (isPanning && !panMoved) { clearFilter(); setSelection([]); }
+    isPanning = false;
+    viewport.classList.remove('grabbing');
+  });
+
+  viewport.addEventListener('wheel', (e) => {
+    if (e.target.closest('.panel')) return;
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? -0.08 : 0.08;
+    const newScale = Math.min(Math.max(scale + delta, 0.3), 2);
+    scale = newScale;
+    applyTransform();
+  }, { passive: false });
+
+  let pinchStartDist = 0, pinchStartScale = 1;
+  const touchDist = (touches) => Math.hypot(touches[0].clientX - touches[1].clientX, touches[0].clientY - touches[1].clientY);
+
+  let touchMoved = false, touchStartClientX = 0, touchStartClientY = 0;
+
+  viewport.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      if (e.target.closest('.node-card') || e.target.closest('.panel')) return;
+      isPanning = true;
+      touchMoved = false;
+      touchStartClientX = e.touches[0].clientX;
+      touchStartClientY = e.touches[0].clientY;
+      startX = e.touches[0].clientX - tx;
+      startY = e.touches[0].clientY - ty;
+    } else if (e.touches.length === 2) {
+      isPanning = false;
+      touchMoved = true;
+      pinchStartDist = touchDist(e.touches);
+      pinchStartScale = scale;
+    }
+  }, { passive: true });
+
+  viewport.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && isPanning) {
+      if (Math.hypot(e.touches[0].clientX - touchStartClientX, e.touches[0].clientY - touchStartClientY) > 4) touchMoved = true;
+      e.preventDefault();
+      tx = e.touches[0].clientX - startX;
+      ty = e.touches[0].clientY - startY;
+      applyTransform();
+    } else if (e.touches.length === 2) {
+      e.preventDefault();
+      const ratio = touchDist(e.touches) / (pinchStartDist || 1);
+      scale = Math.min(Math.max(pinchStartScale * ratio, 0.3), 2);
+      applyTransform();
+    }
+  }, { passive: false });
+
+  viewport.addEventListener('touchend', () => {
+    if (isPanning && !touchMoved) { clearFilter(); setSelection([]); }
+    isPanning = false;
+  });
+
+  document.getElementById('zoom-in').addEventListener('click', () => { scale = Math.min(scale + .15, 2); applyTransform(); });
+  document.getElementById('zoom-out').addEventListener('click', () => { scale = Math.max(scale - .15, .3); applyTransform(); });
+  document.getElementById('zoom-reset').addEventListener('click', fitToView);
+
+  const FLOW_GAP = 96;
+  const CARD_CLEARANCE = 12;
+
+  let selectedIds = new Set();
+  let activeConnKeys = new Set();
+  let activeVlanIds = new Set();
+
+  function getGeometry() {
+    const canvasRect = canvas.getBoundingClientRect();
+    const toRect = (r) => ({
+      left: (r.left - canvasRect.left) / scale,
+      right: (r.right - canvasRect.left) / scale,
+      top: (r.top - canvasRect.top) / scale,
+      bottom: (r.bottom - canvasRect.top) / scale,
+    });
+    const nodes = new Map();
+    document.querySelectorAll('.node-card').forEach((el) => {
+      const rect = toRect(el.getBoundingClientRect());
+      nodes.set(el.dataset.id, { ...rect, midX: (rect.left + rect.right) / 2, midY: (rect.top + rect.bottom) / 2 });
+    });
+    const zones = new Map();
+    VLANS.forEach((v) => {
+      const el = document.getElementById(`zone-${v.id}`);
+      if (el) zones.set(v.id, toRect(el.getBoundingClientRect()));
+    });
+    const borderBoxes = Array.from(document.querySelectorAll('.k8s-subgroup')).map((el) => toRect(el.getBoundingClientRect()));
+    return {
+      nodes, zones, borderBoxes,
+      width: document.getElementById('canvasStack').scrollWidth,
+      height: document.getElementById('canvasStack').scrollHeight,
+    };
+  }
+
+  function buildTracks(geometry) {
+    const rowIds = ['cloud', 'ext', hub.vlan];
+    const rowZones = rowIds.map((id) => geometry.zones.get(id));
+    const gridIds = VLANS.map((v) => v.id).filter((id) => !rowIds.includes(id));
+    const gridZones = gridIds.map((id) => geometry.zones.get(id)).filter(Boolean);
+    const gridTop = gridZones.length ? Math.min(...gridZones.map((z) => z.top)) : null;
+    return {
+      rowIds, gridIds,
+      cloudLanY: rowZones[0] && rowZones[1] ? (rowZones[0].bottom + rowZones[1].top) / 2 : null,
+      lanCoreY: rowZones[1] && rowZones[2] ? (rowZones[1].bottom + rowZones[2].top) / 2 : null,
+      coreGridY: rowZones[2] && gridTop != null ? (rowZones[2].bottom + gridTop) / 2 : null,
+    };
+  }
+
+  const rectsOverlap = (a, b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+
+  const segmentRect = (p1, p2) => ({
+    left: Math.min(p1.x, p2.x) - 1, right: Math.max(p1.x, p2.x) + 1,
+    top: Math.min(p1.y, p2.y) - 1, bottom: Math.max(p1.y, p2.y) + 1,
+  });
+
+  function segmentHitsCards(p1, p2, geometry, excludeIds) {
+    const rect = segmentRect(p1, p2);
+    for (const [id, r] of geometry.nodes) {
+      if (excludeIds.has(id)) continue;
+      const padded = { left: r.left - CARD_CLEARANCE, right: r.right + CARD_CLEARANCE, top: r.top - CARD_CLEARANCE, bottom: r.bottom + CARD_CLEARANCE };
+      if (rectsOverlap(rect, padded)) return true;
+    }
+    return false;
+  }
+
+  function segmentHitsForeignVlans(p1, p2, geometry, ownVlans) {
+    const rect = segmentRect(p1, p2);
+    for (const [vlanId, r] of geometry.zones) {
+      if (ownVlans.has(vlanId)) continue;
+      if (rectsOverlap(rect, r)) return true;
+    }
+    return false;
+  }
+
+  function isSegmentClear(p1, p2, geometry, ownVlans, excludeIds) {
+    if (Math.abs(p1.x - p2.x) > 0.5 && Math.abs(p1.y - p2.y) > 0.5) return false;
+    return !segmentHitsCards(p1, p2, geometry, excludeIds) && !segmentHitsForeignVlans(p1, p2, geometry, ownVlans);
+  }
+
+  function pathFullyClear(points, ctx) {
+    for (let i = 0; i < points.length - 1; i++) {
+      if (!isSegmentClear(points[i], points[i + 1], ctx.geometry, ctx.ownVlans, ctx.excludeIds)) return false;
+    }
+    return true;
+  }
+
+  function getCandidatePorts(rect) {
+    return {
+      N: { x: rect.midX, y: rect.top },
+      S: { x: rect.midX, y: rect.bottom },
+      E: { x: rect.right, y: rect.midY },
+      W: { x: rect.left, y: rect.midY },
+    };
+  }
+
+  function makeStraightCandidates(fp, tp) {
+    if (Math.abs(fp.x - tp.x) < 0.5 || Math.abs(fp.y - tp.y) < 0.5) return [[fp, tp]];
+    return [];
+  }
+
+  function makeLCandidates(fp, tp) {
+    return [
+      [fp, { x: tp.x, y: fp.y }, tp],
+      [fp, { x: fp.x, y: tp.y }, tp],
+    ];
+  }
+
+  function gapCoordinates(geometry, axis, lo, hi, excludeIds) {
+    const relevant = [];
+    geometry.nodes.forEach((r, id) => {
+      if (excludeIds.has(id)) return;
+      const inRange = axis === 'x' ? !(r.bottom < lo || r.top > hi) : !(r.right < lo || r.left > hi);
+      if (inRange) relevant.push(r);
+    });
+    if (!relevant.length) return [];
+    relevant.sort((a, b) => (axis === 'x' ? a.left - b.left : a.top - b.top));
+    const coords = [];
+    for (let i = 0; i < relevant.length - 1; i++) {
+      const a = relevant[i], b = relevant[i + 1];
+      const gapLo = axis === 'x' ? a.right : a.bottom, gapHi = axis === 'x' ? b.left : b.top;
+      if (gapHi > gapLo) coords.push((gapLo + gapHi) / 2);
+    }
+    coords.push((axis === 'x' ? relevant[0].left : relevant[0].top) - 20);
+    coords.push((axis === 'x' ? relevant[relevant.length - 1].right : relevant[relevant.length - 1].bottom) + 20);
+    return coords;
+  }
+
+  function makeDoglegCandidates(fp, tp, fromRect, toRect, tracks, geometry, excludeIds) {
+    const xs = new Set([fp.x, tp.x, fromRect.left - 20, fromRect.right + 20, toRect.left - 20, toRect.right + 20]);
+    const ys = new Set([fp.y, tp.y, fromRect.top - 20, fromRect.bottom + 20, toRect.top - 20, toRect.bottom + 20]);
+    [tracks.cloudLanY, tracks.lanCoreY, tracks.coreGridY].forEach((y) => { if (y != null) ys.add(y); });
+    gapCoordinates(geometry, 'x', Math.min(fp.y, tp.y), Math.max(fp.y, tp.y), excludeIds).forEach((x) => xs.add(x));
+    gapCoordinates(geometry, 'y', Math.min(fp.x, tp.x), Math.max(fp.x, tp.x), excludeIds).forEach((y) => ys.add(y));
+    const candidates = [];
+    ys.forEach((midY) => candidates.push([fp, { x: fp.x, y: midY }, { x: tp.x, y: midY }, tp]));
+    xs.forEach((midX) => candidates.push([fp, { x: midX, y: fp.y }, { x: midX, y: tp.y }, tp]));
+    return candidates;
+  }
+
+  function buildOrthogonalVisibilityGraph(fromPort, toPort, geometry, ownVlans, excludeIds, tracks) {
+    const c = CARD_CLEARANCE;
+    const margin = 220;
+    const region = {
+      left: Math.min(fromPort.x, toPort.x) - margin, right: Math.max(fromPort.x, toPort.x) + margin,
+      top: Math.min(fromPort.y, toPort.y) - margin, bottom: Math.max(fromPort.y, toPort.y) + margin,
+    };
+    const relevant = [];
+    geometry.nodes.forEach((r, id) => {
+      if (excludeIds.has(id)) return;
+      if (rectsOverlap(r, region)) relevant.push({ id, r });
+    });
+    const xs = new Set([fromPort.x, toPort.x]);
+    const ys = new Set([fromPort.y, toPort.y]);
+    relevant.forEach(({ r }) => { xs.add(r.left - c); xs.add(r.right + c); ys.add(r.top - c); ys.add(r.bottom + c); });
+    if (tracks) [tracks.cloudLanY, tracks.lanCoreY, tracks.coreGridY].forEach((y) => { if (y != null) ys.add(y); });
+    geometry.zones.forEach((z) => {
+      if (rectsOverlap(z, region)) { xs.add(z.left - c); xs.add(z.right + c); ys.add(z.top - c); ys.add(z.bottom + c); }
+    });
+
+    const ownerOf = (x, y) => {
+      for (const { id, r } of relevant) {
+        const onX = Math.abs(x - (r.left - c)) < 0.5 || Math.abs(x - (r.right + c)) < 0.5;
+        const onY = Math.abs(y - (r.top - c)) < 0.5 || Math.abs(y - (r.bottom + c)) < 0.5;
+        if (onX && onY) return id;
+      }
+      return null;
+    };
+    const isBlocked = (x, y) => relevant.some(({ r }) => x > r.left - c && x < r.right + c && y > r.top - c && y < r.bottom + c);
+
+    const vertices = [];
+    xs.forEach((x) => ys.forEach((y) => { if (!isBlocked(x, y)) vertices.push({ x, y, owner: ownerOf(x, y) }); }));
+    const fromIdx = vertices.findIndex((v) => Math.abs(v.x - fromPort.x) < 0.5 && Math.abs(v.y - fromPort.y) < 0.5);
+    const toIdx = vertices.findIndex((v) => Math.abs(v.x - toPort.x) < 0.5 && Math.abs(v.y - toPort.y) < 0.5);
+
+    const edges = [];
+    for (let i = 0; i < vertices.length; i++) {
+      for (let j = i + 1; j < vertices.length; j++) {
+        const vi = vertices[i], vj = vertices[j];
+        const localExclude = vi.owner || vj.owner ? new Set([...excludeIds, vi.owner, vj.owner]) : excludeIds;
+        if (isSegmentClear(vi, vj, geometry, ownVlans, localExclude)) edges.push([i, j]);
+      }
+    }
+    return { vertices, edges, fromIdx, toIdx };
+  }
+
+  function findVisibilityRoute(graphData, fromIdx, toIdx) {
+    const { vertices, edges } = graphData;
+    const adj = new Map();
+    edges.forEach(([i, j]) => {
+      if (!adj.has(i)) adj.set(i, []);
+      if (!adj.has(j)) adj.set(j, []);
+      adj.get(i).push(j); adj.get(j).push(i);
+    });
+    const stateKey = (idx, dir) => `${idx}|${dir}`;
+    const best = new Map([[stateKey(fromIdx, 'none'), 0]]);
+    const cameFrom = new Map();
+    const queue = [{ idx: fromIdx, dir: 'none', cost: 0 }];
+    let goalKey = null;
+    while (queue.length) {
+      queue.sort((a, b) => a.cost - b.cost);
+      const cur = queue.shift();
+      const curKey = stateKey(cur.idx, cur.dir);
+      if (best.get(curKey) < cur.cost) continue;
+      if (cur.idx === toIdx) { goalKey = curKey; break; }
+      (adj.get(cur.idx) || []).forEach((nIdx) => {
+        const a = vertices[cur.idx], b = vertices[nIdx];
+        const dir = Math.abs(a.x - b.x) < 0.5 ? 'v' : 'h';
+        const bend = cur.dir !== 'none' && cur.dir !== dir ? 1 : 0;
+        const cost = cur.cost + bend * 1e6 + Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+        const nKey = stateKey(nIdx, dir);
+        if (!best.has(nKey) || cost < best.get(nKey)) {
+          best.set(nKey, cost);
+          cameFrom.set(nKey, curKey);
+          queue.push({ idx: nIdx, dir, cost });
+        }
+      });
+    }
+    if (!goalKey) return null;
+    const path = [];
+    for (let k = goalKey; k; k = cameFrom.get(k)) path.push(vertices[parseInt(k, 10)]);
+    return path.reverse();
+  }
+
+  const dirOf = (a, b) => (Math.abs(a.x - b.x) < 0.5 ? 'v' : 'h');
+  function countBends(points) {
+    let bends = 0;
+    for (let i = 1; i < points.length - 1; i++) if (dirOf(points[i - 1], points[i]) !== dirOf(points[i], points[i + 1])) bends++;
+    return bends;
+  }
+  function segmentRelation(a, b, c, d) {
+    const abH = a.y === b.y, cdH = c.y === d.y;
+    if (abH && cdH) {
+      if (Math.abs(a.y - c.y) > 0.5) return { type: 'none' };
+      const lo = Math.max(Math.min(a.x, b.x), Math.min(c.x, d.x)), hi = Math.min(Math.max(a.x, b.x), Math.max(c.x, d.x));
+      return hi > lo ? { type: 'overlap', length: hi - lo } : { type: 'none' };
+    }
+    if (!abH && !cdH) {
+      if (Math.abs(a.x - c.x) > 0.5) return { type: 'none' };
+      const lo = Math.max(Math.min(a.y, b.y), Math.min(c.y, d.y)), hi = Math.min(Math.max(a.y, b.y), Math.max(c.y, d.y));
+      return hi > lo ? { type: 'overlap', length: hi - lo } : { type: 'none' };
+    }
+    const h = abH ? { y: a.y, x1: Math.min(a.x, b.x), x2: Math.max(a.x, b.x) } : { y: c.y, x1: Math.min(c.x, d.x), x2: Math.max(c.x, d.x) };
+    const v = abH ? { x: c.x, y1: Math.min(c.y, d.y), y2: Math.max(c.y, d.y) } : { x: a.x, y1: Math.min(a.y, b.y), y2: Math.max(a.y, b.y) };
+    return (h.x1 <= v.x && v.x <= h.x2 && v.y1 <= h.y && h.y <= v.y2) ? { type: 'cross' } : { type: 'none' };
+  }
+
+  function scoreRouteLexicographically(points, ctx) {
+    let hardHits = 0, foreignHits = 0, crossings = 0, overlap = 0, length = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const a = points[i], b = points[i + 1];
+      length += Math.abs(b.x - a.x) + Math.abs(b.y - a.y);
+      if (segmentHitsCards(a, b, ctx.geometry, ctx.excludeIds)) hardHits++;
+      if (segmentHitsForeignVlans(a, b, ctx.geometry, ctx.ownVlans)) foreignHits++;
+      ctx.committedSegments.forEach((seg) => {
+        const rel = segmentRelation(a, b, seg.a, seg.b);
+        if (rel.type === 'cross') crossings++;
+        else if (rel.type === 'overlap') overlap += rel.length;
+      });
+    }
+    return { hardHits, foreignHits, bends: countBends(points), crossings, overlap, detourRatio: length / ctx.manhattan, length, points };
+  }
+  function compareScores(x, y) {
+    if (x.hardHits !== y.hardHits) return x.hardHits - y.hardHits;
+    if (x.foreignHits !== y.foreignHits) return x.foreignHits - y.foreignHits;
+    if (x.bends !== y.bends) return x.bends - y.bends;
+    if (x.crossings !== y.crossings) return x.crossings - y.crossings;
+    if (x.overlap !== y.overlap) return x.overlap - y.overlap;
+    if (Math.abs(x.detourRatio - y.detourRatio) > 1e-3) return x.detourRatio - y.detourRatio;
+    return x.length - y.length;
+  }
+
+  function simplifyOrthogonalPath(points) {
+    if (points.length < 3) return points.slice();
+    const out = [points[0]];
+    for (let i = 1; i < points.length - 1; i++) {
+      const a = out[out.length - 1], b = points[i], c = points[i + 1];
+      const collinear = (Math.abs(a.x - b.x) < 0.5 && Math.abs(b.x - c.x) < 0.5) || (Math.abs(a.y - b.y) < 0.5 && Math.abs(b.y - c.y) < 0.5);
+      if (!collinear) out.push(b);
+    }
+    out.push(points[points.length - 1]);
+    return out;
+  }
+
+  const BORDER_CLEARANCE = 10;
+  function nudgeAwayFromBorders(points, borderRects) {
+    if (points.length < 4) return points;
+    const out = points.map((p) => ({ ...p }));
+    for (let i = 1; i < out.length - 2; i++) {
+      const a = out[i], b = out[i + 1];
+      const horizontal = Math.abs(a.y - b.y) < 0.5;
+      for (const r of borderRects) {
+        if (horizontal) {
+          const lo = Math.min(a.x, b.x), hi = Math.max(a.x, b.x);
+          if (hi <= r.left || lo >= r.right) continue;
+          for (const borderY of [r.top, r.bottom]) {
+            if (Math.abs(a.y - borderY) < BORDER_CLEARANCE) {
+              const dir = a.y <= borderY ? -1 : 1;
+              a.y = b.y = borderY + dir * BORDER_CLEARANCE;
+            }
+          }
+        } else {
+          const lo = Math.min(a.y, b.y), hi = Math.max(a.y, b.y);
+          if (hi <= r.top || lo >= r.bottom) continue;
+          for (const borderX of [r.left, r.right]) {
+            if (Math.abs(a.x - borderX) < BORDER_CLEARANCE) {
+              const dir = a.x <= borderX ? -1 : 1;
+              a.x = b.x = borderX + dir * BORDER_CLEARANCE;
+            }
+          }
+        }
+      }
+    }
+    return out;
+  }
+
+  const CORNER_RADIUS = 8;
+  function roundedOrthogonalPath(points) {
+    if (points.length < 2) return '';
+    if (points.length === 2) return `M${points[0].x},${points[0].y} L${points[1].x},${points[1].y}`;
+    let d = `M${points[0].x},${points[0].y}`;
+    for (let i = 1; i < points.length - 1; i++) {
+      const prev = points[i - 1], cur = points[i], next = points[i + 1];
+      const inLen = Math.hypot(cur.x - prev.x, cur.y - prev.y) || 1;
+      const outLen = Math.hypot(next.x - cur.x, next.y - cur.y) || 1;
+      const r = Math.min(CORNER_RADIUS, inLen / 2, outLen / 2);
+      const inX = cur.x + (prev.x - cur.x) * (r / inLen), inY = cur.y + (prev.y - cur.y) * (r / inLen);
+      const outX = cur.x + (next.x - cur.x) * (r / outLen), outY = cur.y + (next.y - cur.y) * (r / outLen);
+      d += ` L${inX},${inY} Q${cur.x},${cur.y} ${outX},${outY}`;
+    }
+    const last = points[points.length - 1];
+    d += ` L${last.x},${last.y}`;
+    return d;
+  }
+
+  function busVlanIds() {
+    return new Set(VLANS.filter((v) => v.bus).map((v) => v.id));
+  }
+  function buildRelations(edges) {
+    const busVlans = busVlanIds();
+    return edges.map((e) => {
+      const from = NODE_BY_ID[e.from], to = NODE_BY_ID[e.to];
+      const identity = (from.tags || []).includes('opnsense') && (to.tags || []).includes('opnsense');
+      const bus = !identity && from.vlan === to.vlan && e.port === '' && busVlans.has(from.vlan);
+      return { e, kind: identity ? 'identity' : bus ? 'bus' : 'flow' };
+    });
+  }
+
+  function groupFlows(relations) {
+    const identityEdges = relations.filter((r) => r.kind === 'identity').map((r) => r.e);
+    const busByVlan = new Map();
+    relations.filter((r) => r.kind === 'bus').forEach((r) => {
+      const vlanId = NODE_BY_ID[r.e.from].vlan;
+      if (!busByVlan.has(vlanId)) busByVlan.set(vlanId, { kind: 'bus', vlanId, edges: [] });
+      busByVlan.get(vlanId).edges.push(r.e);
+    });
+    const flowByKey = new Map();
+    relations.filter((r) => r.kind === 'flow').forEach((r) => {
+      const anchorId = selectedIds.has(r.e.from) ? r.e.from : r.e.to;
+      const key = `${anchorId}::${r.e.port}::${r.e.label}`;
+      if (!flowByKey.has(key)) flowByKey.set(key, { kind: 'flow', anchorId, port: r.e.port, label: r.e.label, edges: [] });
+      flowByKey.get(key).edges.push(r.e);
+    });
+    return {
+      identity: identityEdges.length ? [{ kind: 'identity', edges: identityEdges }] : [],
+      bus: [...busByVlan.values()],
+      flow: [...flowByKey.values()],
+    };
+  }
+
+  function routeBusRelation(bundle, backboneY, geometry) {
+    const nodeIds = new Set();
+    bundle.edges.forEach((e) => { nodeIds.add(e.from); nodeIds.add(e.to); });
+    const taps = [...nodeIds].map((id) => ({ id, rect: geometry.nodes.get(id) })).filter((t) => t.rect);
+    if (!taps.length) return null;
+    const excludeIds = new Set(taps.map((t) => t.id));
+    const tapLines = taps.map((t) => {
+      const dir = t.rect.midY < backboneY ? 1 : -1;
+      const startY = dir > 0 ? t.rect.bottom : t.rect.top;
+      const lo = Math.min(startY, backboneY), hi = Math.max(startY, backboneY);
+      let x = t.rect.midX;
+      geometry.nodes.forEach((r, id) => {
+        if (excludeIds.has(id)) return;
+        if (r.bottom < lo || r.top > hi) return;
+        if (x > r.left - CARD_CLEARANCE && x < r.right + CARD_CLEARANCE) x = (t.rect.midX <= (r.left + r.right) / 2) ? r.left - CARD_CLEARANCE : r.right + CARD_CLEARANCE;
+      });
+      const ownVlan = NODE_BY_ID[t.id].vlan;
+      geometry.zones.forEach((r, vlanId) => {
+        if (vlanId === ownVlan) return;
+        if (r.bottom < lo || r.top > hi) return;
+        if (x > r.left && x < r.right) x = (t.rect.midX <= (r.left + r.right) / 2) ? r.left - CARD_CLEARANCE : r.right + CARD_CLEARANCE;
+      });
+      return { id: t.id, points: [{ x: t.rect.midX, y: startY }, { x, y: startY }, { x, y: backboneY }] };
+    });
+    const xs = tapLines.map((t) => t.points[t.points.length - 1].x);
+    return { backbone: { points: [{ x: Math.min(...xs), y: backboneY }, { x: Math.max(...xs), y: backboneY }] }, taps: tapLines };
+  }
+
+  function routeIdentityRelation(bundle, tracks, geometry) {
+    return routeBusRelation(bundle, tracks.coreGridY, geometry);
+  }
+
+  function routeNormalEdge(e, geometry, tracks, committedSegments) {
+    const from = NODE_BY_ID[e.from], to = NODE_BY_ID[e.to];
+    const a = geometry.nodes.get(e.from), b = geometry.nodes.get(e.to);
+    const excludeIds = new Set([e.from, e.to]);
+    const ownVlans = new Set([from.vlan, to.vlan]);
+    const manhattan = Math.abs(a.midX - b.midX) + Math.abs(a.midY - b.midY) || 1;
+    const ctx = { geometry, ownVlans, excludeIds, committedSegments, manhattan };
+
+    const fromPorts = getCandidatePorts(a), toPorts = getCandidatePorts(b);
+    const portPairs = [];
+    Object.values(fromPorts).forEach((fp) => Object.values(toPorts).forEach((tp) => portPairs.push([fp, tp])));
+
+    const tryLevel = (build) => {
+      const candidates = [];
+      portPairs.forEach(([fp, tp]) => candidates.push(...build(fp, tp)));
+      return candidates.filter((pts) => pathFullyClear(pts, ctx));
+    };
+
+    let valid = tryLevel(makeStraightCandidates);
+    if (!valid.length) valid = tryLevel(makeLCandidates);
+    if (!valid.length) valid = tryLevel((fp, tp) => makeDoglegCandidates(fp, tp, a, b, tracks, geometry, excludeIds));
+
+    let points;
+    if (valid.length) {
+      const scored = valid.map((pts) => scoreRouteLexicographically(pts, ctx));
+      scored.sort(compareScores);
+      points = scored[0].points;
+    } else {
+      let bestPath = null, bestScore = null;
+      portPairs.forEach(([fp, tp]) => {
+        const graphData = buildOrthogonalVisibilityGraph(fp, tp, geometry, ownVlans, excludeIds, tracks);
+        if (graphData.fromIdx === -1 || graphData.toIdx === -1) return;
+        const raw = findVisibilityRoute(graphData, graphData.fromIdx, graphData.toIdx);
+        if (!raw) return;
+        const scored = scoreRouteLexicographically(raw, ctx);
+        if (!bestScore || compareScores(scored, bestScore) < 0) { bestScore = scored; bestPath = raw; }
+      });
+      if (bestPath) {
+        points = bestPath;
+      } else {
+        const centerA = { x: a.midX, y: a.midY }, centerB = { x: b.midX, y: b.midY };
+        const optionA = [centerA, { x: centerB.x, y: centerA.y }, centerB];
+        const optionB = [centerA, { x: centerA.x, y: centerB.y }, centerB];
+        const clearsCards = (pts) => {
+          for (let i = 0; i < pts.length - 1; i++) if (segmentHitsCards(pts[i], pts[i + 1], geometry, excludeIds)) return false;
+          return true;
+        };
+        points = pathFullyClear(optionA, ctx) ? optionA
+          : pathFullyClear(optionB, ctx) ? optionB
+          : clearsCards(optionA) ? optionA
+          : clearsCards(optionB) ? optionB
+          : optionA;
+      }
+    }
+
+    points = nudgeAwayFromBorders(simplifyOrthogonalPath(points), [...geometry.zones.values(), ...geometry.borderBoxes]);
+    for (let i = 0; i < points.length - 1; i++) committedSegments.push({ a: points[i], b: points[i + 1] });
+    return { points };
+  }
+
+  const pulseOn = (pathD, color) => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const pts = (pathD.match(/-?[\d.]+,-?[\d.]+/g) || []).map((p) => { const [x, y] = p.split(',').map(Number); return { x, y }; });
+      if (!pts.length) return '';
+      const lens = [];
+      let total = 0;
+      for (let i = 1; i < pts.length; i++) { const d = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y); lens.push(d); total += d; }
+      let acc = 0, mid = pts[0];
+      for (let i = 0; i < lens.length; i++) {
+        if (acc + lens[i] >= total / 2) { const t = lens[i] ? (total / 2 - acc) / lens[i] : 0; mid = { x: pts[i].x + (pts[i + 1].x - pts[i].x) * t, y: pts[i].y + (pts[i + 1].y - pts[i].y) * t }; break; }
+        acc += lens[i];
+      }
+      return `<circle class="edge-pulse" cx="${mid.x}" cy="${mid.y}" r="2.4" fill="${color}"/>`;
+    }
+    return `
+    <circle class="edge-pulse" r="2.4" fill="${color}">
+      <animateMotion dur="${(2.2 + Math.random()).toFixed(1)}s" repeatCount="indefinite" path="${pathD}"/>
+    </circle>
+  `;
+  };
+  const reversePath = (d) => 'M' + d.match(/-?[\d.]+,-?[\d.]+/g).reverse().join(' L');
+  const labelAt = (x, y, text) => {
+    const lw = text.length * 5.2 + 10;
+    return `
+      <g class="edge-label">
+        <rect class="edge-label-bg" x="${x - lw / 2}" y="${y - 8}" width="${lw}" height="16" rx="8"/>
+        <text class="edge-label-text" x="${x}" y="${y + 3}" text-anchor="middle">${text}</text>
+      </g>
+    `;
+  };
+
+  function longestSegmentMidpoint(points) {
+    let best = null;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i], p1 = points[i + 1];
+      const horizontal = Math.abs(p0.y - p1.y) < 0.5;
+      const len = Math.hypot(p1.x - p0.x, p1.y - p0.y) + (horizontal ? 1000 : 0);
+      if (!best || len > best.len) best = { len, x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 };
+    }
+    return best || { x: points[0].x, y: points[0].y };
+  }
+
+  function placeBundleLabels(routedBundles, geometry) {
+    const placed = [];
+    const cardRects = [...geometry.nodes.values()];
+    return routedBundles.map((rb) => {
+      if (!rb.labelText) return null;
+      const pt = rb.kind === 'flow' ? longestSegmentMidpoint(rb.paths[0].points) : (() => {
+        const bb = rb.backbone.points;
+        return { x: (bb[0].x + bb[1].x) / 2, y: bb[0].y };
+      })();
+      const lw = rb.labelText.length * 5.2 + 10;
+      const collides = (ly) => placed.some((p) => Math.abs(p.y - ly) < 16 && pt.x - lw / 2 < p.x + p.w / 2 && pt.x + lw / 2 > p.x - p.w / 2)
+        || cardRects.some((r) => pt.x - lw / 2 < r.right + 4 && pt.x + lw / 2 > r.left - 4 && ly - 8 < r.bottom + 4 && ly + 8 > r.top - 4);
+      let ly = pt.y;
+      let guard = 0;
+      while (collides(ly) && guard++ < 40) ly += 15;
+      placed.push({ x: pt.x, y: ly, w: lw });
+      return { x: pt.x, y: ly };
+    });
+  }
+
+  function drawEdges() {
+    const svg = document.getElementById('edges');
+    const hubRowEl = document.getElementById('hubRow');
+    const visibleEdges = selectedIds.size
+      ? EDGES.filter(e => (selectedIds.has(e.from) || selectedIds.has(e.to)) && activeConnKeys.has(edgeKey(e)))
+      : [];
+    hubRowEl.style.marginBottom = FLOW_GAP + 'px';
+
+    const w = document.getElementById('canvasStack').scrollWidth;
+    const h = document.getElementById('canvasStack').scrollHeight;
+    svg.setAttribute('width', w);
+    svg.setAttribute('height', h);
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    if (!selectedIds.size) { svg.innerHTML = ''; return; }
+
+    const geometry = getGeometry();
+    const tracks = buildTracks(geometry);
+    const orderedEdges = visibleEdges.slice().sort((x, y) => edgeKey(x).localeCompare(edgeKey(y)));
+    const groups = groupFlows(buildRelations(orderedEdges));
+
+    const committedSegments = [];
+
+    const routedBundles = [];
+    groups.identity.forEach((bundle) => {
+      const routed = routeIdentityRelation(bundle, tracks, geometry);
+      if (routed) routedBundles.push({ kind: 'identity', bundle, ...routed, labelText: bundle.edges[0].label });
+    });
+    groups.bus.forEach((bundle) => {
+      const zone = geometry.zones.get(bundle.vlanId);
+      const backboneY = zone ? zone.bottom + 20 : (() => {
+        const nodeIds = new Set(); bundle.edges.forEach((e) => { nodeIds.add(e.from); nodeIds.add(e.to); });
+        const rects = [...nodeIds].map((id) => geometry.nodes.get(id)).filter(Boolean);
+        return rects.reduce((s, r) => s + r.bottom, 0) / rects.length + 20;
+      })();
+      const routed = routeBusRelation(bundle, backboneY, geometry);
+      if (routed) routedBundles.push({ kind: 'bus', bundle, ...routed, labelText: bundle.edges[0].label });
+    });
+    groups.flow.forEach((bundle) => {
+      const paths = bundle.edges.map((e) => ({ e, ...routeNormalEdge(e, geometry, tracks, committedSegments) }));
+      routedBundles.push({ kind: 'flow', bundle, paths, labelText: bundle.port ? `${bundle.port} · ${bundle.label}` : bundle.label });
+    });
+
+    const labelPositions = placeBundleLabels(routedBundles, geometry);
+
+    let html = '';
+    routedBundles.forEach((rb, i) => {
+      if (rb.kind === 'flow') {
+        rb.paths.forEach(({ e, points }) => {
+          const from = NODE_BY_ID[e.from], to = NODE_BY_ID[e.to];
+          const vlanColor = `var(--vlan-${from.vlan})`;
+          const roundedPath = roundedOrthogonalPath(points);
+          const sameZone = from.vlan === to.vlan;
+          html += `<path class="edge-line" d="${roundedPath}" fill="none" stroke="${vlanColor}" stroke-width="${sameZone ? 1.3 : 1.5}" stroke-opacity="${sameZone ? .6 : .7}" stroke-dasharray="${sameZone ? '3 3' : '4 3'}"/>`;
+          html += pulseOn(roundedPath, vlanColor);
+        });
+      } else {
+        const vlanColor = rb.kind === 'bus'
+          ? `var(--vlan-${rb.bundle.vlanId})`
+          : (() => {
+              const openOpnsense = [...selectedIds].find((id) => (NODE_BY_ID[id].tags || []).includes('opnsense'));
+              return `var(--vlan-${openOpnsense ? NODE_BY_ID[openOpnsense].vlan : hub.vlan})`;
+            })();
+        const backboneD = roundedOrthogonalPath(rb.backbone.points);
+        const straightBackbone = rb.backbone.points.map((p, idx) => `${idx === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+        html += `<path class="edge-line" d="${backboneD}" fill="none" stroke="${vlanColor}" stroke-width="1.5" stroke-opacity=".7" stroke-dasharray="4 3"/>`;
+        rb.taps.forEach((t) => {
+          const tapD = roundedOrthogonalPath(t.points);
+          html += `<path class="edge-line" d="${tapD}" fill="none" stroke="${vlanColor}" stroke-width="1.3" stroke-opacity=".6" stroke-dasharray="3 3"/>`;
+        });
+        const openTap = rb.taps.find((t) => selectedIds.has(t.id));
+        const backboneMidX = (rb.backbone.points[0].x + rb.backbone.points[1].x) / 2;
+        const reverse = openTap && openTap.points[openTap.points.length - 1].x > backboneMidX;
+        html += pulseOn(reverse ? reversePath(straightBackbone) : straightBackbone, vlanColor);
+      }
+
+      const label = labelPositions[i];
+      if (label) html += labelAt(label.x, label.y, rb.labelText);
+    });
+    svg.innerHTML = html;
+  }
+
+  const panel = document.getElementById('panel');
+
+  function renderPanel() {
+    if (selectedIds.size === 0) { closePanel(); return; }
+
+    if (selectedIds.size === 1) {
+      const node = NODE_BY_ID[[...selectedIds][0]];
+      const vlan = VLAN_BY_ID[node.vlan];
+      document.getElementById('panelIcon').innerHTML = ICONS[node.icon] || ICONS.box;
+      document.getElementById('panelIcon').style.background = `var(--vlan-${node.vlan}-bg)`;
+      document.getElementById('panelIcon').style.color = `var(--vlan-${node.vlan})`;
+      document.getElementById('panelName').textContent = node.name;
+      const vlanTag = document.getElementById('panelVlan');
+      vlanTag.textContent = `${vlan.name} · ${node.ip}`;
+      vlanTag.style.color = `var(--vlan-${node.vlan})`;
+      document.getElementById('panelDesc').style.display = 'block';
+      document.getElementById('panelDesc').innerHTML = linkifyDesc(node.desc, node.id);
+
+      const hwSource = Object.keys(node.hardware || {}).length ? node.hardware
+        : (node.tags || []).includes('opnsense') ? (NODE_BY_ID['opnsense'].hardware || {}) : {};
+      const hwEntries = Object.entries(hwSource);
+      const hwLabel = { ram: 'RAM', cpu: 'CPU', disk: 'Disk' };
+      document.getElementById('kvSection').style.display = hwEntries.length ? 'block' : 'none';
+      document.getElementById('panelKv').innerHTML = hwEntries.map(([k, v]) => `
+        <dt>${hwLabel[k] || k}</dt><dd>${v}</dd>
+      `).join('');
+
+      document.getElementById('portsSection').style.display = 'block';
+      const portsEl = document.getElementById('panelPorts');
+      portsEl.innerHTML = node.ports.length
+        ? node.ports.map(p => `<div class="port-row"><span class="port-num">${p.port}</span><span class="port-label">${p.label}</span></div>`).join('')
+        : `<p style="font-size:.72rem;color:var(--muted);margin:0;">No known services</p>`;
+
+      document.getElementById('devicesSection').style.display = 'none';
+
+      const outgoing = EDGES.filter(e => e.from === node.id);
+      const incoming = EDGES.filter(e => e.to === node.id);
+      const allConns = [
+        ...outgoing.map(e => ({ dir: '→', other: NODE_BY_ID[e.to].name, otherVlan: NODE_BY_ID[e.to].vlan, port: e.port, label: e.label, key: edgeKey(e) })),
+        ...incoming.map(e => ({ dir: isMesh(e) ? '→' : '←', other: NODE_BY_ID[e.from].name, otherVlan: NODE_BY_ID[e.from].vlan, port: e.port, label: e.label, key: edgeKey(e) })),
+      ];
+      activeConnKeys = new Set(allConns.map(c => c.key));
+      renderConns(allConns);
+
+      history.replaceState(null, '', '#device=' + node.id);
+    } else {
+      const nodes = [...selectedIds].map(id => NODE_BY_ID[id]);
+      const vlans = new Set(nodes.map(n => n.vlan));
+      const singleVlan = vlans.size === 1 ? VLAN_BY_ID[[...vlans][0]] : null;
+
+      document.getElementById('panelIcon').innerHTML = ICONS.layers;
+      document.getElementById('panelIcon').style.background = singleVlan ? `var(--vlan-${singleVlan.id}-bg)` : 'var(--surface-2)';
+      document.getElementById('panelIcon').style.color = singleVlan ? `var(--vlan-${singleVlan.id})` : 'var(--muted)';
+      document.getElementById('panelName').textContent = `${nodes.length} devices selected`;
+      const vlanTag = document.getElementById('panelVlan');
+      vlanTag.textContent = singleVlan ? singleVlan.name : 'Multi-VLAN';
+      vlanTag.style.color = singleVlan ? `var(--vlan-${singleVlan.id})` : 'var(--muted)';
+      document.getElementById('panelDesc').style.display = 'none';
+      document.getElementById('kvSection').style.display = 'none';
+      document.getElementById('portsSection').style.display = 'none';
+
+      document.getElementById('devicesSection').style.display = 'block';
+      document.getElementById('panelDevices').innerHTML = nodes.map(n => `
+        <div class="port-row">
+          <span class="node-icon" style="width:20px;height:20px;background:var(--vlan-${n.vlan}-bg);color:var(--vlan-${n.vlan})">${ICONS[n.icon] || ICONS.box}</span>
+          <span>${n.name}</span>
+          <span class="port-label" style="margin-left:auto">${n.ip}</span>
+        </div>
+      `).join('');
+
+      const seen = new Set();
+      const allConns = [];
+      EDGES.forEach(e => {
+        if (!selectedIds.has(e.from) && !selectedIds.has(e.to)) return;
+        const key = edgeKey(e);
+        if (seen.has(key)) return;
+        seen.add(key);
+        allConns.push({ dir: `${NODE_BY_ID[e.from].name} →`, other: NODE_BY_ID[e.to].name, otherVlan: NODE_BY_ID[e.to].vlan, port: e.port, label: e.label, key });
+      });
+      activeConnKeys = new Set(allConns.map(c => c.key));
+      renderConns(allConns);
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+
+    panel.classList.add('open');
+    document.querySelectorAll('.node-card').forEach(c => {
+      const isSelected = selectedIds.has(c.dataset.id);
+      const isRelated = !isSelected && EDGES.some(e =>
+        (selectedIds.has(e.from) && e.to === c.dataset.id) || (selectedIds.has(e.to) && e.from === c.dataset.id));
+      c.classList.toggle('focused', isSelected);
+      c.classList.toggle('related', isRelated);
+      c.classList.toggle('dimmed', !isSelected && !isRelated);
+    });
+    drawEdges();
+  }
+
+  function renderConns(allConns) {
+    const connHeader = document.getElementById('connHeader');
+    const connToggleAll = document.getElementById('connToggleAll');
+    const connsEl = document.getElementById('panelConns');
+    if (allConns.length) {
+      connHeader.style.display = 'flex';
+      connsEl.innerHTML = allConns.map(c => `
+        <label class="conn-row">
+          <input type="checkbox" class="conn-check" data-key="${c.key}" checked />
+          <span class="conn-row-text">
+            <span class="conn-row-main">
+              <span class="conn-arrow">${c.dir}</span> <span style="color:var(--vlan-${c.otherVlan})">${c.other}</span>
+              ${c.port ? `<span class="conn-port">${c.port}</span>` : ''}
+            </span>
+            ${c.label ? `<span class="conn-label">${c.label}</span>` : ''}
+          </span>
+        </label>
+      `).join('');
+      connToggleAll.textContent = 'Hide all';
+      connsEl.querySelectorAll('.conn-check').forEach(cb => {
+        cb.addEventListener('change', () => {
+          const key = cb.dataset.key;
+          cb.closest('.conn-row').classList.toggle('off', !cb.checked);
+          if (cb.checked) activeConnKeys.add(key); else activeConnKeys.delete(key);
+          connToggleAll.textContent = activeConnKeys.size ? 'Hide all' : 'Show all';
+          drawEdges();
+        });
+      });
+      connToggleAll.onclick = () => {
+        const turningOn = connToggleAll.textContent === 'Show all';
+        connsEl.querySelectorAll('.conn-check').forEach(cb => {
+          cb.checked = turningOn;
+          cb.closest('.conn-row').classList.toggle('off', !turningOn);
+          if (turningOn) activeConnKeys.add(cb.dataset.key); else activeConnKeys.delete(cb.dataset.key);
+        });
+        connToggleAll.textContent = turningOn ? 'Hide all' : 'Show all';
+        drawEdges();
+      };
+    } else {
+      connHeader.style.display = 'none';
+      connsEl.innerHTML = '';
+    }
+  }
+
+  function closePanel() {
+    document.querySelectorAll('.legend-item.active').forEach(el => el.classList.remove('active'));
+    activeVlanIds = new Set();
+    panel.classList.remove('open');
+    document.querySelectorAll('.node-card').forEach(c => c.classList.remove('focused', 'related', 'dimmed'));
+    selectedIds = new Set();
+    drawEdges();
+    history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  function setSelection(ids) {
+    clearFilter();
+    selectedIds = new Set(ids);
+    if (selectedIds.size === 0) { closePanel(); return; }
+    renderPanel();
+  }
+
+  function toggleInSelection(id) {
+    clearFilter();
+    const next = new Set(selectedIds);
+    next.has(id) ? next.delete(id) : next.add(id);
+    selectedIds = next;
+    if (selectedIds.size === 0) { closePanel(); return; }
+    renderPanel();
+  }
+
+  const searchInput = document.getElementById('search-input');
+
+  function clearFilter() {
+    searchInput.value = '';
+    document.querySelectorAll('.legend-item.active').forEach(el => el.classList.remove('active'));
+    activeVlanIds = new Set();
+    document.getElementById('search-results').classList.remove('open');
+  }
+
+  function applyFilter(matchIds) {
+    if (selectedIds.size) closePanel();
+    document.querySelectorAll('.node-card').forEach(c => {
+      const match = matchIds.has(c.dataset.id);
+      c.classList.toggle('related', match);
+      c.classList.toggle('dimmed', !match);
+    });
+  }
+
+  const searchResults = document.getElementById('search-results');
+  let searchActiveIndex = -1;
+
+  function highlightSearchResult(index) {
+    const items = [...searchResults.querySelectorAll('.search-result-item')];
+    items.forEach((el, i) => el.classList.toggle('highlighted', i === index));
+    if (items[index]) items[index].scrollIntoView({ block: 'nearest' });
+  }
+
+  function renderSearchResults(matches) {
+    searchActiveIndex = -1;
+    if (!matches.length) {
+      searchResults.innerHTML = `<div class="search-empty">No device found</div>`;
+    } else {
+      searchResults.innerHTML = matches.map(n => `
+        <button class="search-result-item" data-id="${n.id}">
+          <span class="node-icon" style="background:var(--vlan-${n.vlan}-bg);color:var(--vlan-${n.vlan})">${ICONS[n.icon] || ICONS.box}</span>
+          <span>
+            <span class="search-result-name">${n.name}</span><br/>
+            <span class="search-result-ip">${n.ip}</span>
+          </span>
+        </button>
+      `).join('');
+      searchResults.querySelectorAll('.search-result-item').forEach(btn => {
+        btn.addEventListener('click', () => setSelection([btn.dataset.id]));
+      });
+    }
+    searchResults.classList.add('open');
+  }
+
+  searchInput.addEventListener('keydown', (e) => {
+    if (!searchResults.classList.contains('open')) return;
+    const items = searchResults.querySelectorAll('.search-result-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      searchActiveIndex = (searchActiveIndex + 1) % items.length;
+      highlightSearchResult(searchActiveIndex);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      searchActiveIndex = (searchActiveIndex - 1 + items.length) % items.length;
+      highlightSearchResult(searchActiveIndex);
+    } else if (e.key === 'Enter' && searchActiveIndex >= 0) {
+      e.preventDefault();
+      setSelection([items[searchActiveIndex].dataset.id]);
+    }
+  });
+
+  searchInput.addEventListener('input', (e) => {
+    document.querySelectorAll('.legend-item.active').forEach(el => el.classList.remove('active'));
+    activeVlanIds = new Set();
+    const q = e.target.value.trim().toLowerCase();
+    if (!q) {
+      document.querySelectorAll('.node-card').forEach(c => c.classList.remove('related', 'dimmed'));
+      searchResults.classList.remove('open');
+      return;
+    }
+    const matches = NODES.filter(n => n.name.toLowerCase().includes(q) || n.ip.includes(q));
+    applyFilter(new Set(matches.map(n => n.id)));
+    renderSearchResults(matches);
+  });
+  searchInput.addEventListener('focus', () => { if (searchInput.value.trim()) searchResults.classList.add('open'); });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) searchResults.classList.remove('open');
+  });
+
+  document.querySelectorAll('.legend-item').forEach(el => {
+    el.addEventListener('click', (e) => {
+      searchInput.value = '';
+      const wasActive = el.classList.contains('active');
+      const vlanId = el.dataset.vlan;
+      const vlanIds = NODES.filter(n => n.vlan === vlanId).map(n => n.id);
+
+      let nextVlanIds, nextIds;
+      if (e.ctrlKey || e.metaKey) {
+        nextVlanIds = new Set(activeVlanIds);
+        wasActive ? nextVlanIds.delete(vlanId) : nextVlanIds.add(vlanId);
+        nextIds = wasActive
+          ? [...selectedIds].filter((id) => !vlanIds.includes(id))
+          : [...selectedIds, ...vlanIds];
+      } else {
+        nextVlanIds = wasActive ? new Set() : new Set([vlanId]);
+        nextIds = wasActive ? [] : vlanIds;
+      }
+
+      setSelection(nextIds);
+      activeVlanIds = nextVlanIds;
+      document.querySelectorAll('.legend-item').forEach(x => x.classList.toggle('active', activeVlanIds.has(x.dataset.vlan)));
+    });
+  });
+
+  document.querySelectorAll('.node-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      const id = card.dataset.id;
+      if (e.ctrlKey || e.metaKey) { toggleInSelection(id); return; }
+      if (selectedIds.size === 1 && selectedIds.has(id)) { closePanel(); return; }
+      setSelection([id]);
+    });
+  });
+  document.getElementById('panelClose').addEventListener('click', closePanel);
+  document.getElementById('panelDesc').addEventListener('click', (e) => {
+    const link = e.target.closest('.desc-link');
+    if (link && NODE_BY_ID[link.dataset.id]) setSelection([link.dataset.id]);
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      searchInput.focus();
+      searchInput.select();
+      return;
+    }
+    if (e.key === 'Escape' && document.getElementById('help-dropdown').classList.contains('open')) {
+      document.getElementById('help-dropdown').classList.remove('open');
+      document.getElementById('help-btn').setAttribute('aria-expanded', 'false');
+      return;
+    }
+    if (e.key === 'Escape' && document.activeElement === searchInput) {
+      searchInput.blur();
+      document.getElementById('search-results').classList.remove('open');
+      return;
+    }
+    if (e.key === 'Escape' && selectedIds.size) { closePanel(); return; }
+  });
+
+  if (location.hash.startsWith('#device=')) {
+    const wanted = decodeURIComponent(location.hash.slice(8));
+    if (NODE_BY_ID[wanted]) setSelection([wanted]);
+  }
+
+  document.fonts.ready.then(() => {
+    drawEdges();
+    fitToView();
+    drawEdges();
+  });
+  window.addEventListener('resize', () => drawEdges());
+
+  </script>
+</body>
+</html>

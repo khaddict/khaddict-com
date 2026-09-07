@@ -366,6 +366,23 @@
       padding: .05rem .35rem;
     }
 
+    .search-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .55rem 1rem;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .search-cta-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+    .search-cta-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
     .cmdk-overlay {
       position: fixed;
       inset: 0;

@@ -21,6 +21,7 @@
       { label: t('nav.media'), href: '{{ nav_media_href }}' },
       { label: t('nav.dashboard'), href: '{{ nav_dashboard_href }}' },
       { label: t('nav.api'), href: '{{ nav_api_href }}' },
+      { label: t('nav.diagram'), href: '{{ nav_diagram_href }}' },
     ];
     const CMDK_POSTS = [
 {% for p in search_posts %}
@@ -31,6 +32,11 @@
         excerptFr: {{ js_str(p.excerpt.fr) }},
         href: '{{ p.url[lang] }}',
       },
+{% endfor %}
+    ];
+    const CMDK_MEDIA = [
+{% for m in search_media %}
+      { name: {{ js_str(m.name) }}, href: '{{ m.url }}' },
 {% endfor %}
     ];
 
@@ -96,22 +102,22 @@
 
       function render(query) {
         const q = query.trim().toLowerCase();
-        const nav = CMDK_NAV.filter((n) => q === '' || n.label.toLowerCase().includes(q));
-        const posts = CMDK_POSTS.filter((p) => {
-          if (q === '') return false;
+        const nav = q === '' ? [] : CMDK_NAV.filter((n) => n.label.toLowerCase().includes(q));
+        const posts = q === '' ? CMDK_POSTS.slice(0, 3) : CMDK_POSTS.filter((p) => {
           const title = currentLang === 'fr' ? p.titleFr : p.title;
           const excerpt = currentLang === 'fr' ? p.excerptFr : p.excerpt;
           return (title + ' ' + excerpt).toLowerCase().includes(q);
         });
-        const api = apiEndpoints.filter((e) => {
-          if (q === '') return false;
+        const api = q === '' ? apiEndpoints.slice(0, 3) : apiEndpoints.filter((e) => {
           return (e.method + ' ' + e.path + ' ' + e.summary).toLowerCase().includes(q);
         });
+        const media = q === '' ? CMDK_MEDIA.slice(0, 3) : CMDK_MEDIA.filter((m) => m.name.toLowerCase().includes(q));
 
         items = [
           ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href })),
           ...posts.map((p) => ({ type: 'post', label: currentLang === 'fr' ? p.titleFr : p.title, excerpt: currentLang === 'fr' ? p.excerptFr : p.excerpt, href: p.href })),
           ...api.map((e) => ({ type: 'api', label: `${e.method.toUpperCase()} ${e.path}`, excerpt: e.summary, href: e.href })),
+          ...media.map((m) => ({ type: 'media', label: m.name, href: m.href })),
         ];
         activeIndex = 0;
 
@@ -125,6 +131,7 @@
         items.forEach((item, i) => {
           if (item.type === 'post' && i === nav.length) html += `<div class="cmdk-group-label">${t('search.groupPosts')}</div>`;
           if (item.type === 'api' && i === nav.length + posts.length) html += `<div class="cmdk-group-label">${t('search.groupApi')}</div>`;
+          if (item.type === 'media' && i === nav.length + posts.length + api.length) html += `<div class="cmdk-group-label">${t('search.groupMedia')}</div>`;
           html += `
             <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}">
               <span class="cmdk-item-title">${escapeHtml(item.label)}</span>
@@ -144,6 +151,7 @@
       }
 
       document.getElementById('cmdk-btn').addEventListener('click', open);
+      document.getElementById('search-cta-btn')?.addEventListener('click', open);
 
       document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {

@@ -11,6 +11,7 @@ import base64
 import json
 import pathlib
 import re
+import subprocess
 from datetime import datetime, timezone
 from email.utils import format_datetime
 
@@ -48,6 +49,7 @@ def build_site_urls(domain, scheme):
             "media": f"{scheme}://media.{domain}",
             "dashboard": f"{scheme}://dashboard.{domain}",
             "api": f"{scheme}://api.{domain}",
+            "diagram": f"{scheme}://diagram.{domain}",
         },
         "fr": {
             "brand": "/fr/",
@@ -57,6 +59,7 @@ def build_site_urls(domain, scheme):
             "media": f"{scheme}://media.{domain}/fr/",
             "dashboard": f"{scheme}://dashboard.{domain}",
             "api": f"{scheme}://api.{domain}/fr/",
+            "diagram": f"{scheme}://diagram.{domain}/fr/",
         },
     }
 
@@ -196,6 +199,7 @@ def build_sitemap_entries(posts):
     blog = "https://blog.khaddict.com"
     projects = "https://projects.khaddict.com"
     media = "https://media.khaddict.com"
+    diagram = "https://diagram.khaddict.com"
 
     entries = []
 
@@ -209,6 +213,7 @@ def build_sitemap_entries(posts):
         add(f"{blog}/posts/{slug}/", f"{blog}/fr/posts/{slug}/")
     add(f"{projects}/", f"{projects}/fr/")
     add(f"{media}/", f"{media}/fr/")
+    add(f"{diagram}/", f"{diagram}/fr/")
 
     return entries
 
@@ -225,6 +230,28 @@ def reading_time_minutes(html):
 
 
 RSS_HREFS = None
+
+GALLERY_DIR = ROOT / "media-build" / "media" / "gallery"
+
+
+def gallery_filenames_by_recency():
+    """Gallery filenames, most recently added first. Uses git history (not
+    filesystem mtime, which a fresh CI checkout would reset for every file)."""
+    filenames = sorted(p.name for p in GALLERY_DIR.iterdir() if p.is_file())
+    try:
+        log = subprocess.run(
+            ["git", "log", "--diff-filter=A", "--name-only", "--format=", "--", "media-build/media/gallery/"],
+            cwd=ROOT, capture_output=True, text=True, check=True,
+        ).stdout
+        added_order = [pathlib.Path(line).name for line in log.splitlines() if line.strip()]
+        # first occurrence in `git log` (newest commits first) is the add date we want;
+        # a file git has no history for yet (staged but uncommitted) is the newest of all
+        uncommitted = [f for f in filenames if f not in added_order]
+        seen = set()
+        committed = [f for f in added_order if f in filenames and not (f in seen or seen.add(f))]
+        return uncommitted + committed
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return filenames
 
 
 def hreflang_hrefs(site_key):
@@ -259,6 +286,7 @@ def nav_hrefs(urls):
         "nav_media_href": urls["media"],
         "nav_dashboard_href": urls["dashboard"],
         "nav_api_href": urls["api"],
+        "nav_diagram_href": urls["diagram"],
     }
 
 
@@ -388,6 +416,14 @@ def main():
         for slug, post in sorted(posts.items(), key=lambda kv: kv[1]["date"], reverse=True)
     ]
 
+    search_media = [
+        {
+            "name": filename,
+            "url": f"{SITE_URLS['en']['media']}/gallery/{filename}",
+        }
+        for filename in gallery_filenames_by_recency()
+    ]
+
     if only in (None, "www"):
         www_yaml = load_i18n("www")
         www_i18n_all = merged_i18n(common, www_yaml)
@@ -402,6 +438,7 @@ def main():
                 i18n=www_i18n_all[locale],
                 i18n_all=www_i18n_all,
                 search_posts=search_posts,
+                search_media=search_media,
                 brand_href=SITE_URLS[locale]["brand"],
                 **nav_hrefs(SITE_URLS[locale]),
                 api_base_url=PROD_API_BASE_URL,
@@ -434,6 +471,7 @@ def main():
             i18n=vps_i18n_all["en"],
             i18n_all=vps_i18n_all,
             search_posts=search_posts,
+                search_media=search_media,
             api_base_url=PROD_API_BASE_URL,
             brand_href=prod_site_urls["en"]["brand"],
             **nav_hrefs(prod_site_urls["en"]),
@@ -459,6 +497,7 @@ def main():
                 i18n_all=blog_i18n_all,
                 posts=posts,
                 search_posts=search_posts,
+                search_media=search_media,
                 api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
@@ -490,6 +529,7 @@ def main():
                 i18n=projects_i18n_all[locale],
                 i18n_all=projects_i18n_all,
                 search_posts=search_posts,
+                search_media=search_media,
                 api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
@@ -520,6 +560,7 @@ def main():
                 i18n=media_i18n_all[locale],
                 i18n_all=media_i18n_all,
                 search_posts=search_posts,
+                search_media=search_media,
                 api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
@@ -550,6 +591,7 @@ def main():
                 i18n=api_i18n_all[locale],
                 i18n_all=api_i18n_all,
                 search_posts=search_posts,
+                search_media=search_media,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
                 brand_icon_src=BRAND_ICON_URL,
@@ -581,6 +623,7 @@ def main():
             i18n=not_found_i18n_all["en"],
             i18n_all=not_found_i18n_all,
             search_posts=search_posts,
+                search_media=search_media,
             api_base_url=PROD_API_BASE_URL,
             brand_href="/",
             **nav_hrefs(SITE_URLS["en"]),
@@ -631,6 +674,7 @@ def main():
                     post=post,
                     posts=posts,
                     search_posts=search_posts,
+                    search_media=search_media,
                     related_slugs=related_slugs,
                     brand_href=SITE_URLS[locale]["home"],
                     **nav_hrefs(SITE_URLS[locale]),

@@ -381,6 +381,23 @@
       padding: .05rem .35rem;
     }
 
+    .search-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .55rem 1rem;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .8rem;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .search-cta-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(139, 92, 246, .08); }
+    .search-cta-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
     .cmdk-overlay {
       position: fixed;
       inset: 0;
@@ -710,6 +727,7 @@
         <a href="https://media.khaddict.com" data-i18n="nav.media">media</a>
         <a href="https://dashboard.khaddict.com" data-i18n="nav.dashboard">dashboard</a>
         <a href="https://api.khaddict.com" data-i18n="nav.api">api</a>
+        <a href="https://diagram.khaddict.com" data-i18n="nav.diagram">diagram</a>
       </nav>
       <div class="bandeau-right">
         <button class="search-btn" id="cmdk-btn" type="button" aria-haspopup="dialog" aria-label="Search the site" data-i18n-aria="search.ariaLabel">
@@ -763,6 +781,10 @@
     <div class="error-panel">
       <div class="error-code">503<span class="error-cursor"></span></div>
       <p class="error-message" data-i18n="error.message">This page is currently unavailable.</p>
+      <button class="search-cta-btn" id="search-cta-btn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <span data-i18n="error.searchCta">Search</span>
+      </button>
     </div>
   </main>
 
@@ -795,6 +817,7 @@
         'nav.media': "media",
         'nav.dashboard': "dashboard",
         'nav.api': "api",
+        'nav.diagram': "diagram",
         'status.label': "status",
         'status.checking': "checking systems...",
         'status.viewFull': "view full status \u2197",
@@ -818,7 +841,9 @@
         'search.groupNav': "Pages",
         'search.groupPosts': "Articles",
         'search.groupApi': "API",
+        'search.groupMedia': "Media",
         'search.hint': "navigate \u2191\u2193 \u00b7 open \u21b5 \u00b7 close esc",
+        'error.searchCta': "Search",
         'title.unavailable': "Unavailable | khaddict",
         'error.message': "This page is currently unavailable.",
       },
@@ -829,6 +854,7 @@
         'nav.media': "m\u00e9dias",
         'nav.dashboard': "dashboard",
         'nav.api': "api",
+        'nav.diagram': "diagram",
         'status.label': "statut",
         'status.checking': "v\u00e9rification en cours...",
         'status.viewFull': "voir le statut complet \u2197",
@@ -852,7 +878,9 @@
         'search.groupNav': "Pages",
         'search.groupPosts': "Articles",
         'search.groupApi': "API",
+        'search.groupMedia': "Media",
         'search.hint': "naviguer \u2191\u2193 \u00b7 ouvrir \u21b5 \u00b7 fermer \u00e9chap",
+        'error.searchCta': "Rechercher",
         'title.unavailable': "Indisponible | khaddict",
         'error.message': "Cette page est actuellement indisponible.",
       },
@@ -1084,6 +1112,7 @@
       { label: t('nav.media'), href: 'https://media.khaddict.com' },
       { label: t('nav.dashboard'), href: 'https://dashboard.khaddict.com' },
       { label: t('nav.api'), href: 'https://api.khaddict.com' },
+      { label: t('nav.diagram'), href: 'https://diagram.khaddict.com' },
     ];
     const CMDK_POSTS = [
       {
@@ -1121,6 +1150,35 @@
         excerptFr: "Une Bambu Lab P2S, un Benchy pour la tester et quelques am\u00e9liorations imprim\u00e9es en PETG.",
         href: 'https://blog.khaddict.com/posts/first-prints-bambu-lab-p2s/',
       },
+    ];
+    const CMDK_MEDIA = [
+      { name: "busy-bar-alert-firing.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-firing.png' },
+      { name: "busy-bar-alert-resolved.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-resolved.png' },
+      { name: "busy-bar-clock.png", href: 'https://media.khaddict.com/gallery/busy-bar-clock.png' },
+      { name: "busy-bar-snapshot-report.png", href: 'https://media.khaddict.com/gallery/busy-bar-snapshot-report.png' },
+      { name: "lab-rax-u7-mount-installed.jpg", href: 'https://media.khaddict.com/gallery/lab-rax-u7-mount-installed.jpg' },
+      { name: "lab-rax-u7-mount-render.png", href: 'https://media.khaddict.com/gallery/lab-rax-u7-mount-render.png' },
+      { name: "uos-server-dashboard.png", href: 'https://media.khaddict.com/gallery/uos-server-dashboard.png' },
+      { name: "uos-server-switch-ports.png", href: 'https://media.khaddict.com/gallery/uos-server-switch-ports.png' },
+      { name: "uos-server-topology.png", href: 'https://media.khaddict.com/gallery/uos-server-topology.png' },
+      { name: "wall-scene.png", href: 'https://media.khaddict.com/gallery/wall-scene.png' },
+      { name: "busy-bar-unboxing.jpg", href: 'https://media.khaddict.com/gallery/busy-bar-unboxing.jpg' },
+      { name: "p2s-ams-riser-lifted.jpg", href: 'https://media.khaddict.com/gallery/p2s-ams-riser-lifted.jpg' },
+      { name: "p2s-ams-riser-set-down.jpg", href: 'https://media.khaddict.com/gallery/p2s-ams-riser-set-down.jpg' },
+      { name: "p2s-gridfinity-storage-closed.jpg", href: 'https://media.khaddict.com/gallery/p2s-gridfinity-storage-closed.jpg' },
+      { name: "p2s-gridfinity-storage-open.jpg", href: 'https://media.khaddict.com/gallery/p2s-gridfinity-storage-open.jpg' },
+      { name: "p2s-under-printer-storage-installed.jpg", href: 'https://media.khaddict.com/gallery/p2s-under-printer-storage-installed.jpg' },
+      { name: "p2s-under-printer-storage.jpg", href: 'https://media.khaddict.com/gallery/p2s-under-printer-storage.jpg' },
+      { name: "p2s-petg-spool-boxes.jpg", href: 'https://media.khaddict.com/gallery/p2s-petg-spool-boxes.jpg' },
+      { name: "bambu-lab-p2s-setup.jpg", href: 'https://media.khaddict.com/gallery/bambu-lab-p2s-setup.jpg' },
+      { name: "lab-rax-brush-panel.jpg", href: 'https://media.khaddict.com/gallery/lab-rax-brush-panel.jpg' },
+      { name: "lab-rax-cable-management.jpg", href: 'https://media.khaddict.com/gallery/lab-rax-cable-management.jpg' },
+      { name: "lab-rax-front-day.jpg", href: 'https://media.khaddict.com/gallery/lab-rax-front-day.jpg' },
+      { name: "lab-rax-front-night.jpg", href: 'https://media.khaddict.com/gallery/lab-rax-front-night.jpg' },
+      { name: "lab-rax-geekom-tray-render.png", href: 'https://media.khaddict.com/gallery/lab-rax-geekom-tray-render.png' },
+      { name: "lab-rax-pi5-tray-render.png", href: 'https://media.khaddict.com/gallery/lab-rax-pi5-tray-render.png' },
+      { name: "p2s-prints-batch-one.jpg", href: 'https://media.khaddict.com/gallery/p2s-prints-batch-one.jpg' },
+      { name: "voidnode-khazix-wallpaper.png", href: 'https://media.khaddict.com/gallery/voidnode-khazix-wallpaper.png' },
     ];
 
     (function () {
@@ -1185,22 +1243,22 @@
 
       function render(query) {
         const q = query.trim().toLowerCase();
-        const nav = CMDK_NAV.filter((n) => q === '' || n.label.toLowerCase().includes(q));
-        const posts = CMDK_POSTS.filter((p) => {
-          if (q === '') return false;
+        const nav = q === '' ? [] : CMDK_NAV.filter((n) => n.label.toLowerCase().includes(q));
+        const posts = q === '' ? CMDK_POSTS.slice(0, 3) : CMDK_POSTS.filter((p) => {
           const title = currentLang === 'fr' ? p.titleFr : p.title;
           const excerpt = currentLang === 'fr' ? p.excerptFr : p.excerpt;
           return (title + ' ' + excerpt).toLowerCase().includes(q);
         });
-        const api = apiEndpoints.filter((e) => {
-          if (q === '') return false;
+        const api = q === '' ? apiEndpoints.slice(0, 3) : apiEndpoints.filter((e) => {
           return (e.method + ' ' + e.path + ' ' + e.summary).toLowerCase().includes(q);
         });
+        const media = q === '' ? CMDK_MEDIA.slice(0, 3) : CMDK_MEDIA.filter((m) => m.name.toLowerCase().includes(q));
 
         items = [
           ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href })),
           ...posts.map((p) => ({ type: 'post', label: currentLang === 'fr' ? p.titleFr : p.title, excerpt: currentLang === 'fr' ? p.excerptFr : p.excerpt, href: p.href })),
           ...api.map((e) => ({ type: 'api', label: `${e.method.toUpperCase()} ${e.path}`, excerpt: e.summary, href: e.href })),
+          ...media.map((m) => ({ type: 'media', label: m.name, href: m.href })),
         ];
         activeIndex = 0;
 
@@ -1214,6 +1272,7 @@
         items.forEach((item, i) => {
           if (item.type === 'post' && i === nav.length) html += `<div class="cmdk-group-label">${t('search.groupPosts')}</div>`;
           if (item.type === 'api' && i === nav.length + posts.length) html += `<div class="cmdk-group-label">${t('search.groupApi')}</div>`;
+          if (item.type === 'media' && i === nav.length + posts.length + api.length) html += `<div class="cmdk-group-label">${t('search.groupMedia')}</div>`;
           html += `
             <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}">
               <span class="cmdk-item-title">${escapeHtml(item.label)}</span>
@@ -1233,6 +1292,7 @@
       }
 
       document.getElementById('cmdk-btn').addEventListener('click', open);
+      document.getElementById('search-cta-btn')?.addEventListener('click', open);
 
       document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
