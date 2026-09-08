@@ -31,3 +31,6 @@ jobs:
 
       - name: Render templates
         run: python build.py
+
+      - name: Check committed generated artifacts are up to date
+        run: git diff --exit-code -- files/api vps-fallback/index.html
