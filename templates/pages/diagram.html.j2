@@ -95,6 +95,7 @@
   }
 
   body { height: 100vh; overflow: hidden; }
+  main { display: flex; flex-direction: column; flex: 1; min-height: 0; }
 
   .topbar {
     position: relative;
@@ -744,6 +745,8 @@
 </head>
 <body>
 {% include "partials/header.html.j2" %}
+<main>
+<h1 class="sr-only">Network diagram</h1>
 <div class="topbar">
   <span class="sub" id="topSub"></span>
   <div class="search-wrap">
@@ -827,6 +830,7 @@
     </div>
   </div>
 </div>
+</main>
 
 
 <script>

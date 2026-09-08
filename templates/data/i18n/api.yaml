@@ -1,5 +1,6 @@
 en:
   title.api: "API | khaddict"
+  api.heading: "API"
   api.loading: "Loading endpoints..."
   api.error: "Couldn't load the API spec. Try again later"
   api.required: "required"
@@ -14,6 +15,7 @@ en:
   api.authToken: "Bearer token"
 fr:
   title.api: "API | khaddict"
+  api.heading: "API"
   api.loading: "Loading endpoints..."
   api.error: "Couldn't load the API spec. Try again later"
   api.required: "required"

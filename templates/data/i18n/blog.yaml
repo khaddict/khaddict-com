@@ -1,5 +1,6 @@
 en:
   title.blog: "Blog | khaddict"
+  blog.heading: "Blog"
   blog.searchPlaceholder: "Search articles..."
   blog.sortNewest: "newest first"
   blog.sortOldest: "oldest first"
@@ -7,6 +8,7 @@ en:
   blog.clearFilters: "Clear filters"
 fr:
   title.blog: "Blog | khaddict"
+  blog.heading: "Blog"
   blog.searchPlaceholder: "Rechercher un article..."
   blog.sortNewest: "plus récent"
   blog.sortOldest: "plus ancien"

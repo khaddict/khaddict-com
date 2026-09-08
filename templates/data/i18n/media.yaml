@@ -1,5 +1,6 @@
 en:
   title.media: "Media | khaddict"
+  media.heading: "Media"
   tabs.icons: "icons"
   tabs.gallery: "gallery"
   tabs.videos: "videos"
@@ -13,6 +14,7 @@ en:
   lightbox.copyImage: "Copy image"
 fr:
   title.media: "Médias | khaddict"
+  media.heading: "Médias"
   tabs.icons: "icônes"
   tabs.gallery: "galerie"
   tabs.videos: "vidéos"
