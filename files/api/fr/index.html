@@ -786,10 +786,16 @@
       flex-shrink: 0;
     }
 
-    .api-method.post { background: var(--accent); }
+    .api-method.post { background: #8457e9; }
     .api-method.get { background: var(--accent-2); }
     .api-method.delete { background: var(--down); }
     .api-method.put, .api-method.patch { background: var(--warn); }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .api-method { color: #1a1a22; }
+      :root:not([data-theme="light"]) .api-method.post { background: var(--accent); }
+    }
+    :root[data-theme="dark"] .api-method { color: #1a1a22; }
+    :root[data-theme="dark"] .api-method.post { background: var(--accent); }
 
     .api-path {
       font-family: 'JetBrains Mono', monospace;
@@ -903,7 +909,7 @@
       height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
-      border: 1px solid rgba(255, 255, 255, .25);
+      border: 1px solid var(--border);
     }
 
     .api-try-color-dropdown {
@@ -1968,6 +1974,7 @@
     <div class="cmdk-modal" role="dialog" aria-modal="true" aria-label="Rechercher sur le site">
       <div class="cmdk-input-row">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <label class="sr-only" for="cmdk-input">Rechercher pages, articles...</label>
         <input class="cmdk-input" id="cmdk-input" type="text" data-i18n-placeholder="search.placeholder" placeholder="Rechercher pages, articles..." autocomplete="off" spellcheck="false" />
       </div>
       <div class="cmdk-results" id="cmdk-results"></div>
