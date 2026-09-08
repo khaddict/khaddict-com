@@ -12,6 +12,7 @@ on:
       - "templates/**"
       - "build.py"
       - "requirements.txt"
+  workflow_dispatch:
 
 jobs:
   build-check:
