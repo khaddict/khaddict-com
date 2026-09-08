@@ -420,6 +420,9 @@ def main():
     common = load_i18n("common")
     with open(TEMPLATES / "data" / "posts.yaml", encoding="utf-8") as f:
         posts = yaml.safe_load(f)
+    for slug in posts:
+        if not re.fullmatch(r"[a-z0-9-]+", slug):
+            parser.error(f"post slug {slug!r} in posts.yaml contains characters other than a-z, 0-9, -")
     for post in posts.values():
         post["reading_time"] = {locale: reading_time_minutes(post["body"][locale]) for locale in LOCALES}
 
