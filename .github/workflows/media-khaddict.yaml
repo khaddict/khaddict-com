@@ -9,6 +9,10 @@ on:
       - "media-build/process-icons.sh"
   workflow_dispatch:
 
+concurrency:
+  group: bump-voidnode-${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest

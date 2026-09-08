@@ -11,6 +11,10 @@ on:
       - "requirements.txt"
   workflow_dispatch:
 
+concurrency:
+  group: bump-voidnode-${{ github.workflow }}
+  cancel-in-progress: false
+
 jobs:
   publish:
     runs-on: ubuntu-latest
