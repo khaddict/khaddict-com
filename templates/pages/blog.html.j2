@@ -131,7 +131,11 @@
       transition: color .15s ease, border-color .15s ease, background .15s ease;
     }
     .tag-chip:hover { color: var(--accent); border-color: var(--accent); }
-    .tag-chip.active { color: #fff; background: var(--accent); border-color: var(--accent); }
+    .tag-chip.active { color: #fff; background: #8457e9; border-color: var(--accent); }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .tag-chip.active { color: #1a1a22; background: var(--accent); }
+    }
+    :root[data-theme="dark"] .tag-chip.active { color: #1a1a22; background: var(--accent); }
 
     .article-list { display: flex; flex-direction: column; gap: 1rem; }
 

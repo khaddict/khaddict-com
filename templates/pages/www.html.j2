@@ -310,6 +310,10 @@
       color: #fff;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
     }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .wall-mode-toggle button.active { color: #1a1a22; }
+    }
+    :root[data-theme="dark"] .wall-mode-toggle button.active { color: #1a1a22; }
 
     .wall-color-picker {
       position: relative;
@@ -525,6 +529,10 @@
 
     .wall-send:hover:not(:disabled) { transform: translateY(-1px); }
     .wall-send:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .wall-send { color: #1a1a22; }
+    }
+    :root[data-theme="dark"] .wall-send { color: #1a1a22; }
 
     .wall-toast {
       display: none;

@@ -144,10 +144,16 @@
       flex-shrink: 0;
     }
 
-    .api-method.post { background: var(--accent); }
+    .api-method.post { background: #8457e9; }
     .api-method.get { background: var(--accent-2); }
     .api-method.delete { background: var(--down); }
     .api-method.put, .api-method.patch { background: var(--warn); }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .api-method { color: #1a1a22; }
+      :root:not([data-theme="light"]) .api-method.post { background: var(--accent); }
+    }
+    :root[data-theme="dark"] .api-method { color: #1a1a22; }
+    :root[data-theme="dark"] .api-method.post { background: var(--accent); }
 
     .api-path {
       font-family: 'JetBrains Mono', monospace;
