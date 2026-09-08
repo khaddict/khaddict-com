@@ -29,6 +29,20 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Check en/fr i18n key parity
+        run: |
+          python3 -c "
+          import sys, yaml, pathlib
+          failed = False
+          for f in sorted(pathlib.Path('templates/data/i18n').glob('*.yaml')):
+              data = yaml.safe_load(f.read_text())
+              en, fr = set(data.get('en', {})), set(data.get('fr', {}))
+              if en != fr:
+                  failed = True
+                  print(f'{f.name}: en-only={en - fr} fr-only={fr - en}')
+          sys.exit(1 if failed else 0)
+          "
+
       - name: Render templates
         run: python build.py
 
