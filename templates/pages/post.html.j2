@@ -246,6 +246,11 @@
     }
     @media (max-width: 640px) {
       .related-grid { grid-template-columns: 1fr; }
+      .post-body .render-pair { flex-wrap: wrap; }
+      .post-body .render-pair .render-item:has(video) {
+        flex-basis: auto;
+        max-width: 100%;
+      }
     }
 {% include "partials/responsive.css.j2" %}
   </style>
