@@ -295,6 +295,29 @@
     white-space: nowrap;
   }
 
+  @media (max-width: 640px) {
+    .topbar { gap: .5rem; padding: .5rem .75rem; }
+    .topbar .sub { display: none; }
+    .search-input { width: 130px; }
+    .legend {
+      flex: 1 0 100%;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-left: 0;
+      gap: .6rem;
+      padding-bottom: .15rem;
+    }
+    .legend-item { flex-shrink: 0; }
+    .help-list li {
+      grid-template-columns: 1fr;
+      gap: .25rem;
+      white-space: normal;
+    }
+    .help-wrap { position: static; }
+    .help-dropdown { left: 1rem; right: 1rem; width: auto; }
+  }
+
   .viewport {
     flex: 1;
     position: relative;
