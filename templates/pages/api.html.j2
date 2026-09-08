@@ -271,9 +271,7 @@
     }
 
     .api-try-color-dropdown {
-      position: absolute;
-      top: calc(100% + .4rem);
-      left: 0;
+      position: fixed;
       min-width: 160px;
       background: var(--surface);
       border: 1px solid var(--border);
@@ -878,8 +876,21 @@
           const wrapper = trigger.closest('.api-try-color');
           const isOpen = wrapper.classList.toggle('open');
           trigger.setAttribute('aria-expanded', isOpen);
+          if (isOpen) {
+            const dropdown = wrapper.querySelector('.api-try-color-dropdown');
+            const rect = trigger.getBoundingClientRect();
+            dropdown.style.top = `${rect.bottom + 6}px`;
+            dropdown.style.left = `${rect.left}px`;
+          }
         }
       });
+
+      function closeAllColorDropdowns() {
+        groupsEl.querySelectorAll('.api-try-color.open').forEach((wrapper) => {
+          wrapper.classList.remove('open');
+          wrapper.querySelector('.api-try-color-btn').setAttribute('aria-expanded', 'false');
+        });
+      }
 
       document.addEventListener('click', (e) => {
         groupsEl.querySelectorAll('.api-try-color.open').forEach((wrapper) => {
@@ -888,6 +899,9 @@
           wrapper.querySelector('.api-try-color-btn').setAttribute('aria-expanded', 'false');
         });
       });
+
+      window.addEventListener('scroll', closeAllColorDropdowns, true);
+      window.addEventListener('resize', closeAllColorDropdowns);
 
       groupsEl.addEventListener('click', async (e) => {
         const copyBtn = e.target.closest('[data-action="copy-curl"]');
