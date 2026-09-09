@@ -207,6 +207,22 @@
 
     .brand-icon { width: 38px; height: 38px; border-radius: 8px; }
 
+    .nav-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color .15s ease, color .15s ease;
+    }
+    .nav-toggle svg { width: 18px; height: 18px; }
+    .nav-toggle:hover { color: var(--accent); border-color: var(--accent); }
+
     .topnav {
       display: flex;
       align-items: center;
@@ -1085,8 +1101,31 @@
     .api-try-response.ok { border-color: var(--accent-2); }
     .api-try-response.err { border-color: var(--down); color: var(--down); }
     @media (max-width: 460px) {
-      .bandeau-inner { justify-content: center; text-align: center; }
-      .topnav { justify-content: center; gap: 1.2rem; }
+      .bandeau-inner { justify-content: space-between; text-align: left; flex-wrap: wrap; }
+      .nav-toggle { display: flex; }
+      .topnav {
+        position: absolute;
+        top: 100%;
+        left: 1rem;
+        right: 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 12px 32px var(--shadow);
+        padding: .4rem;
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+        z-index: 25;
+      }
+      .topnav.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+      .topnav a { padding: .65rem .6rem; border-radius: 6px; }
+      .topnav a:hover { background: rgba(139, 92, 246, .08); }
+      .bandeau-right { flex-basis: 100%; justify-content: center; }
       .footer-links { position: static; align-self: center; margin: 2rem 0 1.5rem; }
       .copyright { position: static; transform: none; text-align: center; margin: 0 0 1.5rem; }
       .status-nav { position: static; }
@@ -1115,7 +1154,10 @@
         <img class="brand-icon" src="https://media.khaddict.com/icons/thumbs/khazix-pc-flat.png" alt="" />
         khaddict.com
       </a>
-      <nav class="topnav">
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="topnav" aria-label="Menu" data-i18n-aria="nav.ariaLabel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <nav class="topnav" id="topnav">
         <a href="https://khaddict.com/fr/" data-i18n="nav.home">accueil</a>
         <a href="https://blog.khaddict.com/fr/" data-i18n="nav.blog">blog</a>
         <a href="https://projects.khaddict.com/fr/" data-i18n="nav.projects">projets</a>
@@ -1172,6 +1214,23 @@
       </div>
     </div>
   </header>
+  <script>
+    (function () {
+      const navToggle = document.getElementById('nav-toggle');
+      const topnav = document.getElementById('topnav');
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = topnav.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', isOpen);
+      });
+      document.addEventListener('click', (e) => {
+        if (!topnav.contains(e.target) && e.target !== navToggle && !navToggle.contains(e.target)) {
+          topnav.classList.remove('open');
+          navToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+  </script>
   <div class="page-scroll">
 
   <main class="api-hero">
@@ -1212,6 +1271,7 @@
         'nav.dashboard': "dashboard",
         'nav.api': "api",
         'nav.diagram': "diagram",
+        'nav.ariaLabel': "Menu",
         'status.label': "status",
         'status.checking': "checking systems...",
         'status.viewFull': "view full status \u2197",
@@ -1262,6 +1322,7 @@
         'nav.dashboard': "dashboard",
         'nav.api': "api",
         'nav.diagram': "diagram",
+        'nav.ariaLabel': "Menu",
         'status.label': "statut",
         'status.checking': "v\u00e9rification en cours...",
         'status.viewFull': "voir le statut complet \u2197",
