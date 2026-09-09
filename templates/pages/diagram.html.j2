@@ -595,6 +595,23 @@
   }
   .panel.open { transform: translateX(0); }
 
+  @media (max-width: 640px) {
+    .panel {
+      top: auto;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: auto;
+      height: 60vh;
+      border-left: none;
+      border-top: 1px solid var(--border);
+      border-radius: 16px 16px 0 0;
+      box-shadow: 0 -20px 40px var(--shadow);
+      transform: translateY(100%);
+    }
+    .panel.open { transform: translateY(0); }
+  }
+
   .panel-head {
     display: flex;
     align-items: center;
