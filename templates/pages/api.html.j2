@@ -879,7 +879,12 @@
           if (isOpen) {
             const dropdown = wrapper.querySelector('.api-try-color-dropdown');
             const rect = trigger.getBoundingClientRect();
-            dropdown.style.top = `${rect.bottom + 6}px`;
+            const dropdownHeight = dropdown.offsetHeight;
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const openUpward = spaceBelow < dropdownHeight + 6 && rect.top > dropdownHeight + 6;
+            dropdown.style.top = openUpward
+              ? `${rect.top - dropdownHeight - 6}px`
+              : `${rect.bottom + 6}px`;
             dropdown.style.left = `${rect.left}px`;
           }
         }
