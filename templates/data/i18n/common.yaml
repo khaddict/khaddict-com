@@ -6,6 +6,7 @@ en:
   nav.dashboard: dashboard
   nav.api: api
   nav.diagram: diagram
+  nav.ariaLabel: "Menu"
   status.label: status
   status.checking: "checking systems..."
   status.viewFull: "view full status ↗"
@@ -41,6 +42,7 @@ fr:
   nav.dashboard: dashboard
   nav.api: api
   nav.diagram: diagram
+  nav.ariaLabel: "Menu"
   status.label: statut
   status.checking: "vérification en cours..."
   status.viewFull: "voir le statut complet ↗"

@@ -4,7 +4,10 @@
         <img class="brand-icon" src="{{ brand_icon_src }}" alt="" />
         khaddict.com
       </a>
-      <nav class="topnav">
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="topnav" aria-label="{{ i18n['nav.ariaLabel'] }}" data-i18n-aria="nav.ariaLabel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+      <nav class="topnav" id="topnav">
         <a href="{{ nav_home_href }}" data-i18n="nav.home">{{ i18n['nav.home'] }}</a>
         <a href="{{ nav_blog_href }}" data-i18n="nav.blog">{{ i18n['nav.blog'] }}</a>
         <a href="{{ nav_projects_href }}" data-i18n="nav.projects">{{ i18n['nav.projects'] }}</a>
@@ -50,4 +53,21 @@
       </div>
     </div>
   </header>
+  <script>
+    (function () {
+      const navToggle = document.getElementById('nav-toggle');
+      const topnav = document.getElementById('topnav');
+      navToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = topnav.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', isOpen);
+      });
+      document.addEventListener('click', (e) => {
+        if (!topnav.contains(e.target) && e.target !== navToggle && !navToggle.contains(e.target)) {
+          topnav.classList.remove('open');
+          navToggle.setAttribute('aria-expanded', 'false');
+        }
+      });
+    })();
+  </script>
   <div class="page-scroll">
