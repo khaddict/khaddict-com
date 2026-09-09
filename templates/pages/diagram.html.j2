@@ -297,9 +297,12 @@
   @media (max-width: 640px) {
     .topbar { gap: .5rem; padding: .5rem .75rem; }
     .topbar .sub { display: none; }
-    .search-wrap { flex: 1 0 100%; }
+    .search-wrap { flex: 1; order: 1; min-width: 0; }
     .search-input { width: 100%; }
+    .zoom-controls { order: 2; }
+    .help-wrap { order: 3; }
     .legend {
+      order: 4;
       flex: 1 0 100%;
       flex-wrap: nowrap;
       overflow-x: auto;
@@ -309,11 +312,7 @@
       padding-bottom: .15rem;
     }
     .legend-item { flex-shrink: 0; }
-    .help-list li {
-      grid-template-columns: 1fr;
-      gap: .25rem;
-      white-space: normal;
-    }
+    .help-list li { grid-template-columns: 180px 1fr; }
     .help-wrap { position: static; }
     .help-dropdown { left: 1rem; right: 1rem; width: auto; }
   }
@@ -808,7 +807,7 @@
       <div class="help-title">Interactions</div>
       <ul class="help-list">
         <li><span class="help-key"><kbd>Click</kbd></span><span>Inspect device</span></li>
-        <li><span class="help-key"><kbd id="help-kbd-multiselect">Ctrl+Click</kbd></span><span>Multi-select</span></li>
+        <li id="help-li-multiselect"><span class="help-key"><kbd id="help-kbd-multiselect">Ctrl+Click</kbd></span><span>Multi-select</span></li>
         <li><span class="help-key"><kbd>Click VLAN label</kbd></span><span>Focus VLAN</span></li>
         <li><span class="help-key"><kbd>Esc</kbd> <kbd>Click empty space</kbd></span><span>Close panel</span></li>
         <li><span class="help-key"><kbd>/</kbd></span><span>Search devices</span></li>
@@ -896,8 +895,13 @@
   (function () {
     const searchKbd = document.getElementById('search-kbd');
     const helpKbdMultiselect = document.getElementById('help-kbd-multiselect');
-    if (window.matchMedia('(pointer: coarse)').matches) searchKbd.style.display = 'none';
-    if (/Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent)) helpKbdMultiselect.textContent = '⌘+Click';
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+    if (isTouchDevice) {
+      searchKbd.style.display = 'none';
+      document.getElementById('help-li-multiselect').style.display = 'none';
+    } else if (/Mac/.test(navigator.platform || navigator.userAgent)) {
+      helpKbdMultiselect.textContent = '⌘+Click';
+    }
   })();
 
   document.addEventListener('DOMContentLoaded', () => {
