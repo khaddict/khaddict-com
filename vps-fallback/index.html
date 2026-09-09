@@ -117,7 +117,8 @@
     }
 
     body {
-      min-height: 100dvh;
+      height: 100dvh;
+      overflow: hidden;
       background:
         radial-gradient(620px circle at 12% -8%, var(--blob-1), transparent 60%),
         radial-gradient(520px circle at 100% 8%, var(--blob-2), transparent 55%),
@@ -128,6 +129,21 @@
       flex-direction: column;
       transition: background-color .2s ease, color .2s ease;
     }
+
+    .page-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .page-scroll::-webkit-scrollbar { width: 10px; }
+    .page-scroll::-webkit-scrollbar-track { background: transparent; }
+    .page-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+    .page-scroll::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
     .bandeau {
       position: sticky;
@@ -788,6 +804,7 @@
       </div>
     </div>
   </header>
+  <div class="page-scroll">
 
   <main class="hero">
     <div class="error-panel">
@@ -1347,5 +1364,5 @@
       input.addEventListener('input', () => render(input.value));
     })();
   </script>
-</body>
+  </div></body>
 </html>
