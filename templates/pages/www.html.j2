@@ -977,7 +977,7 @@
       function startMirror() {
         if (mirrorInterval) return;
         pollMirror();
-        mirrorInterval = setInterval(pollMirror, 1500);
+        mirrorInterval = setInterval(pollMirror, 300);
       }
 
       function stopMirror() {
@@ -1123,8 +1123,16 @@
           const res = await doFetch();
           waitSecs = reportResult(res);
           if (res.ok) {
-            refreshBarStatus();
             onSuccess();
+            try {
+              const statusRes = await fetch(`${API_URL}/busybar/status`);
+              const data = await statusRes.json();
+              setBarOnline(!!data.online);
+              setMessagesToday(data.messages_today);
+              if (Number.isFinite(data.rate_limit_remaining) && data.rate_limit_remaining > 0) {
+                waitSecs = data.rate_limit_remaining;
+              }
+            } catch {}
           }
         } catch {
           toast.textContent = t('wall.error');
