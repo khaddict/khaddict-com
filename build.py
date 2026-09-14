@@ -46,6 +46,7 @@ def build_site_urls(domain, scheme):
             "dashboard": f"{scheme}://dashboard.{domain}",
             "api": f"{scheme}://api.{domain}",
             "diagram": f"{scheme}://diagram.{domain}",
+            "sre": f"{scheme}://sre.{domain}",
         },
         "fr": {
             "brand": "/fr/",
@@ -56,6 +57,7 @@ def build_site_urls(domain, scheme):
             "dashboard": f"{scheme}://dashboard.{domain}",
             "api": f"{scheme}://api.{domain}/fr/",
             "diagram": f"{scheme}://diagram.{domain}/fr/",
+            "sre": f"{scheme}://sre.{domain}",
         },
     }
 
@@ -289,6 +291,7 @@ def nav_hrefs(urls):
         "nav_dashboard_href": urls["dashboard"],
         "nav_api_href": urls["api"],
         "nav_diagram_href": urls["diagram"],
+        "nav_sre_href": urls["sre"],
     }
 
 
