@@ -1007,6 +1007,7 @@
     { id: 'pihole', name: 'pihole', vlan: 'edge', ip: '10.40.0.13', icon: 'globe', desc: 'Network-wide DNS ad-blocking and DNS server', tags: ['edge', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 53, label: 'DNS' }, { port: 80, label: 'HTTP' }, { port: 443, label: 'HTTPS' }, { port: 9100, label: 'Node Exporter' }] },
     { id: 'api', name: 'api', vlan: 'edge', ip: '10.40.0.14', icon: 'plug', desc: 'Public API gateway for IoT devices; drives the BUSY Bar display', tags: ['edge', 'trixie'], hardware: { ram: '2048 MB', cpu: '1×2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP (internal)' }, { port: 9100, label: 'Node Exporter' }] },
     { id: 'matomo', name: 'matomo', vlan: 'edge', ip: '10.40.0.3', icon: 'barchart', desc: 'Web analytics for khaddict.com', tags: ['edge', 'lxc'], hardware: { ram: '2048 MB', cpu: '2', disk: '16 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP' }, { port: 3306, label: 'MariaDB' }, { port: 9100, label: 'Node Exporter' }] },
+    { id: 'bookstack', name: 'bookstack', vlan: 'edge', ip: '10.40.0.10', icon: 'filetext', desc: 'BookStack wiki for personal SRE/DevOps revision notes, exposed as sre.khaddict.com via revproxy', tags: ['edge', 'trixie'], hardware: { ram: '4096 MB', cpu: '1×2', disk: '50 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 80, label: 'HTTP (internal)' }, { port: 3306, label: 'MariaDB' }, { port: 9100, label: 'Node Exporter' }] },
     { id: 'ollama', name: 'ollama', vlan: 'edge', ip: '10.40.0.4', icon: 'brain', desc: 'Local LLM inference server', tags: ['edge', 'lxc'], hardware: { ram: '51200 MB', cpu: '16', disk: '100 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 9100, label: 'Node Exporter' }, { port: 11434, label: 'Ollama' }] },
     { id: 'openwebui', name: 'openwebui', vlan: 'edge', ip: '10.40.0.9', icon: 'message', desc: 'Browser-based chat frontend for Ollama', tags: ['edge', 'lxc'], hardware: { ram: '8192 MB', cpu: '4', disk: '50 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 8080, label: 'HTTP Alt' }, { port: 9100, label: 'Node Exporter' }] },
     { id: 'unifi', name: 'unifi', vlan: 'edge', ip: '10.40.0.11', icon: 'router', desc: 'UniFi network controller. Also has an out-of-band interface (192.168.0.252) on the physical LAN, to adopt/manage the switch and AP on their factory addressing.', tags: ['edge', 'lxc'], hardware: { ram: '4096 MB', cpu: '2', disk: '20 GB' }, ports: [{ port: 22, label: 'SSH' }, { port: 6789, label: 'Speed test' }, { port: 8080, label: 'Device inform' }, { port: 8880, label: 'Guest portal' }, { port: 9100, label: 'Node Exporter' }] },
@@ -1040,6 +1041,7 @@
     { from: 'opnsense', to: 'revproxy', port: 443, label: 'HTTPS ingress' },
     { from: 'revproxy', to: 'api', port: 80, label: 'HTTP' },
     { from: 'revproxy', to: 'matomo', port: 80, label: 'HTTP' },
+    { from: 'revproxy', to: 'bookstack', port: 80, label: 'HTTP' },
     { from: 'saltmaster', to: 'vault', port: 8200, label: 'Secrets' },
     { from: 'saltmaster', to: 'netbox', port: 443, label: 'Inventory sync' },
     { from: 'saltmaster', to: 'opnsense', port: 443, label: 'Config' },
@@ -1062,6 +1064,7 @@
     { from: 'prometheus', to: 'pihole', port: 9100, label: 'Node exporter' },
     { from: 'prometheus', to: 'api', port: 9100, label: 'Node exporter' },
     { from: 'prometheus', to: 'matomo', port: 9100, label: 'Node exporter' },
+    { from: 'prometheus', to: 'bookstack', port: 9100, label: 'Node exporter' },
     { from: 'prometheus', to: 'ollama', port: 9100, label: 'Node exporter' },
     { from: 'prometheus', to: 'openwebui', port: 9100, label: 'Node exporter' },
     { from: 'prometheus', to: 'unifi', port: 9100, label: 'Node exporter' },
@@ -1084,6 +1087,9 @@
     { from: 'freebox', to: 'rpi', port: '', label: 'Local network' },
     { from: 'jetkvm', to: 'voidnode', port: 443, label: 'Out-of-band console' },
     { from: 'vps', to: 'revproxy', port: 443, label: 'WireGuard tunnel (SNI passthrough)' },
+    { from: 'vps', to: 'opnsense-admin', port: 53, label: 'WireGuard tunnel (DNS)' },
+    { from: 'vps', to: 'vault', port: 8200, label: 'WireGuard tunnel (Vault secrets)' },
+    { from: 'vps', to: 'pbs', port: 8007, label: 'WireGuard tunnel (PBS backup)' },
   ];
 
   const VLAN_BY_ID = Object.fromEntries(VLANS.map(v => [v.id, v]));
