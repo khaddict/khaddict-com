@@ -1,12 +1,12 @@
 en:
   nav.home: home
-  nav.blog: blog
   nav.projects: projects
+  nav.blog: blog
   nav.media: media
+  nav.sre: sre
+  nav.diagram: diagram
   nav.dashboard: dashboard
   nav.api: api
-  nav.diagram: diagram
-  nav.sre: sre
   nav.ariaLabel: "Menu"
   status.label: status
   status.checking: "checking systems..."
@@ -37,13 +37,13 @@ en:
   englishOnly.notice: "This page is only available in English."
 fr:
   nav.home: accueil
-  nav.blog: blog
   nav.projects: projets
+  nav.blog: blog
   nav.media: médias
+  nav.sre: sre
+  nav.diagram: diagram
   nav.dashboard: dashboard
   nav.api: api
-  nav.diagram: diagram
-  nav.sre: sre
   nav.ariaLabel: "Menu"
   status.label: statut
   status.checking: "vérification en cours..."
