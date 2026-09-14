@@ -322,6 +322,7 @@
     .wall-color-pill {
       display: inline-flex;
       align-items: center;
+      gap: .4rem;
       font-family: 'JetBrains Mono', monospace;
       font-size: .7rem;
       font-weight: 600;
@@ -334,39 +335,91 @@
       transition: background .15s ease;
     }
 
+    .wall-color-pill-swatch {
+      width: .75rem;
+      height: .75rem;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15);
+    }
+
     .wall-color-popover {
       display: none;
+      flex-direction: column;
       position: absolute;
       top: calc(100% + .5rem);
       left: 0;
-      align-items: center;
-      gap: .4rem;
+      gap: .55rem;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: .35rem;
+      border-radius: .9rem;
+      padding: .7rem;
       box-shadow: 0 8px 20px var(--shadow);
       z-index: 5;
+      width: 11rem;
     }
 
     .wall-color-popover.open { display: flex; }
 
-    .wall-color-swatch {
+    .wall-color-sv {
+      position: relative;
+      width: 100%;
+      height: 6.5rem;
+      border-radius: .5rem;
+      cursor: crosshair;
+      touch-action: none;
+      background:
+        linear-gradient(to top, #000, transparent),
+        linear-gradient(to right, #fff, transparent),
+        hsl(var(--wall-hue, 0) 100% 50%);
+    }
+
+    .wall-color-sv-thumb {
+      position: absolute;
+      width: .75rem;
+      height: .75rem;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, .4);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .wall-color-hue {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 100%;
+      height: .6rem;
+      border-radius: 999px;
+      background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+      cursor: pointer;
+    }
+
+    .wall-color-hue::-webkit-slider-thumb {
+      appearance: none;
+      -webkit-appearance: none;
       width: 1rem;
       height: 1rem;
       border-radius: 50%;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .15);
-      transition: transform .12s ease;
+      background: #fff;
+      border: 2px solid rgba(0, 0, 0, .4);
     }
 
-    .wall-color-swatch:hover { transform: scale(1.15); }
+    .wall-color-hue::-moz-range-thumb {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid rgba(0, 0, 0, .4);
+    }
 
-    .wall-color-swatch.active {
-      outline: 2px solid var(--text);
-      outline-offset: 2px;
+    .wall-color-hex {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: .7rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: .04em;
     }
 
     #wall-image-field { height: 3rem; }
@@ -626,15 +679,15 @@
 
           <div class="wall-color-picker" id="wall-color-picker">
             <button type="button" class="wall-color-pill" id="wall-color-trigger" aria-haspopup="true" aria-expanded="false">
+              <span class="wall-color-pill-swatch" id="wall-color-pill-swatch"></span>
               <span data-i18n="wall.color.pick">{{ i18n['wall.color.pick'] }}</span>
             </button>
             <div class="wall-color-popover" id="wall-color-popover">
-{% for hex, key in [
-  ('#FFFFFF', 'white'), ('#FF0000', 'red'), ('#FF8800', 'orange'), ('#FFFF00', 'yellow'),
-  ('#00FF00', 'green'), ('#00FFFF', 'cyan'), ('#0066FF', 'blue'), ('#FF00FF', 'magenta'),
-] %}
-              <button type="button" class="wall-color-swatch{{ ' active' if loop.first }}" data-color="{{ hex }}" style="background:{{ hex }}" aria-label="{{ i18n['wall.color.' + key] }}" data-i18n-aria="wall.color.{{ key }}"></button>
-{% endfor %}
+              <div class="wall-color-sv" id="wall-color-sv" tabindex="0" role="slider" aria-label="{{ i18n['wall.color.saturationValue'] }}" data-i18n-aria="wall.color.saturationValue">
+                <div class="wall-color-sv-thumb" id="wall-color-sv-thumb"></div>
+              </div>
+              <input type="range" class="wall-color-hue" id="wall-color-hue" min="0" max="359" value="0" aria-label="{{ i18n['wall.color.hue'] }}" data-i18n-aria="wall.color.hue">
+              <div class="wall-color-hex" id="wall-color-hex">#FFFFFF</div>
             </div>
           </div>
         </div>
@@ -710,13 +763,6 @@
 
       let selectedColor = '#FFFFFF';
 
-      function colorPillBackground(hex) {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return `rgba(${r}, ${g}, ${b}, .3)`;
-      }
-
       function updateCounter() {
         const len = textarea.value.length;
         counter.textContent = `${len}/60`;
@@ -771,6 +817,62 @@
       const colorPicker = document.getElementById('wall-color-picker');
       const colorTrigger = document.getElementById('wall-color-trigger');
       const colorPopover = document.getElementById('wall-color-popover');
+      const colorPillSwatch = document.getElementById('wall-color-pill-swatch');
+      const svBox = document.getElementById('wall-color-sv');
+      const svThumb = document.getElementById('wall-color-sv-thumb');
+      const hueSlider = document.getElementById('wall-color-hue');
+      const hexLabel = document.getElementById('wall-color-hex');
+
+      let hue = 0, sat = 0, val = 100;
+
+      function hsvToHex(h, s, v) {
+        s /= 100; v /= 100;
+        const k = (n) => (n + h / 60) % 6;
+        const f = (n) => v - v * s * Math.max(0, Math.min(k(n), 4 - k(n), 1));
+        const toHex = (n) => Math.round(f(n) * 255).toString(16).padStart(2, '0');
+        return `#${toHex(5)}${toHex(3)}${toHex(1)}`.toUpperCase();
+      }
+
+      function updateColorUI() {
+        selectedColor = hsvToHex(hue, sat, val);
+        svBox.style.setProperty('--wall-hue', hue);
+        svThumb.style.left = `${sat}%`;
+        svThumb.style.top = `${100 - val}%`;
+        colorPillSwatch.style.background = selectedColor;
+        hexLabel.textContent = selectedColor;
+      }
+
+      function setSvFromEvent(e) {
+        const rect = svBox.getBoundingClientRect();
+        const x = Math.min(Math.max(e.clientX - rect.left, 0), rect.width);
+        const y = Math.min(Math.max(e.clientY - rect.top, 0), rect.height);
+        sat = (x / rect.width) * 100;
+        val = 100 - (y / rect.height) * 100;
+        updateColorUI();
+      }
+
+      let svDragging = false;
+      svBox.addEventListener('pointerdown', (e) => {
+        svDragging = true;
+        svBox.setPointerCapture(e.pointerId);
+        setSvFromEvent(e);
+      });
+      svBox.addEventListener('pointermove', (e) => { if (svDragging) setSvFromEvent(e); });
+      svBox.addEventListener('pointerup', () => { svDragging = false; });
+      svBox.addEventListener('keydown', (e) => {
+        const step = e.shiftKey ? 10 : 2;
+        if (e.key === 'ArrowRight') { sat = Math.min(100, sat + step); updateColorUI(); e.preventDefault(); }
+        else if (e.key === 'ArrowLeft') { sat = Math.max(0, sat - step); updateColorUI(); e.preventDefault(); }
+        else if (e.key === 'ArrowUp') { val = Math.min(100, val + step); updateColorUI(); e.preventDefault(); }
+        else if (e.key === 'ArrowDown') { val = Math.max(0, val - step); updateColorUI(); e.preventDefault(); }
+      });
+
+      hueSlider.addEventListener('input', () => {
+        hue = Number(hueSlider.value);
+        updateColorUI();
+      });
+
+      updateColorUI();
 
       document.querySelectorAll('.wall-mode-toggle button').forEach((btn) => {
         btn.addEventListener('click', () => {
@@ -801,17 +903,6 @@
         e.stopPropagation();
         const isOpen = colorPopover.classList.toggle('open');
         colorTrigger.setAttribute('aria-expanded', String(isOpen));
-      });
-
-      document.querySelectorAll('.wall-color-swatch').forEach((sw) => {
-        sw.addEventListener('click', () => {
-          document.querySelectorAll('.wall-color-swatch').forEach((s) => s.classList.remove('active'));
-          sw.classList.add('active');
-          selectedColor = sw.dataset.color;
-          colorTrigger.style.background = colorPillBackground(selectedColor);
-          colorPopover.classList.remove('open');
-          colorTrigger.setAttribute('aria-expanded', 'false');
-        });
       });
 
       document.addEventListener('click', (e) => {
