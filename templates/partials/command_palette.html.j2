@@ -17,13 +17,13 @@
     const CMDK_API_HREF = '{{ nav_api_href }}';
     const CMDK_NAV = [
       { label: t('nav.home'), href: '{{ nav_home_href }}' },
-      { label: t('nav.blog'), href: '{{ nav_blog_href }}' },
       { label: t('nav.projects'), href: '{{ nav_projects_href }}' },
+      { label: t('nav.blog'), href: '{{ nav_blog_href }}' },
       { label: t('nav.media'), href: '{{ nav_media_href }}' },
+      { label: t('nav.sre'), href: '{{ nav_sre_href }}' },
+      { label: t('nav.diagram'), href: '{{ nav_diagram_href }}' },
       { label: t('nav.dashboard'), href: '{{ nav_dashboard_href }}' },
       { label: t('nav.api'), href: '{{ nav_api_href }}' },
-      { label: t('nav.diagram'), href: '{{ nav_diagram_href }}' },
-      { label: t('nav.sre'), href: '{{ nav_sre_href }}' },
     ];
     const CMDK_POSTS = [
 {% for p in search_posts %}
