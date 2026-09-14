@@ -195,8 +195,6 @@
       color: var(--muted);
     }
 
-    .post-comments { margin-top: 2.5rem; }
-
     .related-section {
       margin-top: 2.5rem;
       padding-top: 1.5rem;
@@ -298,9 +296,6 @@
         <div class="related-grid" id="related-grid"></div>
       </div>
 
-      <div class="post-comments">
-        <div id="remark42"></div>
-      </div>
     </div>
   </main>
 
@@ -438,7 +433,6 @@
       const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       document.documentElement.dataset.theme = next;
       setThemeCookie(next);
-      if (window.REMARK42) window.REMARK42.changeTheme(next);
     });
 
 {% include "partials/copy_flash.js.j2" %}
@@ -452,22 +446,6 @@
         try { await navigator.clipboard.writeText('{{ canonical_url }}'); } catch {}
         flashCopyState(copyBtn, copyToast);
       });
-    })();
-
-    (function () {
-      window.remark_config = {
-        host: 'https://blog.khaddict.com/remark42',
-        site_id: 'khaddict-blog',
-        url: '{{ canonical_url }}',
-        theme: document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light',
-        locale: currentLang,
-        no_footer: true,
-        show_rss_subscription: false,
-      };
-      const script = document.createElement('script');
-      script.src = window.remark_config.host + '/web/embed.js';
-      script.defer = true;
-      (document.head || document.body).appendChild(script);
     })();
   </script>
 {% include "partials/command_palette.html.j2" %}
