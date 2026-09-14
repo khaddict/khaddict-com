@@ -240,76 +240,22 @@
       color: var(--text);
     }
 
-    .api-try-color { position: relative; }
-
-    .api-try-color-btn {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      max-width: 200px;
+    .api-try-color {
+      width: 34px;
       height: 34px;
-      padding: 0 .7rem;
-      border-radius: 8px;
+      padding: 0;
+      border-radius: 50%;
       border: 1px solid var(--border);
       background: var(--bg);
-      color: var(--text);
       cursor: pointer;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .8rem;
-      transition: border-color .15s ease;
+      box-shadow: 0 1px 3px var(--shadow);
+      transition: transform .12s ease;
     }
 
-    .api-try-color-btn:hover { border-color: var(--accent); }
-    .api-try-color-btn svg { width: 10px; height: 10px; margin-left: auto; flex-shrink: 0; color: var(--muted); }
-
-    .api-try-color-swatch {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      border: 1px solid var(--border);
-    }
-
-    .api-try-color-dropdown {
-      position: fixed;
-      min-width: 160px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      box-shadow: 0 12px 32px var(--shadow);
-      padding: .4rem;
-      opacity: 0;
-      transform: translateY(-6px);
-      pointer-events: none;
-      transition: opacity .18s ease, transform .18s ease;
-      z-index: 10;
-    }
-
-    .api-try-color.open .api-try-color-dropdown {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .api-try-color-option {
-      display: flex;
-      align-items: center;
-      gap: .55rem;
-      width: 100%;
-      text-align: left;
-      padding: .4rem .55rem;
-      border-radius: 6px;
-      border: none;
-      background: none;
-      color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: .78rem;
-      cursor: pointer;
-      transition: background .15s ease, color .15s ease;
-    }
-
-    .api-try-color-option:hover { background: rgba(139, 92, 246, .08); color: var(--accent); }
-    .api-try-color-option.active { color: var(--accent); font-weight: 600; }
+    .api-try-color:hover { transform: scale(1.08); }
+    .api-try-color::-webkit-color-swatch-wrapper { padding: 0; border-radius: 50%; overflow: hidden; }
+    .api-try-color::-webkit-color-swatch { border: none; border-radius: 50%; }
+    .api-try-color::-moz-color-swatch { border: none; border-radius: 50%; }
 
     .api-try-btn {
       font-size: .76rem;
@@ -476,17 +422,6 @@
 
       const endpointMeta = new Map();
 
-      const WALL_COLORS = [
-        { name: 'White', hex: '#FFFFFF' },
-        { name: 'Red', hex: '#FF0000' },
-        { name: 'Orange', hex: '#FF8800' },
-        { name: 'Yellow', hex: '#FFFF00' },
-        { name: 'Green', hex: '#00FF00' },
-        { name: 'Cyan', hex: '#00FFFF' },
-        { name: 'Blue', hex: '#0066FF' },
-        { name: 'Magenta', hex: '#FF00FF' },
-      ];
-
       function resolveSchema(spec, schema) {
         if (!schema) return null;
         if (schema.$ref) {
@@ -574,7 +509,6 @@
         if (!container) return undefined;
         const el = container.querySelector(`[data-field="${name}"], [data-param="${name}"]`);
         if (!el) return undefined;
-        if (el.classList.contains('api-try-color')) return el.dataset.value || undefined;
         if (el.type === 'file') return el.files[0] ? el.files[0].name : undefined;
         return el.value !== '' ? el.value : undefined;
       }
@@ -640,23 +574,8 @@
       function fieldInputHtml(fieldId, name, prop, required, attr = 'field', path = '') {
         const safeName = escapeHtml(name);
         if (name === 'color') {
-          const selected = (prop && WALL_COLORS.find((c) => c.hex === prop.default)) || WALL_COLORS[0];
-          const options = WALL_COLORS.map((c) => `
-            <button type="button" class="api-try-color-option${c.hex === selected.hex ? ' active' : ''}" data-value="${c.hex}">
-              <span class="api-try-color-swatch" style="background:${c.hex}"></span>
-              <span class="api-try-color-option-label">${c.name}</span>
-            </button>
-          `).join('');
-          return `
-            <div class="api-try-color" id="${fieldId}" data-${attr}="${safeName}" data-value="${selected.hex}">
-              <button type="button" class="api-try-color-btn" aria-haspopup="true" aria-expanded="false">
-                <span class="api-try-color-swatch" style="background:${selected.hex}"></span>
-                <span class="api-try-color-label">${selected.name}</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-              </button>
-              <div class="api-try-color-dropdown">${options}</div>
-            </div>
-          `;
+          const value = (prop && prop.default) || '#ffffff';
+          return `<input class="api-try-color" id="${fieldId}" data-${attr}="${safeName}" type="color" value="${value}" />`;
         }
         if (prop && (prop.format === 'binary' || prop.contentMediaType)) {
           const accept = path.includes('audio') ? 'audio/*' : 'image/png,image/jpeg,image/webp';
@@ -819,7 +738,6 @@
       }
 
       function fieldValue(el) {
-        if (el.classList.contains('api-try-color')) return el.dataset.value;
         return el.value;
       }
 
@@ -858,55 +776,6 @@
           head.setAttribute('aria-expanded', expanded);
         }
       });
-
-      groupsEl.addEventListener('click', (e) => {
-        const option = e.target.closest('.api-try-color-option');
-        if (option) {
-          const wrapper = option.closest('.api-try-color');
-          wrapper.dataset.value = option.dataset.value;
-          wrapper.querySelector('.api-try-color-btn .api-try-color-swatch').style.background = option.dataset.value;
-          wrapper.querySelector('.api-try-color-btn .api-try-color-label').textContent = option.querySelector('.api-try-color-option-label').textContent;
-          wrapper.querySelectorAll('.api-try-color-option').forEach((o) => o.classList.toggle('active', o === option));
-          wrapper.classList.remove('open');
-          refreshCurlExample(wrapper.closest('.api-try'));
-          return;
-        }
-        const trigger = e.target.closest('.api-try-color-btn');
-        if (trigger) {
-          const wrapper = trigger.closest('.api-try-color');
-          const isOpen = wrapper.classList.toggle('open');
-          trigger.setAttribute('aria-expanded', isOpen);
-          if (isOpen) {
-            const dropdown = wrapper.querySelector('.api-try-color-dropdown');
-            const rect = trigger.getBoundingClientRect();
-            const dropdownHeight = dropdown.offsetHeight;
-            const spaceBelow = window.innerHeight - rect.bottom;
-            const openUpward = spaceBelow < dropdownHeight + 6 && rect.top > dropdownHeight + 6;
-            dropdown.style.top = openUpward
-              ? `${rect.top - dropdownHeight - 6}px`
-              : `${rect.bottom + 6}px`;
-            dropdown.style.left = `${rect.left}px`;
-          }
-        }
-      });
-
-      function closeAllColorDropdowns() {
-        groupsEl.querySelectorAll('.api-try-color.open').forEach((wrapper) => {
-          wrapper.classList.remove('open');
-          wrapper.querySelector('.api-try-color-btn').setAttribute('aria-expanded', 'false');
-        });
-      }
-
-      document.addEventListener('click', (e) => {
-        groupsEl.querySelectorAll('.api-try-color.open').forEach((wrapper) => {
-          if (wrapper.contains(e.target)) return;
-          wrapper.classList.remove('open');
-          wrapper.querySelector('.api-try-color-btn').setAttribute('aria-expanded', 'false');
-        });
-      });
-
-      window.addEventListener('scroll', closeAllColorDropdowns, true);
-      window.addEventListener('resize', closeAllColorDropdowns);
 
       groupsEl.addEventListener('click', async (e) => {
         const copyBtn = e.target.closest('[data-action="copy-curl"]');
