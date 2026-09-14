@@ -91,7 +91,7 @@
       --accent:             #8b5cf6;
       --accent-2:           #c026d3;
       --up:                 #16a34a;
-      --down: #dc2626; --warn: #b45309; --up-bg: #dcfce7; --warn-bg: #fef3c7; --down-bg: #fee2e2;
+      --down: #dc2626; --warn: #a89d00; --up-bg: #dcfce7; --warn-bg: #fef9c3; --down-bg: #fee2e2;
       --surface:            #ffffff;
       --surface-translucent: rgba(255, 255, 255, .5);
       --shadow:             rgba(24, 24, 27, .12);
@@ -108,7 +108,7 @@
         --accent:              #a78bfa;
         --accent-2:            #e879f9;
         --up:                  #4ade80;
-        --down: #f87171; --warn: #fbbf24; --up-bg: rgba(74, 222, 128, .13); --warn-bg: rgba(251, 191, 36, .14); --down-bg: rgba(248, 113, 113, .13);
+        --down: #f87171; --warn: #ffee00; --up-bg: rgba(74, 222, 128, .13); --warn-bg: rgba(255, 238, 0, .14); --down-bg: rgba(248, 113, 113, .13);
         --surface:             #22222c;
         --surface-translucent: rgba(26, 26, 34, .5);
         --shadow:              rgba(0, 0, 0, .5);
@@ -119,14 +119,14 @@
 
     :root[data-theme="light"] {
       --bg: #ffffff; --text: #18181b; --muted: #71717a; --border: rgba(24, 24, 27, .09);
-      --accent: #8b5cf6; --accent-2: #c026d3; --up: #16a34a; --down: #dc2626; --warn: #b45309; --up-bg: #dcfce7; --warn-bg: #fef3c7; --down-bg: #fee2e2;
+      --accent: #8b5cf6; --accent-2: #c026d3; --up: #16a34a; --down: #dc2626; --warn: #a89d00; --up-bg: #dcfce7; --warn-bg: #fef9c3; --down-bg: #fee2e2;
       --surface: #ffffff; --surface-translucent: rgba(255, 255, 255, .5); --shadow: rgba(24, 24, 27, .12);
       --blob-1: rgba(139, 92, 246, .32); --blob-2: rgba(192, 71, 219, .24);
     }
 
     :root[data-theme="dark"] {
       --bg: #1a1a22; --text: #f1f5f9; --muted: #94949f; --border: rgba(255, 255, 255, .1);
-      --accent: #a78bfa; --accent-2: #e879f9; --up: #4ade80; --down: #f87171; --warn: #fbbf24; --up-bg: rgba(74, 222, 128, .13); --warn-bg: rgba(251, 191, 36, .14); --down-bg: rgba(248, 113, 113, .13);
+      --accent: #a78bfa; --accent-2: #e879f9; --up: #4ade80; --down: #f87171; --warn: #ffee00; --up-bg: rgba(74, 222, 128, .13); --warn-bg: rgba(255, 238, 0, .14); --down-bg: rgba(248, 113, 113, .13);
       --surface: #22222c; --surface-translucent: rgba(26, 26, 34, .5); --shadow: rgba(0, 0, 0, .5);
       --blob-1: rgba(139, 92, 246, .22); --blob-2: rgba(192, 71, 219, .18);
     }
@@ -1165,6 +1165,7 @@
         <a href="https://dashboard.khaddict.com" data-i18n="nav.dashboard">dashboard</a>
         <a href="https://api.khaddict.com/fr/" data-i18n="nav.api">api</a>
         <a href="https://diagram.khaddict.com/fr/" data-i18n="nav.diagram">diagram</a>
+        <a href="https://sre.khaddict.com" data-i18n="nav.sre">sre</a>
       </nav>
       <div class="bandeau-right">
         <button class="search-btn" id="cmdk-btn" type="button" aria-haspopup="dialog" aria-label="Rechercher sur le site" data-i18n-aria="search.ariaLabel">
@@ -1271,6 +1272,7 @@
         'nav.dashboard': "dashboard",
         'nav.api': "api",
         'nav.diagram': "diagram",
+        'nav.sre': "sre",
         'nav.ariaLabel': "Menu",
         'status.label': "status",
         'status.checking': "checking systems...",
@@ -1322,6 +1324,7 @@
         'nav.dashboard': "dashboard",
         'nav.api': "api",
         'nav.diagram': "diagram",
+        'nav.sre': "sre",
         'nav.ariaLabel': "Menu",
         'status.label': "statut",
         'status.checking': "v\u00e9rification en cours...",
@@ -2099,6 +2102,7 @@
       { label: t('nav.dashboard'), href: 'https://dashboard.khaddict.com' },
       { label: t('nav.api'), href: 'https://api.khaddict.com/fr/' },
       { label: t('nav.diagram'), href: 'https://diagram.khaddict.com/fr/' },
+      { label: t('nav.sre'), href: 'https://sre.khaddict.com' },
     ];
     const CMDK_POSTS = [
       {
@@ -2138,6 +2142,13 @@
       },
     ];
     const CMDK_MEDIA = [
+      { name: "led-status-blue.jpg", href: 'https://media.khaddict.com/gallery/led-status-blue.jpg' },
+      { name: "led-status-cad-panel.png", href: 'https://media.khaddict.com/gallery/led-status-cad-panel.png' },
+      { name: "led-status-cad-tray.png", href: 'https://media.khaddict.com/gallery/led-status-cad-tray.png' },
+      { name: "led-status-green.jpg", href: 'https://media.khaddict.com/gallery/led-status-green.jpg' },
+      { name: "led-status-pico-pinout.png", href: 'https://media.khaddict.com/gallery/led-status-pico-pinout.png' },
+      { name: "led-status-red.jpg", href: 'https://media.khaddict.com/gallery/led-status-red.jpg' },
+      { name: "led-status-yellow.jpg", href: 'https://media.khaddict.com/gallery/led-status-yellow.jpg' },
       { name: "wall-scene.webp", href: 'https://media.khaddict.com/gallery/wall-scene.webp' },
       { name: "busy-bar-back-panel.jpg", href: 'https://media.khaddict.com/gallery/busy-bar-back-panel.jpg' },
       { name: "busy-bar-alert-firing.png", href: 'https://media.khaddict.com/gallery/busy-bar-alert-firing.png' },
