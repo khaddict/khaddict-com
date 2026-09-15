@@ -474,7 +474,7 @@ def main():
             out_root / "vps-fallback/index.html",
             lang="en",
             lang_mode="cookie",
-            lang_current="FR",
+            lang_current="EN",
             i18n=vps_i18n_all["en"],
             i18n_all=vps_i18n_all,
             search_posts=build_search_posts(prod_site_urls, posts),
