@@ -455,15 +455,25 @@
       return /\.(mp4|webm|mov)$/i.test(name);
     }
 
-    async function loadDir(label, path, fit) {
+    const GALLERY_ORDER = {{ js_str(gallery_order) }};
+
+    async function loadDir(label, path, fit, order) {
       const res   = await fetch(path);
       const items = await res.json();
-      return {
-        label,
-        path,
-        fit,
-        files: items.filter(i => i.type === 'file').sort((a, b) => a.name.localeCompare(b.name))
-      };
+      const files = items.filter(i => i.type === 'file');
+      if (order) {
+        files.sort((a, b) => {
+          const ia = order.indexOf(a.name);
+          const ib = order.indexOf(b.name);
+          if (ia === -1 && ib === -1) return a.name.localeCompare(b.name);
+          if (ia === -1) return -1;
+          if (ib === -1) return 1;
+          return ia - ib;
+        });
+      } else {
+        files.sort((a, b) => a.name.localeCompare(b.name));
+      }
+      return { label, path, fit, files };
     }
 
     const lightbox          = document.getElementById('lightbox');
@@ -661,7 +671,7 @@
       const tree = document.getElementById('tree');
       try {
         const dirs = await Promise.all([
-          loadDir('tabs.gallery', '/gallery/', 'cover'),
+          loadDir('tabs.gallery', '/gallery/', 'cover', GALLERY_ORDER),
           loadDir('tabs.videos',  '/videos/',  'cover'),
           loadDir('tabs.icons',   '/icons/',   'contain')
         ]);

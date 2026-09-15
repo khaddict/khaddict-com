@@ -554,6 +554,7 @@ def main():
     if only in (None, "media"):
         media_yaml = load_i18n("media")
         media_i18n_all = merged_i18n(common, media_yaml)
+        gallery_order = gallery_filenames_by_recency()
         for locale, out_rel in (("en", "files/media/index.html"), ("fr", "files/media/fr/index.html")):
             render(
                 env,
@@ -566,6 +567,7 @@ def main():
                 i18n_all=media_i18n_all,
                 search_posts=search_posts,
                 search_media=search_media,
+                gallery_order=gallery_order,
                 api_base_url=PROD_API_BASE_URL,
                 brand_href=SITE_URLS[locale]["home"],
                 **nav_hrefs(SITE_URLS[locale]),
