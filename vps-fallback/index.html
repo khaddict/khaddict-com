@@ -1086,7 +1086,7 @@
 
           const pct24 = hb.uptimeList[`${m.id}_24`];
           const pctNum = pct24 !== undefined ? pct24 * 100 : undefined;
-          const p = pctNum !== undefined ? `${pctNum.toFixed(2)}%` : '—';
+          const p = pctNum !== undefined ? `${pctNum.toFixed(2)}%` : 'n/a';
           const pctCls = !isUp ? 'bad' : recentHasDown ? 'mid' : 'good';
           const dotCls = !isUp ? 'down' : recentHasDown ? 'warn' : 'up';
 
