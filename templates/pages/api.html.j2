@@ -590,7 +590,7 @@
       function fieldInputHtml(fieldId, name, prop, required, attr = 'field', path = '') {
         const safeName = escapeHtml(name);
         if (name === 'color') {
-          const value = (prop && prop.default) || '#ffffff';
+          const value = escapeHtml((prop && prop.default) || '#ffffff');
           return `
             <label class="api-try-color-pill" for="${fieldId}">
               <span class="api-try-color-pill-swatch" id="${fieldId}-swatch" style="background:${value}"></span>
@@ -820,12 +820,23 @@
         const bodyKind = container.dataset.bodyKind;
         const inputs = container.querySelectorAll('[data-field]');
 
-        let path = container.dataset.path;
-        container.querySelectorAll('[data-param]').forEach((el) => {
-          path = path.replace(`{${el.dataset.param}}`, encodeURIComponent(fieldValue(el)));
-        });
-
         const meta = endpointMeta.get(Number(container.id.slice(3)));
+        const opParams = (meta && meta.operation.parameters) || [];
+
+        let path = container.dataset.path;
+        opParams.filter((p) => p.in === 'path').forEach((p) => {
+          const el = container.querySelector(`[data-param="${p.name}"]`);
+          if (el) path = path.replace(`{${p.name}}`, encodeURIComponent(fieldValue(el)));
+        });
+        const queryParams = opParams
+          .filter((p) => p.in === 'query')
+          .map((p) => {
+            const el = container.querySelector(`[data-param="${p.name}"]`);
+            return el ? `${encodeURIComponent(p.name)}=${encodeURIComponent(fieldValue(el))}` : null;
+          })
+          .filter((pair) => pair !== null);
+        if (queryParams.length) path += '?' + queryParams.join('&');
+
         const bodySchema = meta
           ? resolveSchema(meta.spec, meta.operation.requestBody?.content?.['application/json']?.schema)
           : null;
