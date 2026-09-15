@@ -94,21 +94,19 @@ WWW_META = None
 
 TAG_COLORS_LIGHT = {
     "homelab": "#7C5CBF",
-    "printing3d": "#A85A26",
-    "tooling": "#2E6DAE",
-    "systems": "#1A7557",
-    "networking": "#B03E71",
-    "cloud": "#1C7F97",
-    "dev": "#A6790F",
+    "printing3d": "#A17436",
+    "systems": "#36A174",
+    "networking": "#A136A1",
+    "dev": "#366BA1",
+    "electronics": "#A1363E",
 }
 TAG_COLORS_DARK = {
     "homelab": "#B39DDB",
-    "printing3d": "#F5B78E",
-    "tooling": "#90CAF9",
-    "systems": "#A5D6C1",
-    "networking": "#F0A8C4",
-    "cloud": "#8ED2E0",
-    "dev": "#F0C674",
+    "printing3d": "#E7C89D",
+    "systems": "#9DE7C8",
+    "networking": "#E79DE7",
+    "dev": "#9DC2E7",
+    "electronics": "#E79DA3",
 }
 
 
