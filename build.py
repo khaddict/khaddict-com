@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Renders the shared-chrome Jinja2 templates into the static HTML files that
 Helm and the vps-fallback host serve. templates/ is the only source of truth;
-generated output is never committed. CI (publish-chart.yaml) runs this with no
-arguments right before `helm package`. For local Helm testing, run it the same
+generated output is gitignored and not committed, except files/api/{,fr/}index.html
+and vps-fallback/index.html (see README.md). CI (publish-chart.yaml) runs this with
+no arguments right before `helm package`. For local Helm testing, run it the same
 way to populate the real paths on disk. For a quick preview without touching
 those paths, use --out-dir (e.g. --out-dir _preview, already gitignored).
 """
@@ -682,10 +683,10 @@ def main():
 
             post_extra = {
                 locale: {
+                    **post_yaml[locale],
                     "title.post": f"{post['title'][locale]} | khaddict blog",
                     "post.title": post["title"][locale],
                     "post.body": post["body"][locale].replace("{MEDIA}", SITE_URLS["en"]["media"]),
-                    **post_yaml[locale],
                 }
                 for locale in LOCALES
             }
