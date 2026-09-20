@@ -20,9 +20,9 @@
       { label: t('nav.projects'), href: '{{ nav_projects_href }}' },
       { label: t('nav.blog'), href: '{{ nav_blog_href }}' },
       { label: t('nav.media'), href: '{{ nav_media_href }}' },
-      { label: t('nav.sre'), href: '{{ nav_sre_href }}' },
+      { label: t('nav.sre'), href: '{{ nav_sre_href }}', external: true },
       { label: t('nav.diagram'), href: '{{ nav_diagram_href }}' },
-      { label: t('nav.dashboard'), href: '{{ nav_dashboard_href }}' },
+      { label: t('nav.dashboard'), href: '{{ nav_dashboard_href }}', external: true },
       { label: t('nav.api'), href: '{{ nav_api_href }}' },
     ];
     const CMDK_POSTS = [
@@ -115,7 +115,7 @@
         const media = q === '' ? CMDK_MEDIA.slice(0, 3) : CMDK_MEDIA.filter((m) => m.name.toLowerCase().includes(q));
 
         items = [
-          ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href })),
+          ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href, external: n.external })),
           ...posts.map((p) => ({ type: 'post', label: currentLang === 'fr' ? p.titleFr : p.title, excerpt: currentLang === 'fr' ? p.excerptFr : p.excerpt, href: p.href })),
           ...api.map((e) => ({ type: 'api', label: `${e.method.toUpperCase()} ${e.path}`, excerpt: e.summary, href: e.href })),
           ...media.map((m) => ({ type: 'media', label: m.name, href: m.href })),
@@ -134,7 +134,7 @@
           if (item.type === 'api' && i === nav.length + posts.length) html += `<div class="cmdk-group-label">${t('search.groupApi')}</div>`;
           if (item.type === 'media' && i === nav.length + posts.length + api.length) html += `<div class="cmdk-group-label">${t('search.groupMedia')}</div>`;
           html += `
-            <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}">
+            <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}"${item.external ? ' target="_blank" rel="noopener"' : ''}>
               <span class="cmdk-item-title">${escapeHtml(item.label)}</span>
               ${item.excerpt ? `<span class="cmdk-item-excerpt">${escapeHtml(item.excerpt)}</span>` : ''}
             </a>
@@ -183,7 +183,13 @@
         if (e.key === 'Enter') {
           e.preventDefault();
           const active = items[activeIndex];
-          if (active) window.location.href = active.href;
+          if (active) {
+            if (active.external) {
+              window.open(active.href, '_blank', 'noopener');
+            } else {
+              window.location.href = active.href;
+            }
+          }
         }
       });
 

@@ -1125,9 +1125,9 @@
         <a href="https://projects.khaddict.com" data-i18n="nav.projects">projects</a>
         <a href="https://blog.khaddict.com" data-i18n="nav.blog">blog</a>
         <a href="https://media.khaddict.com" data-i18n="nav.media">media</a>
-        <a href="https://sre.khaddict.com" data-i18n="nav.sre">sre</a>
+        <a href="https://sre.khaddict.com" target="_blank" rel="noopener" data-i18n="nav.sre">sre</a>
         <a href="https://diagram.khaddict.com" data-i18n="nav.diagram">diagram</a>
-        <a href="https://dashboard.khaddict.com" data-i18n="nav.dashboard">dashboard</a>
+        <a href="https://dashboard.khaddict.com" target="_blank" rel="noopener" data-i18n="nav.dashboard">dashboard</a>
         <a href="https://api.khaddict.com" data-i18n="nav.api">api</a>
       </nav>
       <div class="bandeau-right">
@@ -2006,9 +2006,9 @@
       { label: t('nav.projects'), href: 'https://projects.khaddict.com' },
       { label: t('nav.blog'), href: 'https://blog.khaddict.com' },
       { label: t('nav.media'), href: 'https://media.khaddict.com' },
-      { label: t('nav.sre'), href: 'https://sre.khaddict.com' },
+      { label: t('nav.sre'), href: 'https://sre.khaddict.com', external: true },
       { label: t('nav.diagram'), href: 'https://diagram.khaddict.com' },
-      { label: t('nav.dashboard'), href: 'https://dashboard.khaddict.com' },
+      { label: t('nav.dashboard'), href: 'https://dashboard.khaddict.com', external: true },
       { label: t('nav.api'), href: 'https://api.khaddict.com' },
     ];
     const CMDK_POSTS = [
@@ -2168,7 +2168,7 @@
         const media = q === '' ? CMDK_MEDIA.slice(0, 3) : CMDK_MEDIA.filter((m) => m.name.toLowerCase().includes(q));
 
         items = [
-          ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href })),
+          ...nav.map((n) => ({ type: 'nav', label: n.label, href: n.href, external: n.external })),
           ...posts.map((p) => ({ type: 'post', label: currentLang === 'fr' ? p.titleFr : p.title, excerpt: currentLang === 'fr' ? p.excerptFr : p.excerpt, href: p.href })),
           ...api.map((e) => ({ type: 'api', label: `${e.method.toUpperCase()} ${e.path}`, excerpt: e.summary, href: e.href })),
           ...media.map((m) => ({ type: 'media', label: m.name, href: m.href })),
@@ -2187,7 +2187,7 @@
           if (item.type === 'api' && i === nav.length + posts.length) html += `<div class="cmdk-group-label">${t('search.groupApi')}</div>`;
           if (item.type === 'media' && i === nav.length + posts.length + api.length) html += `<div class="cmdk-group-label">${t('search.groupMedia')}</div>`;
           html += `
-            <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}">
+            <a class="cmdk-item${i === activeIndex ? ' active' : ''}" data-index="${i}" href="${escapeHtml(item.href)}"${item.external ? ' target="_blank" rel="noopener"' : ''}>
               <span class="cmdk-item-title">${escapeHtml(item.label)}</span>
               ${item.excerpt ? `<span class="cmdk-item-excerpt">${escapeHtml(item.excerpt)}</span>` : ''}
             </a>
@@ -2236,7 +2236,13 @@
         if (e.key === 'Enter') {
           e.preventDefault();
           const active = items[activeIndex];
-          if (active) window.location.href = active.href;
+          if (active) {
+            if (active.external) {
+              window.open(active.href, '_blank', 'noopener');
+            } else {
+              window.location.href = active.href;
+            }
+          }
         }
       });
 
